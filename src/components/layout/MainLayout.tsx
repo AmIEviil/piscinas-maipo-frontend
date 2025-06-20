@@ -3,7 +3,7 @@ import { TopBar } from "../topbar/TopBar";
 
 export const BodyLayout = () => {
   return (
-    <div>
+    <div >
       <TopBar />
       <Outlet />
     </div>
