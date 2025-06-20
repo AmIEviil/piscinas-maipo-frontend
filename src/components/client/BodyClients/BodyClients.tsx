@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useClient } from "../../../hooks/ClientHooks";
 import type { Client } from "../../../service/clientInterface";
 
@@ -32,6 +32,7 @@ const BodyClients = () => {
             <th>Email</th>
             <th>Dia de Mantención</th>
             <th>Valor Mantención</th>
+            <th>Acciones</th>
           </thead>
           <tbody>
             {clients?.map((client) => (
@@ -43,6 +44,11 @@ const BodyClients = () => {
                 <td>{client.email}</td>
                 <td>{client.diaMantencion}</td>
                 <td>{client.valorMantencion}</td>
+                <td>
+                  <button>Ver</button>
+                  <button>Editar</button>
+                  <button>Elinar</button>
+                </td>
               </tr>
             ))}
           </tbody>
