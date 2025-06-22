@@ -6,19 +6,18 @@ export const TopBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const actualRoute = location.pathname.replace("/", "");
+  const actualRoute = location.pathname.replace("/", "") || "Home";
 
   return (
     <div className={style.topBarContainer}>
       <div className={style.headerModuleContainer}>
-        <span>
-          {actualRoute.charAt(0).toUpperCase() + actualRoute.slice(1)}
-        </span>
+        <span>Piscinas El Maipo</span>
       </div>
+      <span>{actualRoute.charAt(0).toUpperCase() + actualRoute.slice(1)}</span>
       <div className={style.tabsContainer}>
-        <button onClick={() => navigate(PAGE_ROUTES.Home)}>Home</button>
-        <button onClick={() => navigate(PAGE_ROUTES.Login)}>Login</button>
+        <button onClick={() => navigate("/")}>Home</button>
         <button onClick={() => navigate(PAGE_ROUTES.Clientes)}>Clientes</button>
+        <button onClick={() => navigate(PAGE_ROUTES.Inventario)}>Inventario</button>
       </div>
     </div>
   );

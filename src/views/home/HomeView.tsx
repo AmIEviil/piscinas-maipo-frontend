@@ -1,7 +1,11 @@
+import BodyHome from "../../components/home/bodyHome/BodyHome";
+
 export const HomeView = () => {
   return (
     <div>
-      <span>HomeView</span>
+      <div>
+        <BodyHome />
+      </div>
     </div>
   );
 };

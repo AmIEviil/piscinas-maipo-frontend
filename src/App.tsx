@@ -3,14 +3,11 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 import { useLogin } from "./hooks/LoginHooks";
-import { useClient } from "./hooks/ClientHooks";
 
 function App() {
   const [users, setUsers] = useState<unknown>();
-  const [clients, setClients] = useState<unknown>();
 
   const loginMutation = useLogin();
-  const clientMutation = useClient();
 
   const handleUsers = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -18,8 +15,6 @@ function App() {
     try {
       const users = await loginMutation.mutateAsync();
       setUsers(users);
-      const clients = await clientMutation.mutateAsync();
-      setClients(clients);
     } catch (error) {
       console.log(error);
     }
@@ -43,7 +38,6 @@ function App() {
         </p>
       </div>
       <div>{users !== undefined ? JSON.stringify(users) : null}</div>
-      <div>{clients !== undefined ? JSON.stringify(clients) : null}</div>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>

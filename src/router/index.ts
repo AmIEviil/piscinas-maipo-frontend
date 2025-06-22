@@ -8,9 +8,9 @@ const BodyLayout = lazy(() =>
   }))
 );
 
-const LoginView = lazy(() =>
-  import("../views/login/LoginView.tsx").then((module) => ({
-    default: module.LoginView,
+const InventoryView = lazy(() =>
+  import("../views/inventory/InventoryView.tsx").then((module) => ({
+    default: module.InventoryView,
   }))
 );
 
@@ -28,17 +28,7 @@ const ClientsView = lazy(() =>
 
 export const router = createBrowserRouter([
   {
-    path: PAGE_ROUTES.Login,
-    Component: BodyLayout,
-    children: [
-      {
-        index: true,
-        Component: LoginView,
-      },
-    ],
-  },
-  {
-    path: PAGE_ROUTES.Home,
+    path: "/",
     Component: BodyLayout,
     children: [
       {
@@ -54,6 +44,16 @@ export const router = createBrowserRouter([
       {
         index: true,
         Component: ClientsView,
+      },
+    ],
+  },
+  {
+    path: PAGE_ROUTES.Inventario,
+    Component: BodyLayout,
+    children: [
+      {
+        index: true,
+        Component: InventoryView,
       },
     ],
   },

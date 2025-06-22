@@ -1,90 +1,16 @@
-.tableContainer {
-  width: 100%;
-  overflow-x: auto;
-  margin-top: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px var(--color-sombra);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-}
-
-thead {
-  background-color: var(--color-primario);
-  color: var(--color-fondo);
-  position: sticky;
-  top: 0;
-}
-
-th {
-  padding: 1rem 1.2rem;
-  text-align: left;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 0.5px;
-  border-bottom: 2px solid var(--color-secundario);
-}
-
-tbody tr {
-  transition: all 0.2s ease;
-}
-
-tbody tr:nth-child(even) {
-  background-color: var(--color-fondo-suave);
-}
-
-tbody tr:nth-child(odd) {
-  background-color: var(--color-fondo);
-}
-
-tbody tr:hover {
-  background-color: var(--color-detalle-claro);
-  cursor: pointer;
-}
-
-td {
-  padding: 0.8rem 1.2rem;
-  color: var(--color-gris-oscuro);
-  border-bottom: 1px solid var(--color-detalle-claro);
-}
-
-td:not(:last-child) {
-  border-right: 1px solid var(--color-detalle-claro);
-}
-
-button {
-  background-color: var(--color-secundario);
-  color: var(--color-fondo);
-  border: none;
-  padding: 0.5rem 0.8rem;
-  margin-right: 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: all 0.2s ease;
-}
-
-button:hover {
-  background-color: var(--color-primario);
-  transform: translateY(-1px);
-}
-
 .filtersContainer {
   display: flex;
   justify-content: space-between;
   gap: 1.5rem;
   padding: 1rem;
-  background-color: var(--color-fondo-suave);
-  border-radius: 8px;
+  background-color: var(--color-fondo);
+  border-radius: 16px;
   margin-bottom: 1rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
-.filtersContainer div {
+.filtersContainer .filters {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -99,15 +25,20 @@ button:hover {
 
 .filtersContainer input,
 .filtersContainer select {
-  padding: 0.5rem;
-  border: 1px solid var(--color-detalle-claro);
-  border-radius: 4px;
   min-width: 150px;
 }
 
 .filtersContainer input:focus,
 .filtersContainer select:focus {
   outline: none;
-  border-color: var(--color-secundario);
-  box-shadow: 0 0 0 2px rgba(2, 137, 199, 0.2);
+}
+
+.actionsFilters {
+  display: flex;
+  flex-direction: row;
+  padding-right: 2rem;
+}
+
+.tableContainer {
+  margin-top: 1.5rem;
 }
