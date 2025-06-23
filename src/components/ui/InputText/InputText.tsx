@@ -48,10 +48,16 @@ const InputText = ({
         disabled={disabled}
         sx={{
           "& .MuiOutlinedInput-input": {
-            paddingLeft: "2rem",
+            padding: "0.5rem",
           },
           "& .MuiOutlinedInput-notchedOutline": {
             borderRadius: "24px",
+          },
+          "& .MuiInputLabel-root": {
+            top: "-0.5rem",
+          },
+          "& .MuiInputLabel-shrink": {
+            top: "-0.1rem",
           },
         }}
       />

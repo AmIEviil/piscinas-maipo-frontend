@@ -31,10 +31,19 @@ const CustomSelect = ({
 
   return (
     <div>
-      <FormControl sx={{ m: 1, minWidth: 220, width: "100%" }}>
+      <FormControl sx={{ m: 0.5, minWidth: 150, width: "100%" }}>
         <InputLabel
           className={`${style.customInputLabel} ${icon ? style.withIcon : ""}`}
           id="demo-simple-select"
+          sx={{
+            top: "-0.5rem",
+            paddingLeft: icon ? "2rem" : "0rem",
+            fontWeight: "500",
+            "&.MuiInputLabel-shrink": {
+              top: "-0.1rem",
+              left: "0px",
+            },
+          }}
         >
           {icon && <span className={style.iconInputLabel}>{icon}</span>}
           <span className={style.InputLabel}>{label}</span>
@@ -50,13 +59,30 @@ const CustomSelect = ({
                 overflowY: "auto",
               },
             },
+            style: {
+              width: "1rem",
+            },
           }}
           sx={{
             "& .MuiOutlinedInput-input": {
-              paddingLeft: "2rem",
+              margin: "0px",
+              padding: "0.5rem",
             },
+            "&.MuiInputLabel-root": {
+              backgroundColor: "blue",
+            },
+            // MuiFormLabel-root-MuiInputLabel-root
             "& .MuiOutlinedInput-notchedOutline": {
               borderRadius: "24px",
+              // backgroundColor: "red",
+            },
+            "& .MuiInputLabel-root": {
+              top: "-0.5rem",
+              backgroundColor: " red",
+            },
+            "& .MuiInputLabel-shrink": {
+              top: "-0.1rem",
+              backgroundColor: " blue",
             },
           }}
         >

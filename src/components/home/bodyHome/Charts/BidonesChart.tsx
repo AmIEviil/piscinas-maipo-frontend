@@ -1,28 +1,43 @@
 import GaugeChart from "../../../ui/charts/gauge/GaugeChart";
 import style from "./BidonesChart.module.css";
+import { type IMetricsProduct } from "../../../../service/productsInterface";
+import { CircularProgress } from "@mui/material";
 
-const estadisticasBidones = {
-  minValue: 0,
-  maxValue: 30,
-  actualValue: 15,
-};
+interface ProductsChart {
+  showPercentage?: boolean;
+  loading?: boolean;
+  productData: IMetricsProduct;
+}
 
-const BidonesChart = () => {
+const BidonesChart = ({
+  showPercentage = false,
+  productData,
+  loading,
+}: ProductsChart) => {
   return (
     <div className={style.bidonesChartContainer}>
-      <div className={style.actionsContainer}>
-        <button className={style.actionButton}>Detalles</button>
-        <button className={style.actionButton}>Detalles</button>
-        <button className={style.actionButton}>Solicitar Productos</button>
-      </div>
-      <div>
-        <GaugeChart
-          minValue={estadisticasBidones.minValue}
-          maxValue={estadisticasBidones.maxValue}
-          actualValue={estadisticasBidones.actualValue}
-          title="Tabletas Utilizadas"
-        />
-      </div>
+      {loading && <CircularProgress />}
+      {productData && !loading ? (
+        <>
+          <div className={style.actionsContainer}>
+            <button className={style.actionButton}>Detalles</button>
+            <button className={style.actionButton}>Detalles</button>
+            <button className={style.actionButton}>Solicitar Productos</button>
+          </div>
+          <div>
+            <GaugeChart
+              minValue={0}
+              maxValue={productData.disponibles}
+              actualValue={
+                showPercentage
+                  ? productData.porcentaje_utilizado
+                  : productData.usados
+              }
+              title={productData.tipo}
+            />
+          </div>
+        </>
+      ) : null}
     </div>
   );
 };

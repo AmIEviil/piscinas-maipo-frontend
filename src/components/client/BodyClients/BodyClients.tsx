@@ -207,7 +207,7 @@ const BodyClients = () => {
             value={direccionInput}
           />
         </div>
-        <div className={style.filters}>
+        <div className={`${style.filters} select`}>
           <Select
             label="Dia Mantención"
             options={dias}
@@ -225,7 +225,7 @@ const BodyClients = () => {
         </div>
         <div className={style.actionsFilters}>
           <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
-            <button onClick={handleClearFilter}>
+            <button onClick={handleClearFilter} className={style.actionButton}>
               <SearchOffIcon />
             </button>
           </Tooltip>

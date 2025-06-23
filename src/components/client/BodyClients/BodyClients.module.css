@@ -36,9 +36,40 @@
 .actionsFilters {
   display: flex;
   flex-direction: row;
-  padding-right: 2rem;
+  margin-left: 0.5rem;
 }
 
 .tableContainer {
   margin-top: 1.5rem;
+}
+
+@media screen and (max-width: 1280px) {
+  .filtersContainer {
+    gap: 0.5rem;
+    padding: 0.5rem;
+    justify-content: center;
+    /* background-color: var(--color-fondo); */
+    border-radius: 16px;
+    margin-bottom: 0.5rem;
+    align-items: center;
+    width: 100%;
+  }
+
+  .filtersContainer .filters {
+    display: flex;
+    flex-direction: row;
+    gap: 0rem;
+  }
+  .actionsFilters {
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .filtersContainer {
+    flex-wrap: nowrap;
+    flex-direction: column;
+  }
+
 }
