@@ -23,7 +23,6 @@ const CustomSelect = ({
   icon,
 }: CustomSelectProps) => {
   const handleChange = (event: SelectChangeEvent) => {
-    console.log(event);
     if (onChange) {
       onChange(event);
     }

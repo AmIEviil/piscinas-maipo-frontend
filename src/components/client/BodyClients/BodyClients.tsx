@@ -167,7 +167,6 @@ const BodyClients = () => {
   };
 
   const handleEditClient = (client: Client) => {
-    console.log(client);
     setSelectedClient(client);
     setIsEditMode(true);
     setOpenCreateDialog(true);

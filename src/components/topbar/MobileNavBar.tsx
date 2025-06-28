@@ -8,7 +8,10 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import MailIcon from "@mui/icons-material/Mail";
+import TocIcon from "@mui/icons-material/Toc";
+import HomeIcon from "@mui/icons-material/Home";
+import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
+import InventoryIcon from "@mui/icons-material/Inventory";
 import { PAGE_ROUTES } from "../../constant/routes";
 import { useLocation, useNavigate } from "react-router";
 
@@ -17,7 +20,7 @@ export default function CustomNavBar() {
   const [open, setOpen] = React.useState(false);
   const location = useLocation();
 
-  const actualRoute = location.pathname.replace("/", "") || "Home";
+  const actualRoute = location.pathname.replace("/", "") || "Inicio";
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
@@ -29,7 +32,7 @@ export default function CustomNavBar() {
         <ListItem disablePadding>
           <ListItemButton onClick={() => navigate("/")}>
             <ListItemIcon>
-              <MailIcon />
+              <HomeIcon />
             </ListItemIcon>
             <ListItemText primary="Inicio" />
           </ListItemButton>
@@ -37,7 +40,7 @@ export default function CustomNavBar() {
         <ListItem disablePadding>
           <ListItemButton onClick={() => navigate(PAGE_ROUTES.Clientes)}>
             <ListItemIcon>
-              <MailIcon />
+              <PeopleOutlineIcon />
             </ListItemIcon>
             <ListItemText primary="Clientes" />
           </ListItemButton>
@@ -45,7 +48,7 @@ export default function CustomNavBar() {
         <ListItem disablePadding>
           <ListItemButton onClick={() => navigate(PAGE_ROUTES.Inventario)}>
             <ListItemIcon>
-              <MailIcon />
+              <InventoryIcon />
             </ListItemIcon>
             <ListItemText primary="Inventario" />
           </ListItemButton>
@@ -58,11 +61,18 @@ export default function CustomNavBar() {
   return (
     <div>
       <Button onClick={toggleDrawer(true)}>
-        <span>
-          {actualRoute.charAt(0).toUpperCase() + actualRoute.slice(1)}
+        <span
+          style={{
+            display: "inline-flex",
+            gap: "1rem",
+            textTransform: "capitalize",
+          }}
+        >
+          {actualRoute}
+          <TocIcon />
         </span>
       </Button>
-      <Drawer open={open} onClose={toggleDrawer(false)}>
+      <Drawer anchor="right" open={open} onClose={toggleDrawer(false)}>
         {DrawerList}
       </Drawer>
     </div>

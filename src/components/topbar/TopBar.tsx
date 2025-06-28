@@ -8,7 +8,7 @@ export const TopBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const actualRoute = location.pathname.replace("/", "") || "Home";
+  const actualRoute = location.pathname.replace("/", "") || "Inicio";
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -35,13 +35,13 @@ export const TopBar = () => {
         />
         <span>Piscinas El Maipo</span>
       </div>
-      {windowWidth > 580 && (
+      {windowWidth > 720 && (
         <span>
           {actualRoute.charAt(0).toUpperCase() + actualRoute.slice(1)}
         </span>
       )}
       <div className={style.tabsContainer}>
-        {windowWidth > 580 ? (
+        {windowWidth > 720 ? (
           <>
             <button onClick={() => navigate("/")}>Inicio</button>
             <button onClick={() => navigate(PAGE_ROUTES.Clientes)}>

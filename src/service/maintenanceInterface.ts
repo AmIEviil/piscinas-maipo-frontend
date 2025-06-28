@@ -1,3 +1,4 @@
+import { type IProducto } from "../service/productsInterface";
 export interface IMaintenance {
   id: number;
   fechaMantencion: Date;
@@ -8,15 +9,14 @@ export interface IMaintenance {
   recibioPago: false;
   productos: IProductosUtilizados[];
 }
-
-export interface IProducto {
-  id: number;
-  nombre: string;
-  valor_unitario: number;
-  cant_disponibe: number;
-}
-
 export interface IProductosUtilizados {
   id: number;
   product: IProducto;
+}
+
+export interface IResumeMaintenance {
+  dia: string;
+  programadas: number;
+  realizadas: number;
+  faltantes: number;
 }

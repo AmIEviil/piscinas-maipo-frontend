@@ -85,3 +85,11 @@ export const tiposPiscinasMaterial = [
   { value: "Piedra Natural", label: "Piedra Natural" },
   { value: "Hormigón", label: "Hormigón" },
 ];
+
+export const titlesInventoryTable = [
+  { label: "Nombre", showOrderBy: false },
+  { label: "Tipo", showOrderBy: false },
+  { label: "Cant. Disponible", showOrderBy: false },
+  { label: "Valor Unitario", showOrderBy: false },
+  { label: "Acciones", showOrderBy: false },
+];

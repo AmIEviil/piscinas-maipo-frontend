@@ -20,8 +20,7 @@ const BidonesChart = ({
       {productData && !loading ? (
         <>
           <div className={style.actionsContainer}>
-            <button className={style.actionButton}>Detalles</button>
-            <button className={style.actionButton}>Detalles</button>
+            <button className={style.actionButton}>Ir a Inventario</button>
             <button className={style.actionButton}>Solicitar Productos</button>
           </div>
           <div>
