@@ -8,7 +8,7 @@ import TableGeneric from "../ui/table/Table";
 // import type { SelectChangeEvent } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+// import VisibilityIcon from "@mui/icons-material/Visibility";
 import AddIcon from "@mui/icons-material/Add";
 import Tooltip from "@mui/material/Tooltip";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
@@ -17,12 +17,22 @@ import { titlesInventoryTable } from "../../constant/constantBodyClient";
 
 import { type IProducto } from "../../service/productsInterface";
 import { useProducts } from "../../hooks/ProductHooks";
+import CreateProductDialog from "./CreateProduct/CreateProductDialog";
+import InfoProductDialog from "./InfoProduct/InfoDialogProduct";
+import PopUp from "../ui/PopUp/PopUp";
 
 const BodyInventory = () => {
   const productsMutation = useProducts();
 
   const [products, setProducts] = useState<IProducto[]>();
   const [loadingTable, setLoadingTable] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<IProducto | null>(
+    null
+  );
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [openPopUp, setOpenPopUp] = useState(false);
 
   const fetchData = async () => {
     setLoadingTable(true);
@@ -40,13 +50,55 @@ const BodyInventory = () => {
     fetchData();
   }, []);
 
+  // const handleOpenDialog = async (product: IProducto) => {
+  //   setSelectedProduct(product);
+  //   handleSeeDetailsProduct(product);
+  //   setOpenDialog(true);
+  // };
+
+  const handleEditProduct = (product: IProducto) => {
+    setSelectedProduct(product);
+    setIsEditMode(true);
+    setOpenCreateDialog(true);
+  };
+
+  // const handleSeeDetailsProduct = async (product: IProducto) => {
+  //   setSelectedProduct(product);
+  //   try {
+  //     if (!product.id) return;
+  //     setOpenDialog(true);
+  //   } catch (error) {
+  //     console.error("Error cargando mantenciones:", error);
+  //   }
+  // };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setOpenCreateDialog(false);
+  };
+
+  const handleClosePopUp = () => {
+    setOpenPopUp(false);
+  };
+
+  const handleOpenDeletePopUp = (product: IProducto) => {
+    setSelectedProduct(product);
+    setOpenPopUp(true);
+  };
+
+  const handleDeleteProduct = async (id: number) => {
+    try {
+      // await deleteProductMutation.mutateAsync(id);
+      // fetchData();
+      console.log("Producto eliminado:", id);
+      setOpenPopUp(false);
+    } catch (error) {
+      console.error("Error eliminando al producto:", id, error);
+    }
+  };
+
   return (
     <div>
-      <div>
-        <label>
-          Aqui se mostrara toda la información sobre los clientes activos
-        </label>
-      </div>
       <div className={style.filtersContainer}>
         {/* <div className={style.filters}>
           <InputText
@@ -88,7 +140,7 @@ const BodyInventory = () => {
               <SearchOffIcon />
             </button>
           </Tooltip>
-          <Tooltip title="Agregar nuevo Cliente" arrow leaveDelay={0}>
+          <Tooltip title="Agregar nuevo Producto" arrow leaveDelay={0}>
             <button
             // onClick={handleOpenCreateDialog}
             >
@@ -109,26 +161,25 @@ const BodyInventory = () => {
               <td>{product.cant_disponible}</td>
               <td>{formatMoneyNumber(product.valor_unitario)}</td>
               <td>
-                <Tooltip title="Ver detalles Cliente" arrow leaveDelay={0}>
+                {/* <Tooltip title="Ver detalles Cliente" arrow leaveDelay={0}>
                   <button
                     className="actions"
-                    // onClick={() => handleOpenDialog(client)}
+                    onClick={() => handleOpenDialog(product)}
                   >
                     <VisibilityIcon />
                   </button>
-                </Tooltip>
-                <Tooltip title="Editar Cliente" arrow leaveDelay={0}>
-                  <button
-                  //   onClick={() => handleEditClient(client)}
-                  >
+                </Tooltip> */}
+                <Tooltip title="Editar Producto" arrow leaveDelay={0}>
+                  <button onClick={() => handleEditProduct(product)}>
                     <EditIcon />
                   </button>
                 </Tooltip>
                 <Tooltip title="Eliminar Producto" arrow leaveDelay={0}>
                   <button
-                  // onClick={() =>
-                  //   client.id !== undefined && handleDeleteClient(client.id)
-                  // }
+                    onClick={() =>
+                      product.id !== undefined &&
+                      handleOpenDeletePopUp(product)
+                    }
                   >
                     <DeleteIcon className={style.iconAction} />
                   </button>
@@ -138,18 +189,33 @@ const BodyInventory = () => {
           )}
         />
       </div>
-      {/* <InfoClientDialog
+      <InfoProductDialog
         open={openDialog}
         onClose={handleCloseDialog}
-        clientInfo={selectedClient ?? undefined}
-        maintenancesClient={mantenciones ?? undefined}
+        productInfo={selectedProduct ?? undefined}
       />
-      <CreateClientDialog
+
+      <CreateProductDialog
         open={openCreateDialog}
         onClose={handleCloseDialog}
         isEditMode={isEditMode}
-        clientInfo={selectedClient ?? undefined}
-      /> */}
+        productInfo={selectedProduct ?? undefined}
+      />
+      <PopUp
+        open={openPopUp}
+        onClose={handleClosePopUp}
+        onConfirm={() => {
+          handleDeleteProduct(selectedProduct?.id ?? 0);
+        }}
+        title="Confirmar eliminación"
+        confirmText="Eliminar"
+      >
+        <div className="flex flex-col gap-4 text-center">
+          <p>¿Estás seguro de que deseas eliminar este producto?</p>
+          <p className="font-bold">{selectedProduct?.nombre}</p>
+          <p>Esta acción no se puede deshacer.</p>
+        </div>
+      </PopUp>
     </div>
   );
 };

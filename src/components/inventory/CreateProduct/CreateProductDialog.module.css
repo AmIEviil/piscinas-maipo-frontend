@@ -1,0 +1,55 @@
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.fieldsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.fieldsContainer:last-child .inputField:last-child {
+  display: flex;
+  justify-content: center;
+}
+
+.inputField {
+  flex: 1 1 calc(50% - 16px);
+  min-width: 220px;
+}
+
+.dialogTitle {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--color-primario);
+  margin-bottom: 12px;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background-color: var(--color-fondo-suave);
+  border-top: 1px solid var(--color-detalle-claro);
+}
+
+.primaryButton {
+  background-color: var(--color-secundario);
+  color: var(--color-fondo);
+  padding: 8px 20px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.labelField {
+  display: flex;
+  padding-bottom: 0.5rem;
+  gap: 5px;
+}

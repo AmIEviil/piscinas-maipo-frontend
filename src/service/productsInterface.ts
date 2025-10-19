@@ -1,5 +1,5 @@
 export interface IProducto {
-  id: number;
+  id?: number;
   nombre: string;
   valor_unitario: number;
   cant_disponible: number;
