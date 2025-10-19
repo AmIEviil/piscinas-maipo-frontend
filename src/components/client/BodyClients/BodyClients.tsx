@@ -16,7 +16,7 @@ import TableGeneric from "../../ui/table/Table";
 import InfoClientDialog from "../InfoClient/InfoDialogClient";
 import CreateClientDialog from "../CreateClient/CreateClientDialog";
 
-import type { SelectChangeEvent } from "@mui/material";
+import { Checkbox, type SelectChangeEvent } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -30,6 +30,8 @@ import {
   titlesTable,
 } from "../../../constant/constantBodyClient";
 import { formatMoneyNumber } from "../../../utils/formatTextUtils";
+import { formatNoResultsText } from "../../../utils/FiltersUtils";
+import PopUp from "../../ui/PopUp/PopUp";
 
 interface IfilterQuery {
   nombre?: string;
@@ -48,6 +50,7 @@ const BodyClients = () => {
   const [filterQuery, setFilterQuery] = useState<IfilterQuery>({});
   const [loadingTable, setLoadingTable] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedClients, setSelectedClients] = useState<Client[]>([]);
   const [mantenciones, setMantenciones] = useState<IMaintenance[]>();
   const [openDialog, setOpenDialog] = useState(false);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
@@ -57,6 +60,12 @@ const BodyClients = () => {
   const [direccionInput, setDireccionInput] = useState("");
   const [selectedComuna, setSelectedComuna] = useState("");
   const [selectedDay, setSelectedDay] = useState("");
+
+  const [openPopUp, setOpenPopUp] = useState(false);
+
+  const handleClosePopUp = () => {
+    setOpenPopUp(false);
+  };
 
   const handleOpenDialog = async (client: Client) => {
     setSelectedClient(client);
@@ -174,21 +183,39 @@ const BodyClients = () => {
 
   const handleDeleteClient = async (id: number) => {
     try {
-      const response = await deleteClientMutation.mutateAsync(id);
-      console.log(response);
+      await deleteClientMutation.mutateAsync(id);
       fetchData();
+      setOpenPopUp(false);
     } catch (error) {
       console.error("Error eliminando al cliente:", id, error);
     }
   };
 
+  const handleTextNoResults = () => {
+    if (
+      filterQuery.nombre ||
+      filterQuery.direccion ||
+      filterQuery.comuna ||
+      filterQuery.dia
+    ) {
+      return formatNoResultsText(
+        nombreInput || direccionInput || selectedComuna || selectedDay,
+        "clientes"
+      );
+    }
+  };
+
+  const handleOpenDeletePopUp = (client: Client) => {
+    setSelectedClient(client);
+    setOpenPopUp(true);
+  };
+
+  const handleSelectClient = (client: Client) => {
+    setSelectedClients((prev) => [...prev, client]);
+  };
+
   return (
-    <div>
-      <div>
-        <label>
-          Aqui se mostrara toda la información sobre los clientes activos
-        </label>
-      </div>
+    <div className="pt-4">
       <div className={style.filtersContainer}>
         <div className={style.filters}>
           <InputText
@@ -240,8 +267,15 @@ const BodyClients = () => {
           titles={titlesTable}
           data={clients ?? []}
           loading={loadingTable}
+          textNotFound={handleTextNoResults()}
           renderRow={(client) => (
             <tr key={client.id}>
+              <td>
+                <Checkbox
+                  checked={selectedClients.includes(client)}
+                  onChange={() => handleSelectClient(client)}
+                />
+              </td>
               <td>{client.nombre}</td>
               <td>{client.direccion}</td>
               <td>{client.comuna}</td>
@@ -249,7 +283,7 @@ const BodyClients = () => {
               <td>{client.email ? client.email : "No tiene email asociado"}</td>
               <td>{client.dia_mantencion}</td>
               <td>{formatMoneyNumber(client.valor_mantencion)}</td>
-              <td>
+              <td className="flex flex-col gap-2  sm:gap-4 items-center justify-center">
                 <Tooltip title="Ver detalles Cliente" arrow leaveDelay={0}>
                   <button
                     className="actions"
@@ -266,7 +300,7 @@ const BodyClients = () => {
                 <Tooltip title="Eliminar Cliente" arrow leaveDelay={0}>
                   <button
                     onClick={() =>
-                      client.id !== undefined && handleDeleteClient(client.id)
+                      client.id !== undefined && handleOpenDeletePopUp(client)
                     }
                   >
                     <DeleteIcon className={style.iconAction} />
@@ -282,6 +316,14 @@ const BodyClients = () => {
         onClose={handleCloseDialog}
         clientInfo={selectedClient ?? undefined}
         maintenancesClient={mantenciones ?? undefined}
+        onMaintenanceCreated={async () => {
+          if (selectedClient?.id) {
+            const updatedMaintenances = await maintenanceByClient.mutateAsync(
+              selectedClient.id
+            );
+            setMantenciones(updatedMaintenances);
+          }
+        }}
       />
       <CreateClientDialog
         open={openCreateDialog}
@@ -289,6 +331,21 @@ const BodyClients = () => {
         isEditMode={isEditMode}
         clientInfo={selectedClient ?? undefined}
       />
+      <PopUp
+        open={openPopUp}
+        onClose={handleClosePopUp}
+        onConfirm={() => {
+          handleDeleteClient(selectedClient?.id ?? 0);
+        }}
+        title="Confirmar eliminación"
+        confirmText="Eliminar"
+      >
+        <div className="flex flex-col gap-4 text-center">
+          <p>¿Estás seguro de que deseas eliminar este cliente?</p>
+          <p className="font-bold">{selectedClient?.nombre}</p>
+          <p>Esta acción no se puede deshacer.</p>
+        </div>
+      </PopUp>
     </div>
   );
 };

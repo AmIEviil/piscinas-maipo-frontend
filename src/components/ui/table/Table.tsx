@@ -40,7 +40,7 @@ const TableGeneric = <T,>({
         {loading && <CircularProgress className={style.iconTd} />}
         {!data.length && !loading && (
           <ul>
-            <span>No se econtraron resultados {textNotFound}</span>
+            <span>{textNotFound}</span>
             <li>Revisa la ortografia</li>
             <li>Intenta buscar por otra palabra</li>
           </ul>

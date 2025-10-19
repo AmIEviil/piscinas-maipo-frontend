@@ -1,6 +1,6 @@
 import {
   type IMaintenance,
-  //   IProducto,
+  type IMaintenanceCreate,
 } from "../../service/maintenanceInterface";
 import { MAINTENANCE_API } from "../api/maintenance/api";
 import apiClient from "../client/client";
@@ -17,6 +17,11 @@ export const maintenanceService = {
       id.toString()
     );
     const response = await apiClient.get(url);
+    return response.data;
+  },
+
+  createMaintenance: async (dto: IMaintenanceCreate): Promise<IMaintenance> => {
+    const response = await apiClient.post(MAINTENANCE_API.maintenances, dto);
     return response.data;
   },
 };

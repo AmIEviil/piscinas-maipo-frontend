@@ -25,6 +25,12 @@ export const TopBar = () => {
     };
   }, []);
 
+  const routes = [
+    { name: "Inicio", path: "/" },
+    { name: "Clientes", path: PAGE_ROUTES.Clientes },
+    { name: "Inventario", path: PAGE_ROUTES.Inventario },
+  ];
+
   return (
     <div className={style.topBarContainer}>
       <div className={style.headerModuleContainer}>
@@ -43,13 +49,11 @@ export const TopBar = () => {
       <div className={style.tabsContainer}>
         {windowWidth > 720 ? (
           <>
-            <button onClick={() => navigate("/")}>Inicio</button>
-            <button onClick={() => navigate(PAGE_ROUTES.Clientes)}>
-              Clientes
-            </button>
-            <button onClick={() => navigate(PAGE_ROUTES.Inventario)}>
-              Inventario
-            </button>
+            {routes.map((route) => (
+              <button key={route.name} onClick={() => navigate(route.path)}>
+                {route.name}
+              </button>
+            ))}
           </>
         ) : (
           <>

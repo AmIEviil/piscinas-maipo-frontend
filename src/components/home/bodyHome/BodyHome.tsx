@@ -47,7 +47,7 @@ export default function BodyHome() {
     <div className={style.bodyHomeContainer}>
       <div className={style.chartsHomeContainer}>
         <span className={style.titleChart}>Productos</span>
-        <div className={style.chartsContainer}>
+        <div className={`${style.chartsContainer} custom-scrollbar`}>
           {metrics?.map((metric, index) => (
             <BidonesChart
               key={index}
@@ -59,7 +59,7 @@ export default function BodyHome() {
       </div>
       <div className={style.chartsHomeContainer}>
         <span className={style.titleChart}>Mantenciones</span>
-        <div className={style.resumeMaintenance}>
+        <div className={`${style.resumeMaintenance} custom-scrollbar`}>
           {maintenancesMetrics?.map((maintenance, index) => (
             <ChartDiario
               key={index}

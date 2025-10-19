@@ -2,6 +2,7 @@ import { CircularProgress } from "@mui/material";
 import type { IResumeMaintenance } from "../../../../service/maintenanceInterface";
 import GaugeChart from "../../../ui/charts/gauge/GaugeChart";
 import style from "./ChartsDiarios.module.css";
+import { useNavigate } from "react-router";
 
 interface ProductsChart {
   showPercentage?: boolean;
@@ -15,6 +16,8 @@ const ChartDiario = ({
   loading,
 }: ProductsChart) => {
   const noMaintenancesToDo = productData.programadas === 0;
+  const navigate = useNavigate();
+
   return (
     <div className={style.diasChartContainer}>
       {loading && <CircularProgress />}
@@ -22,7 +25,12 @@ const ChartDiario = ({
         <>
           <div className={style.actionsContainer}>
             <button className={style.actionButton}>Detalles dia</button>
-            <button className={style.actionButton}>Ir a Clientes</button>
+            <button
+              className={style.actionButton}
+              onClick={() => navigate("/clientes")}
+            >
+              Ir a Clientes
+            </button>
           </div>
           <div className={style.chartContainer}>
             {noMaintenancesToDo ? (

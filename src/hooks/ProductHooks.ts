@@ -17,12 +17,12 @@ export const useProducts = () => {
 export const useProductsMetrics = () => {
   const productMetricsMutation = useMutation({
     mutationFn: productsService.getProductsMetrics,
-    onError: (error: unknown) => {
-      console.log(error);
-    },
-    onSuccess: (data) => {
-      console.log(data);
-    },
+    // onError: (error: unknown) => {
+    //   console.log(error);
+    // },
+    // onSuccess: (data) => {
+    //   console.log(data);
+    // },
   });
   return productMetricsMutation;
 };

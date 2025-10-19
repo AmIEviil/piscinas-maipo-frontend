@@ -188,7 +188,7 @@ const CreateClientDialog = ({
                 icon={<PersonIcon />}
                 require
                 onChange={handleName}
-                initialValue={nameClient}
+                value={nameClient}
               />
             </div>
             <div className={style.inputField}>
@@ -196,7 +196,7 @@ const CreateClientDialog = ({
                 title="Teléfono"
                 icon={<PhoneIcon />}
                 onChange={handleTelefono}
-                initialValue={telefonoClient}
+                value={telefonoClient}
               />
             </div>
           </div>
@@ -207,7 +207,7 @@ const CreateClientDialog = ({
                 icon={<EmailIcon />}
                 require={false}
                 onChange={handleEmail}
-                initialValue={emailClient}
+                value={emailClient}
               />
             </div>
             <div className={style.inputField}>
@@ -215,7 +215,7 @@ const CreateClientDialog = ({
                 title="Dirección"
                 icon={<HomeIcon />}
                 onChange={handleDireccion}
-                initialValue={direccionClient}
+                value={direccionClient}
               />
             </div>
             <div className={style.inputField}>
@@ -268,9 +268,10 @@ const CreateClientDialog = ({
             </div>
             <div className={style.inputField}>
               <CustomInputText
+                title="Valor mantención"
                 icon={<PaidIcon />}
                 onChange={handleValorMantencion}
-                initialValue={formatMoneyNumber(valorMantencionClient)}
+                value={formatMoneyNumber(valorMantencionClient)}
               />
             </div>
           </div>

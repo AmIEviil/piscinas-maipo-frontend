@@ -7,7 +7,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #1e293b;
+  background-color: var(--color-celeste-oscuro);
   color: white;
   padding: 1rem 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -39,6 +39,10 @@
   transition: all 0.2s ease-in-out;
 }
 
+.activeTab{
+  background-color: red;
+}
+
 .tabsContainer button:hover {
   border-bottom: 2px solid var(--color-secundario);
   color: var(--color-secundario);
@@ -53,5 +57,4 @@
     display: flex;
     gap: 0rem;
   }
-
 }

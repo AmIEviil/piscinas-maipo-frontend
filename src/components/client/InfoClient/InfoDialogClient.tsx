@@ -6,45 +6,90 @@ import DialogContent from "@mui/material/DialogContent";
 import { DialogTitle } from "@mui/material";
 import clsx from "clsx";
 import { type Client } from "../../../service/clientInterface";
-import { type IMaintenance } from "../../../service/maintenanceInterface";
+import {
+  type IMaintenance,
+  type IMaintenanceCreate,
+} from "../../../service/maintenanceInterface";
 import style from "./InfoDialogClient.module.css";
 import GoogleMapFromAddress from "../../ui/googleMapEmbed.tsx/GoogleMapEmbed";
 import TableGeneric from "../../ui/table/Table";
+import { formatMoneyNumber } from "../../../utils/formatTextUtils";
+import { getWindowWidth } from "../../../utils/WindowUtils";
 
 //Icons
 import EmailIcon from "@mui/icons-material/Email";
+import AddIcon from "@mui/icons-material/Add";
 import PaidIcon from "@mui/icons-material/Paid";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PoolIcon from "@mui/icons-material/Pool";
 import ExploreIcon from "@mui/icons-material/Explore";
-import { formatMoneyNumber } from "../../../utils/formatTextUtils";
+import CaretIcon from "../../ui/Icons/CaretIcon";
+import MaintenanceFields from "./MaintenancesFields";
+import { useCreateMaintenance } from "../../../hooks/MaintenanceHooks";
+import { useProductStore } from "../../../store/ProductStore";
+import { formatDateToDDMMYYYY } from "../../../utils/DateUtils";
 
 interface InfoClientDialogProps {
   open: boolean;
   clientInfo?: Client;
   maintenancesClient?: IMaintenance[];
   onClose: () => void;
+  onMaintenanceCreated?: () => void;
 }
 
-const titlesTable = [
-  { label: "Fecha Mantencion", showOrderBy: false },
-  { label: "Tabletas", showOrderBy: false },
-  { label: "Cloro Liquido", showOrderBy: true },
-  { label: "Cloro Granulado", showOrderBy: true },
-  { label: "Otros", showOrderBy: true },
-  { label: "Realizada", showOrderBy: true },
-  { label: "Recibio Pago", showOrderBy: true },
-];
-
 const InfoClientDialog = ({
-  open = false, // Valor por defecto false
+  open = false,
   clientInfo,
   onClose,
   maintenancesClient,
+  onMaintenanceCreated,
 }: InfoClientDialogProps) => {
+  const createMaintenance = useCreateMaintenance();
   const [coordenadas, setCoordenadas] = useState<
     { lat: number; lng: number } | undefined
   >(undefined);
+
+  const [isAddingMaintenance, setIsAddingMaintenance] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(getWindowWidth());
+  const [showClientInfo, setShowClientInfo] = useState(windowWidth > 720);
+  const [showMaintenances, setShowMaintenances] = useState(windowWidth > 720);
+  const { products, fetchProducts } = useProductStore();
+
+  const allProducts = products ?? [];
+
+  const titlesTable = [
+    { label: "Fecha Mantencion", showOrderBy: false },
+    ...allProducts
+      .map((p) =>
+        p.nombre
+          ? { label: p.nombre, showOrderBy: false }
+          : { label: "", showOrderBy: false }
+      )
+      .filter(Boolean),
+    { label: "Otros", showOrderBy: false },
+    { label: "Realizada", showOrderBy: false },
+    { label: "Recibio Pago", showOrderBy: false },
+  ];
+
+  useEffect(() => {
+    if (products.length === 0) {
+      fetchProducts();
+    }
+  }, [products.length, fetchProducts]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    // Limpieza al desmontar
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   useEffect(() => {
     if (!clientInfo?.direccion || !clientInfo?.comuna) return;
 
@@ -96,24 +141,25 @@ const InfoClientDialog = ({
     for (const mant of mantenciones) {
       if (mant.realizada) {
         totalMantencion += valorMantencion;
+      }
 
-        for (const prod of mant.productos) {
-          const nombre = prod.product.nombre;
-          const valorUnitario = prod.product.valor_unitario;
+      for (const prod of mant.productos) {
+        const nombre = prod.product.nombre;
+        const valorUnitario = prod.product.valor_unitario;
+        const cantidad = prod.cantidad;
 
-          if (!resumenMateriales[nombre]) {
-            resumenMateriales[nombre] = {
-              cantidad: 1,
-              valorUnitario,
-              total: valorUnitario,
-            };
-          } else {
-            resumenMateriales[nombre].cantidad += 1;
-            resumenMateriales[nombre].total += valorUnitario;
-          }
-
-          totalProductos += valorUnitario;
+        if (!resumenMateriales[nombre]) {
+          resumenMateriales[nombre] = {
+            cantidad: cantidad,
+            valorUnitario,
+            total: valorUnitario,
+          };
+        } else {
+          resumenMateriales[nombre].cantidad += cantidad;
+          resumenMateriales[nombre].total += valorUnitario * cantidad;
         }
+
+        totalProductos += valorUnitario * cantidad;
       }
     }
 
@@ -140,6 +186,24 @@ const InfoClientDialog = ({
           totalProductos: 0,
         };
 
+  const handleAcceptMaintenance = async (
+    maintenanceData: IMaintenanceCreate
+  ) => {
+    try {
+      await createMaintenance.mutateAsync(maintenanceData);
+      setIsAddingMaintenance(false);
+      if (onMaintenanceCreated) {
+        onMaintenanceCreated();
+      }
+    } catch (err) {
+      console.error("Error al crear mantención:", err);
+    }
+  };
+
+  const handleCancelMaintenance = () => {
+    setIsAddingMaintenance(false);
+  };
+
   return (
     <Dialog fullWidth={true} maxWidth={"xl"} open={open} onClose={handleClose}>
       <DialogContent style={{ borderRadius: 16 }}>
@@ -149,122 +213,188 @@ const InfoClientDialog = ({
               {clientInfo?.nombre} - {clientInfo?.direccion} -{" "}
               {clientInfo?.comuna}
             </DialogTitle>
+            <div className="flex justify-between items-center sm:w-1/2">
+              <span
+                className="cursor-pointer flex items-center gap-1 font-medium mt-4 mb-2 select-none w-full justify-between"
+                onClick={() => setShowClientInfo(!showClientInfo)}
+              >
+                Info Cliente
+                <CaretIcon direction="down" />
+              </span>
+            </div>
             <div className={style.detailsInfoContainer}>
-              <div className={style.labelsContainer}>
-                <div>
-                  <span className={style.labelItem}>
-                    <CalendarMonthIcon className={style.iconItem} /> Dia de
-                    Mantención: {clientInfo.dia_mantencion}
-                  </span>
-                  <span className={style.labelItem}>
-                    <PaidIcon className={style.iconItem} /> Valor Mantención:{" "}
-                    {formatMoneyNumber(clientInfo.valor_mantencion)}
-                  </span>
-                  <span className={style.labelItem}>
-                    <PoolIcon className={style.iconItem} /> Tipo Piscina:{" "}
-                    {clientInfo.tipo_piscina}
-                  </span>
+              {showClientInfo && (
+                <div className={style.labelsContainer}>
+                  <div className={style.labelItemContainer}>
+                    <span className={style.labelItem}>
+                      <CalendarMonthIcon className={style.iconItem} /> Dia de
+                      Mantención: {clientInfo.dia_mantencion}
+                    </span>
+                    <span className={style.labelItem}>
+                      <PaidIcon className={style.iconItem} /> Valor Mantención:{" "}
+                      {formatMoneyNumber(clientInfo.valor_mantencion)}
+                    </span>
+                    <span className={style.labelItem}>
+                      <PoolIcon className={style.iconItem} /> Tipo Piscina:{" "}
+                      {clientInfo.tipo_piscina}
+                    </span>
+                  </div>
+                  <div className={style.labelItemContainer}>
+                    <span className={`${style.labelItem} text-left bg-red-500`}>
+                      <EmailIcon className={style.iconItem} /> Email:{" "}
+                      {clientInfo.email
+                        ? clientInfo.email
+                        : "Sin correo electrónico"}
+                    </span>
+                    <span className={style.labelItem}>
+                      <CalendarMonthIcon className={style.iconItem} /> Fecha
+                      Ingreso:{" "}
+                      {clientInfo.fecha_ingreso
+                        ? formatDateToDDMMYYYY(clientInfo.fecha_ingreso)
+                        : "No tiene fecha de ingreso"}
+                    </span>
+                    <span className={style.labelItem}>
+                      <a
+                        href={`https://www.google.com/maps?q=${coordenadas?.lat},${coordenadas?.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: "#1976d2",
+                          textDecoration: "underline",
+                        }}
+                        className={style.googleLink}
+                      >
+                        <ExploreIcon className={style.iconItem} />
+                        Ver en Google Maps
+                      </a>
+                    </span>
+                  </div>
+                  {windowWidth > 720 && (
+                    <div>
+                      <button
+                        className={clsx(style.labelItem, style.buttonInfo)}
+                      >
+                        Obtener control diario
+                      </button>
+                      <button
+                        className={clsx(style.labelItem, style.buttonInfo)}
+                      >
+                        Generar Boleta
+                      </button>
+                    </div>
+                  )}
                 </div>
+              )}
+              {windowWidth > 720 && (
                 <div>
-                  <span className={style.labelItem}>
-                    <EmailIcon className={style.iconItem} /> Email:{" "}
-                    {clientInfo.email
-                      ? clientInfo.email
-                      : "No tiene email asociado"}
-                  </span>
-                  <span className={style.labelItem}>
-                    <CalendarMonthIcon className={style.iconItem} /> Fecha
-                    Ingreso:{" "}
-                    {clientInfo.fecha_ingreso
-                      ? clientInfo.fecha_ingreso.toString()
-                      : "No tiene fecha de ingreso"}
-                  </span>
-                  <span className={style.labelItem}>
-                    <a
-                      href={`https://www.google.com/maps?q=${coordenadas?.lat},${coordenadas?.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: "#1976d2", textDecoration: "underline" }}
-                      className={style.googleLink}
-                    >
-                      <ExploreIcon className={style.iconItem} />
-                      Ver en Google Maps
-                    </a>
-                  </span>
+                  <GoogleMapFromAddress
+                    lat={coordenadas?.lat ?? 0}
+                    lng={coordenadas?.lng ?? 0}
+                    width="300px"
+                    height="200px"
+                    zoom={200}
+                  />
                 </div>
-                <div>
-                  <button className={clsx(style.labelItem, style.buttonInfo)}>
-                    Obtener control diario
-                  </button>
-                  <button className={clsx(style.labelItem, style.buttonInfo)}>
-                    Generar Boleta
-                  </button>
-                  <button className={clsx(style.labelItem, style.buttonInfo)}>
-                    Obtener control diario
-                  </button>
-                </div>
-              </div>
-              <div>
-                <GoogleMapFromAddress
-                  lat={coordenadas?.lat ?? 0}
-                  lng={coordenadas?.lng ?? 0}
-                  width="300px"
-                  height="200px"
-                  zoom={200}
-                />
-              </div>
+              )}
             </div>
           </div>
         )}
-        {maintenancesClient?.length && (
-          <div className={style.maintenancesContainer}>
-            <div className={style.tableContainer}>
-              <TableGeneric
-                titles={titlesTable}
-                data={maintenancesClient ?? []}
-                renderRow={(mantencion) => (
-                  <tr key={mantencion.id}>
-                    <td>{mantencion.fechaMantencion.toString()}</td>
-                    <td>{mantencion.cantTabletas}</td>
-                    <td>{mantencion.cantBidones}</td>
-                    <td>{mantencion.cantTabletas}</td>
-                    <td>{mantencion.otros}</td>
-                    <td>{mantencion.realizada}</td>
-                    <td>{mantencion.recibioPago}</td>
-                  </tr>
-                )}
-              />
-            </div>
-            <div className={style.totalMes}>
-              <span className={style.titleTotal}>Resumen</span>
-
-              {Object.entries(resumen.resumenMateriales).map(
-                ([nombre, data]) => (
-                  <div key={nombre} className={style.totalValues}>
-                    <span>
-                      {nombre} - {data.valorUnitario.toLocaleString("es-CL")}
-                      {" x "}
-                      {data.cantidad}
-                    </span>
-                    <span>${data.total.toLocaleString("es-CL")}</span>
-                  </div>
-                )
-              )}
-
-              <div className={style.totalValues}>
-                <strong>Total productos:</strong>
-                <span>${resumen.totalProductos.toLocaleString("es-CL")}</span>
-              </div>
-              <div className={style.totalValues}>
-                <strong>Total mantenciones:</strong>
-                <span>${resumen.totalMantencion.toLocaleString("es-CL")}</span>
-              </div>
-              <div className={style.totalValues}>
-                <strong>Total general:</strong>
-                <span>${resumen.granTotal.toLocaleString("es-CL")}</span>
-              </div>
-            </div>
+        <div className="flex flex-row justify-between items-center ">
+          <span
+            onClick={() => setShowMaintenances(!showMaintenances)}
+            className="cursor-pointer flex items-center gap-1 font-medium mt-4 mb-2 select-none w-fit"
+          >
+            {maintenancesClient?.length
+              ? "Ver Mantenciones"
+              : "Sin Mantenciones"}
+            {maintenancesClient?.length ? (
+              <CaretIcon direction={`${showMaintenances ? "down" : "up"}`} />
+            ) : null}
+          </span>
+          <div className={style.buttonContainer}>
+            <button
+              className={`${style.buttonInfo} p-1!`}
+              onClick={() => setIsAddingMaintenance(true)}
+            >
+              <AddIcon />
+            </button>
           </div>
+        </div>
+
+        {showMaintenances && (
+          <>
+            {maintenancesClient?.length ? (
+              <div className={style.maintenancesContainer}>
+                <div className={style.tableContainer}>
+                  <TableGeneric
+                    titles={titlesTable}
+                    data={maintenancesClient ?? []}
+                    renderRow={(mantencion) => (
+                      <tr key={mantencion.id}>
+                        <td>
+                          {formatDateToDDMMYYYY(mantencion.fechaMantencion)}
+                        </td>
+                        {allProducts.map((prod) => {
+                          const used = mantencion.productos.find(
+                            (p) => p.product.id === prod.id
+                          );
+                          return (
+                            <td key={prod.id}>{used ? used.cantidad : 0}</td>
+                          );
+                        })}
+                        <td>{mantencion.otros}</td>
+                        <td>{mantencion.realizada ? "Sí" : "No"}</td>
+                        <td>{mantencion.recibioPago ? "Sí" : "No"}</td>
+                      </tr>
+                    )}
+                  />
+                </div>
+                <div className={style.totalMes}>
+                  <span className={style.titleTotal}>Resumen</span>
+                  {Object.entries(resumen.resumenMateriales).map(
+                    ([nombre, data]) => (
+                      <div key={nombre} className={style.totalValues}>
+                        <span>
+                          {nombre} -{" "}
+                          {data.valorUnitario.toLocaleString("es-CL")}
+                          {" x "}
+                          {data.cantidad}
+                        </span>
+                        <span>${data.total.toLocaleString("es-CL")}</span>
+                      </div>
+                    )
+                  )}
+
+                  <div className={style.totalValues}>
+                    <strong>Total productos:</strong>
+                    <span>
+                      ${resumen.totalProductos.toLocaleString("es-CL")}
+                    </span>
+                  </div>
+                  <div className={style.totalValues}>
+                    <strong>Total mantenciones:</strong>
+                    <span>
+                      ${resumen.totalMantencion.toLocaleString("es-CL")}
+                    </span>
+                  </div>
+                  <div className={style.totalValues}>
+                    <strong>Total general:</strong>
+                    <span>${resumen.granTotal.toLocaleString("es-CL")}</span>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </>
+        )}
+
+        {isAddingMaintenance && (
+          <MaintenanceFields
+            clientId={clientInfo?.id ?? 0}
+            valorMantencion={clientInfo?.valor_mantencion ?? 0}
+            productosList={products}
+            onAccept={handleAcceptMaintenance}
+            onCancel={handleCancelMaintenance}
+          />
         )}
       </DialogContent>
       <DialogActions>

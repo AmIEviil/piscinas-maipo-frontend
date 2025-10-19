@@ -12,6 +12,7 @@ export interface IMaintenance {
 export interface IProductosUtilizados {
   id: number;
   product: IProducto;
+  cantidad: number;
 }
 
 export interface IResumeMaintenance {
@@ -19,4 +20,13 @@ export interface IResumeMaintenance {
   programadas: number;
   realizadas: number;
   faltantes: number;
+}
+
+export interface IMaintenanceCreate {
+  fechaMantencion: string;
+  realizada: boolean;
+  recibioPago: boolean;
+  valorMantencion: number;
+  client: { id: number };
+  productosUsados: { productId: number; cantidad: number }[];
 }

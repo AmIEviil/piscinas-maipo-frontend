@@ -27,3 +27,17 @@ export const useMaintenancesByClient = () => {
 
   return maintenanceByClientMutation;
 };
+
+export const useCreateMaintenance = () => {
+  const createMaintenanceMutation = useMutation({
+    mutationFn: maintenanceService.createMaintenance,
+    onError: (error: unknown) => {
+      console.log("Error al crear mantención:", error);
+    },
+    onSuccess: (data) => {
+      console.log("Mantención creada con éxito:", data);
+    },
+  });
+
+  return createMaintenanceMutation;
+};

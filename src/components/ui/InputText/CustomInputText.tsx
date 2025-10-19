@@ -1,37 +1,32 @@
-import { useState, useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import "./InputText.css";
 
 interface InputTextProps {
   title?: string;
   caption?: string;
-  initialValue?: string | number;
+  value?: string | number;
   disabled?: boolean;
   type?: string;
   placeholder?: string;
   require?: boolean;
   onChange?: (value: string) => void;
-  icon?: ReactNode; // Nuevo: ícono al inicio
+  icon?: ReactNode;
+  customClass?: string;
 }
 
 const CustomInputText = ({
   title = "Soy un título",
-  initialValue = "",
+  value = "",
   disabled = false,
   type = "text",
   placeholder,
   onChange = () => {},
   require = true,
-  icon, // Nuevo
+  icon,
+  customClass = "",
 }: InputTextProps) => {
-  const [value, setValue] = useState(initialValue);
-
-  useEffect(() => {
-    onChange(String(value));
-  }, [value, onChange]);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!disabled) {
-      setValue(e.target.value);
       onChange(e.target.value);
     }
   };
@@ -48,7 +43,7 @@ const CustomInputText = ({
       <div className="input-wrapper">
         {icon && <span className="input-icon">{icon}</span>}
         <input
-          className={`input-field ${disabled ? "disabled" : ""} ${
+          className={`input-field ${customClass} ${disabled ? "disabled" : ""} ${
             icon ? "with-icon" : ""
           }`}
           type={type}

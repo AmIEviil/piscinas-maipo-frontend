@@ -12,8 +12,8 @@ export const dias = [
     label: "Martes",
   },
   {
-    value: "Miercoles",
-    label: "Miercoles",
+    value: "Miércoles",
+    label: "Miércoles",
   },
   {
     value: "Jueves",
@@ -62,6 +62,7 @@ export const comunas = [
   { value: "Vitacura", label: "Vitacura" },
 ];
 export const titlesTable = [
+  { label: "", showOrderBy: false },
   { label: "Nombre", showOrderBy: false },
   { label: "Dirección", showOrderBy: false },
   { label: "Comuna", showOrderBy: true },
