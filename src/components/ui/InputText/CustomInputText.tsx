@@ -10,6 +10,7 @@ interface InputTextProps {
   placeholder?: string;
   require?: boolean;
   onChange?: (value: string) => void;
+  onBlur?: () => void;
   icon?: ReactNode;
   customClass?: string;
 }
@@ -21,6 +22,7 @@ const CustomInputText = ({
   type = "text",
   placeholder,
   onChange = () => {},
+  onBlur = () => {},
   require = true,
   icon,
   customClass = "",
@@ -52,6 +54,7 @@ const CustomInputText = ({
           onChange={handleChange}
           disabled={disabled}
           placeholder={placeholder}
+          onBlur={onBlur}
         />
       </div>
     </div>

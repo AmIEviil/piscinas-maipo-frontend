@@ -8,10 +8,13 @@ import type { ReactNode } from "react";
 
 interface CustomSelectProps {
   label?: string;
-  options?: { value: string; label: string }[];
-  value?: string;
+  options?: { value: string | number; label: string }[];
+  value?: string | number;
   disabled?: boolean;
-  onChange?: (event: SelectChangeEvent) => void;
+  onChange?: (
+    event: SelectChangeEvent<string | number>,
+    child?: ReactNode
+  ) => void;
   icon?: ReactNode;
 }
 
@@ -22,9 +25,13 @@ const CustomSelect = ({
   onChange,
   icon,
 }: CustomSelectProps) => {
-  const handleChange = (event: SelectChangeEvent) => {
+  const handleChange = (
+    event: SelectChangeEvent<string | number>,
+    child?: ReactNode
+  ) => {
     if (onChange) {
-      onChange(event);
+      console.log("Select changed:", event.target.value);
+      onChange(event, child);
     }
   };
 

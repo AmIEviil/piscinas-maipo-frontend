@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { IProducto } from "../service/productsInterface";
+import type { IProducto, ITypeProduct } from "../service/productsInterface";
 import { productsService } from "../core/services/ProductsService";
 
 interface ProductStore {
@@ -12,5 +12,18 @@ export const useProductStore = create<ProductStore>((set) => ({
   fetchProducts: async () => {
     const products = await productsService.getProducts();
     set({ products });
+  },
+}));
+
+interface TypeProductStore {
+  productsTypes: ITypeProduct[];
+  fetchProductsTypes: () => Promise<void>;
+}
+
+export const useTypesProductStore = create<TypeProductStore>((set) => ({
+  productsTypes: [],
+  fetchProductsTypes: async () => {
+    const productsTypes = await productsService.getAllTypesProducts();
+    set({ productsTypes });
   },
 }));

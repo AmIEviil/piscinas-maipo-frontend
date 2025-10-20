@@ -12,7 +12,7 @@ import TocIcon from "@mui/icons-material/Toc";
 import HomeIcon from "@mui/icons-material/Home";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import InventoryIcon from "@mui/icons-material/Inventory";
-import { PAGE_ROUTES } from "../../constant/routes";
+import { topbarOptions } from "../../constant/routes";
 import { useLocation, useNavigate } from "react-router";
 
 export default function CustomNavBar() {
@@ -26,33 +26,40 @@ export default function CustomNavBar() {
     setOpen(newOpen);
   };
 
+  const renderIcon = (iconName: string) => {
+    switch (iconName) {
+      case "home":
+        return <HomeIcon />;
+      case "clients":
+        return <PeopleOutlineIcon />;
+      case "inventory":
+        return <InventoryIcon />;
+      default:
+        return null;
+    }
+  };
+
   const DrawerList = (
     <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
       <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => navigate("/")}>
-            <ListItemIcon>
-              <HomeIcon />
-            </ListItemIcon>
-            <ListItemText primary="Inicio" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => navigate(PAGE_ROUTES.Clientes)}>
-            <ListItemIcon>
-              <PeopleOutlineIcon />
-            </ListItemIcon>
-            <ListItemText primary="Clientes" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => navigate(PAGE_ROUTES.Inventario)}>
-            <ListItemIcon>
-              <InventoryIcon />
-            </ListItemIcon>
-            <ListItemText primary="Inventario" />
-          </ListItemButton>
-        </ListItem>
+        {topbarOptions.map((route) => (
+          <ListItem
+            disablePadding
+            key={route.name}
+            className={
+              actualRoute.toLowerCase() === route.name.toLowerCase()
+                ? "bg-blue-300! border-t border-b border-blue-500"
+                : ""
+            }
+          >
+            <ListItemButton onClick={() => navigate(route.path)}>
+              {route.icon && (
+                <ListItemIcon>{renderIcon(route.icon)}</ListItemIcon>
+              )}
+              <ListItemText primary={route.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
       </List>
       <Divider />
     </Box>

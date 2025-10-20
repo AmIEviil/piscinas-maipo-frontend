@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -28,6 +28,7 @@ import MaintenanceFields from "./MaintenancesFields";
 import { useCreateMaintenance } from "../../../hooks/MaintenanceHooks";
 import { useProductStore } from "../../../store/ProductStore";
 import { formatDateToDDMMYYYY } from "../../../utils/DateUtils";
+import CustomPagination from "../../ui/pagination/Pagination";
 
 interface InfoClientDialogProps {
   open: boolean;
@@ -35,6 +36,10 @@ interface InfoClientDialogProps {
   maintenancesClient?: IMaintenance[];
   onClose: () => void;
   onMaintenanceCreated?: () => void;
+  onNextClient: () => void;
+  onPreviousClient: () => void;
+  totalRecords: number;
+  currentIndex: number;
 }
 
 const InfoClientDialog = ({
@@ -43,6 +48,10 @@ const InfoClientDialog = ({
   onClose,
   maintenancesClient,
   onMaintenanceCreated,
+  onNextClient,
+  onPreviousClient,
+  totalRecords,
+  currentIndex,
 }: InfoClientDialogProps) => {
   const createMaintenance = useCreateMaintenance();
   const [coordenadas, setCoordenadas] = useState<
@@ -204,23 +213,65 @@ const InfoClientDialog = ({
     setIsAddingMaintenance(false);
   };
 
+  const renderFooter = () => {
+    if (totalRecords <= 1) return null;
+
+    return (
+      <>
+        <div>
+          <span className="font-bold">
+            {currentIndex + 1}/{totalRecords}
+          </span>
+        </div>
+        <div>
+          <CustomPagination
+            actualPage={currentIndex + 1}
+            totalPages={totalRecords}
+            onPageChange={(page) => {
+              if (page > currentIndex + 1) {
+                onNextClient();
+              } else {
+                onPreviousClient();
+              }
+            }}
+          />
+        </div>
+      </>
+    );
+  };
+
+  const dialogFooter = useMemo(
+    () => renderFooter(),
+    [totalRecords, currentIndex, onNextClient, onPreviousClient]
+  );
+
   return (
-    <Dialog fullWidth={true} maxWidth={"xl"} open={open} onClose={handleClose}>
-      <DialogContent style={{ borderRadius: 16 }}>
+    <Dialog
+      fullWidth={true}
+      maxWidth={"xl"}
+      open={open}
+      onClose={handleClose}
+      style={{ borderRadius: 32 }}
+    >
+      <DialogContent>
         {clientInfo && (
           <div className={style.clientInfoContainer}>
             <DialogTitle style={{ padding: 0 }}>
               {clientInfo?.nombre} - {clientInfo?.direccion} -{" "}
               {clientInfo?.comuna}
             </DialogTitle>
-            <div className="flex justify-between items-center sm:w-1/2">
-              <span
-                className="cursor-pointer flex items-center gap-1 font-medium mt-4 mb-2 select-none w-full justify-between"
-                onClick={() => setShowClientInfo(!showClientInfo)}
-              >
-                Info Cliente
-                <CaretIcon direction="down" />
-              </span>
+            <div
+              className="flex flex-row items-center text-center align-middle w-full gap-2"
+              onClick={() =>
+                windowWidth < 720 ? setShowClientInfo(!showClientInfo) : null
+              }
+            >
+              <span className="font-medium ">Info Cliente</span>
+              {windowWidth < 720 && (
+                <span className="cursor-pointer">
+                  <CaretIcon direction="down" />
+                </span>
+              )}
             </div>
             <div className={style.detailsInfoContainer}>
               {showClientInfo && (
@@ -398,6 +449,7 @@ const InfoClientDialog = ({
         )}
       </DialogContent>
       <DialogActions>
+        {dialogFooter}
         <Button onClick={onClose}>Cerrar</Button>
       </DialogActions>
     </Dialog>

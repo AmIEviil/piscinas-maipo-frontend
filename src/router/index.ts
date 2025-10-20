@@ -26,6 +26,18 @@ const ClientsView = lazy(() =>
   }))
 );
 
+const RevestimientoView = lazy(() =>
+  import("../views/revestimiento/RevestimientoView.tsx").then((module) => ({
+    default: module.RevestimientoView,
+  }))
+);
+
+const ReparacionesView = lazy(() =>
+  import("../views/reparaciones/ReparacionesView.tsx").then((module) => ({
+    default: module.ReparacionesView,
+  }))
+);
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -54,6 +66,36 @@ export const router = createBrowserRouter([
       {
         index: true,
         Component: InventoryView,
+      },
+    ],
+  },
+  {
+    path: PAGE_ROUTES.Revestimiento,
+    Component: BodyLayout,
+    children: [
+      {
+        index: true,
+        Component: RevestimientoView,
+      },
+    ],
+  },
+  {
+    path: PAGE_ROUTES.Trabajos,
+    Component: BodyLayout,
+    children: [
+      {
+        index: true,
+        Component: ReparacionesView,
+      },
+    ],
+  },
+  {
+    path: PAGE_ROUTES.Trabajos,
+    Component: BodyLayout,
+    children: [
+      {
+        index: true,
+        Component: ReparacionesView,
       },
     ],
   },

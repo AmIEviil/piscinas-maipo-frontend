@@ -5,24 +5,32 @@ import DialogTitle from "@mui/material/DialogTitle";
 import CustomInputText from "../../ui/InputText/CustomInputText";
 import style from "./CreateProductDialog.module.css";
 
-// Icons
-import PersonIcon from "@mui/icons-material/Person";
-import PhoneIcon from "@mui/icons-material/Phone";
-import PaidIcon from "@mui/icons-material/Paid";
-
 import { useEffect, useRef, useState } from "react";
 import { green } from "@mui/material/colors";
 import Fab from "@mui/material/Fab";
 import CheckIcon from "@mui/icons-material/Check";
 import SaveIcon from "@mui/icons-material/Save";
-import { formatMoneyNumber } from "../../../utils/formatTextUtils";
-import type { IProducto } from "../../../service/productsInterface";
+import type {
+  ICreateProductPayload,
+  ICreateTypeProductPayload,
+  IProducto,
+  ITypeProduct,
+} from "../../../service/productsInterface";
+import CustomSelect from "../../ui/Select/Select";
+import {
+  useCreateProduct,
+  useCreateTypeProduct,
+  useUpdateProduct,
+  useUpdateProductType,
+} from "../../../hooks/ProductHooks";
 
 interface CreateClientDialogProps {
   open: boolean;
   onClose: () => void;
   productInfo?: IProducto;
   isEditMode?: boolean;
+  kind?: "product" | "type";
+  productTypes: ITypeProduct[];
 }
 
 const CreateProductDialog = ({
@@ -30,11 +38,36 @@ const CreateProductDialog = ({
   onClose,
   productInfo,
   isEditMode,
+  kind,
+  productTypes,
 }: CreateClientDialogProps) => {
+  const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
+  const createTypeProduct = useCreateTypeProduct();
+  const updateTypeProduct = useUpdateProductType();
+
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const [nameProductType, setNameProductType] = useState<string>();
+
   const [nameProduct, setNameProduct] = useState<string>();
+  const [tipoProducto, setTipoProducto] = useState<number | string>("");
   const [cantidadDisponibleProduct, setCantidadDisponibleProduct] =
     useState<number>();
-  const [valorUnitarioProduct, setValorUnitarioProduct] = useState<number>();
+  const [valorUnitarioProduct, setValorUnitarioProduct] = useState<
+    number | undefined
+  >(undefined);
+
+  const [inputValue, setInputValue] = useState<string>("");
+
+  const [isValidForm, setIsValidForm] = useState<boolean>(false);
+
+  const typeOptions = productTypes.map((type) => ({
+    label: type.nombre,
+    value: type.id,
+  }));
 
   const handleName = (value: string) => {
     setNameProduct(value);
@@ -42,38 +75,74 @@ const CreateProductDialog = ({
   const handleCantidadDisponible = (value: number) => {
     setCantidadDisponibleProduct(value);
   };
-  const handleValorUnitario = (value: number) => {
-    setValorUnitarioProduct(value);
+
+  const handleChange = (value: string) => {
+    const numeric = value.replace(/[^\d]/g, "");
+    setInputValue(numeric);
+    setValorUnitarioProduct(Number(numeric));
   };
 
-  const handleButtonClick = async () => {
+  const handleBlur = () => {
+    if (valorUnitarioProduct !== undefined && !isNaN(valorUnitarioProduct)) {
+      setInputValue(
+        Intl.NumberFormat("es-CL", {
+          style: "currency",
+          currency: "CLP",
+        }).format(valorUnitarioProduct)
+      );
+    }
+  };
+
+  const handleAcceptButton = async () => {
     if (loading) return;
 
     setSuccess(false);
     setLoading(true);
-    const productToSubmit: IProducto = {
+    const productToSubmit: ICreateProductPayload = {
       nombre: nameProduct ?? "",
       cant_disponible: cantidadDisponibleProduct ?? 0,
       valor_unitario: valorUnitarioProduct ?? 0,
+      tipo: (tipoProducto as number) ?? 0,
+    };
+
+    const productTypeToSubmit: ICreateTypeProductPayload = {
+      nombre: nameProductType ?? "",
     };
 
     try {
-      if (isEditMode) {
-        if (!productInfo?.id) return;
-        // await updateClientMutation.mutateAsync({
-        //   clientId: productInfo.id,
-        //   data: productToSubmit,
-        // });
-        console.log("Editar producto:", productToSubmit);
-      } else {
-        // await createClientMutation.mutateAsync(productToSubmit);
-        console.log("Crear producto:", productToSubmit);
+      switch (kind) {
+        case "product":
+          if (isEditMode) {
+            if (!productInfo?.id) return;
+            console.log("Editar producto:", productToSubmit);
+            await updateProduct.mutateAsync({
+              productId: productInfo.id,
+              productData: productToSubmit,
+            });
+          } else {
+            console.log("Crear producto:", productToSubmit);
+            await createProduct.mutateAsync(productToSubmit);
+          }
+          break;
+        case "type":
+          if (isEditMode) {
+            if (!productInfo?.tipo.id) return;
+            await updateTypeProduct.mutateAsync({
+              typeId: productInfo.tipo.id,
+              typeData: productTypeToSubmit,
+            });
+            console.log("Editar tipo de producto:", productTypeToSubmit);
+          } else {
+            console.log("Crear tipo de producto:", productTypeToSubmit);
+            await createTypeProduct.mutateAsync(productTypeToSubmit);
+          }
+          break;
       }
       setSuccess(true);
       setLoading(false);
       onClose();
     } catch (error) {
-      console.error("Error creando cliente:", error);
+      console.error("Error creando producto:", error);
       setSuccess(false);
       setLoading(false);
     }
@@ -82,15 +151,6 @@ const CreateProductDialog = ({
   const handleClose = () => {
     onClose();
   };
-
-  const isValidForm =
-    nameProduct?.length && cantidadDisponibleProduct && valorUnitarioProduct
-      ? true
-      : false;
-
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const buttonSx = {
     ...(success && {
@@ -113,56 +173,107 @@ const CreateProductDialog = ({
     }
   }, [productInfo, isEditMode]);
 
-  return (
-    <Dialog fullWidth maxWidth="md" open={open} onClose={handleClose}>
-      <DialogTitle className={style.dialogTitle}>
-        Crear Nuevo Producto
-      </DialogTitle>
-      <DialogContent>
-        <div className={style.formContainer}>
-          <div className={style.fieldsContainer}>
-            <div className={style.inputField}>
-              <CustomInputText
-                title="Nombre"
-                icon={<PersonIcon />}
-                require
-                onChange={handleName}
-                value={nameProduct}
-              />
-            </div>
-            <div className={style.inputField}>
-              <CustomInputText
-                title="Cantidad Disponible"
-                icon={<PhoneIcon />}
-                onChange={(value) => handleCantidadDisponible(Number(value))}
-                value={cantidadDisponibleProduct}
-              />
-            </div>
-          </div>
-          <div className={style.fieldsContainer}>
-            <div className={style.inputField}>
-              <CustomInputText
-                title="Valor unitario"
-                icon={<PaidIcon />}
-                onChange={(value) => handleValorUnitario(Number(value))}
-                value={formatMoneyNumber(valorUnitarioProduct)}
-              />
-            </div>
-          </div>
-        </div>
-      </DialogContent>
+  useEffect(() => {
+    if (
+      kind === "product" &&
+      nameProduct?.length &&
+      cantidadDisponibleProduct &&
+      valorUnitarioProduct
+    ) {
+      setIsValidForm(true);
+    }
+    if (kind === "type" && nameProductType?.length) {
+      setIsValidForm(true);
+    }
+  }, [
+    productInfo,
+    isEditMode,
+    nameProduct,
+    cantidadDisponibleProduct,
+    valorUnitarioProduct,
+    nameProductType,
+    kind,
+  ]);
+
+  const renderBodyDialog = () => {
+    switch (kind) {
+      case "product":
+        return (
+          <>
+            <CustomInputText
+              title="Nombre del Producto"
+              customClass="pl-2!"
+              require
+              onChange={handleName}
+              value={nameProduct}
+            />
+            <CustomSelect
+              label="Tipo de Producto"
+              options={typeOptions}
+              onChange={(event) => setTipoProducto(Number(event.target.value))}
+              value={tipoProducto}
+            />
+            <CustomInputText
+              title="Cantidad Disponible"
+              customClass="pl-2!"
+              require
+              onChange={(value) => handleCantidadDisponible(Number(value))}
+              value={cantidadDisponibleProduct}
+            />
+            <CustomInputText
+              title="Valor Unitario"
+              customClass="pl-2!"
+              require
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={inputValue}
+            />
+          </>
+        );
+
+      case "type":
+        return (
+          <>
+            <h3>Tipo de Producto</h3>
+            <CustomInputText
+              title="Nombre del Tipo"
+              customClass="pl-2!"
+              require
+              onChange={setNameProductType}
+              value={nameProductType}
+            />
+          </>
+        );
+    }
+  };
+
+  const renderFooterDialog = () => {
+    return (
       <DialogActions className={style.dialogActions}>
         <Fab
           aria-label="save"
           color="primary"
           sx={buttonSx}
-          onClick={handleButtonClick}
+          onClick={handleAcceptButton}
           disabled={!isValidForm || loading}
         >
           {success ? <CheckIcon /> : <SaveIcon />}
         </Fab>
         <button onClick={onClose}>Cancelar</button>
       </DialogActions>
+    );
+  };
+
+  return (
+    <Dialog fullWidth maxWidth="md" open={open} onClose={handleClose}>
+      <DialogTitle className={style.dialogTitle}>
+        {isEditMode ? "Editar" : "Crear"}{" "}
+        {kind === "product" ? "Producto" : "Tipo de Producto"}
+      </DialogTitle>
+      <DialogContent>
+        <div className={style.formContainer}>{renderBodyDialog()}</div>
+      </DialogContent>
+      {renderFooterDialog()}
     </Dialog>
   );
 };

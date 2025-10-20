@@ -9,7 +9,7 @@ import AddIcon from "@mui/icons-material/Add";
 interface MaintenanceFieldsProps {
   clientId: number;
   valorMantencion: number;
-  productosList?: IProducto[];
+  productosList: IProducto[];
   onAccept: (maintenance: IMaintenanceCreate) => void;
   onCancel?: () => void;
 }
@@ -37,10 +37,15 @@ const MaintenanceFields = ({
   const [cantidad, setCantidad] = useState<number>(0);
   const [error, setError] = useState<string>("");
 
-  const productOptions = productosList?.map((product) => ({
-    value: product.id.toString(),
-    label: product.nombre,
-  }));
+  const productOptions = productosList
+    .filter(
+      (p): p is IProducto & { id: number } =>
+        p.id !== undefined && p.id !== null
+    )
+    .map((product) => ({
+      value: product.id.toString(),
+      label: product.nombre,
+    }));
 
   const handleAddProduct = () => {
     if (!selectedProduct) {
@@ -133,8 +138,8 @@ const MaintenanceFields = ({
                 label=""
                 options={productOptions}
                 value={selectedProduct}
-                onChange={(selected) =>
-                  setSelectedProduct(selected.target.value)
+                onChange={(event) =>
+                  setSelectedProduct(String(event.target.value))
                 }
               />
               <div className="flex flex-row gap-2 items-center justify-center">

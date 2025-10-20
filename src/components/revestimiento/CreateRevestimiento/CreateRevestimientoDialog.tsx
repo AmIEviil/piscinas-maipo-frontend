@@ -4,7 +4,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { type Client } from "../../../service/clientInterface";
 import CustomInputText from "../../ui/InputText/CustomInputText";
-import style from "./CreateClientDialog.module.css";
+import style from "./CreateRevestimientoDialog.module.css";
 
 // Icons
 import PersonIcon from "@mui/icons-material/Person";
@@ -16,7 +16,6 @@ import EmailIcon from "@mui/icons-material/Email";
 import PoolIcon from "@mui/icons-material/Pool";
 import PaidIcon from "@mui/icons-material/Paid";
 
-import { useCreateClient, useUpdateClient } from "../../../hooks/ClientHooks";
 import { useEffect, useRef, useState } from "react";
 
 import DatePicker from "../../ui/calendar/DatePicker";
@@ -32,22 +31,23 @@ import Fab from "@mui/material/Fab";
 import CheckIcon from "@mui/icons-material/Check";
 import SaveIcon from "@mui/icons-material/Save";
 import type { SelectChangeEvent } from "@mui/material";
+import type { IRevestimiento } from "../../../service/revestimientoInterface";
 
-interface CreateClientDialogProps {
+interface CreateRevestimientoDialogProps {
   open: boolean;
   onClose: () => void;
-  clientInfo?: Client;
+  revestimientoInfo?: IRevestimiento;
   isEditMode?: boolean;
 }
 
-const CreateClientDialog = ({
+const CreateRevestimientoDialog = ({
   open = false,
   onClose,
-  clientInfo,
+  revestimientoInfo,
   isEditMode,
-}: CreateClientDialogProps) => {
-  const createClientMutation = useCreateClient();
-  const updateClientMutation = useUpdateClient();
+}: CreateRevestimientoDialogProps) => {
+  // const createClientMutation = useCreateClient();
+  // const updateClientMutation = useUpdateClient();
 
   const [nameClient, setNameClient] = useState<string>();
   const [direccionClient, setdireccionClient] = useState<string>();
@@ -122,13 +122,15 @@ const CreateClientDialog = ({
 
     try {
       if (isEditMode) {
-        if (!clientInfo?.id) return;
-        await updateClientMutation.mutateAsync({
-          clientId: clientInfo.id,
-          data: clientToSubmit,
-        });
+        if (!revestimientoInfo?.id) return;
+        // await updateClientMutation.mutateAsync({
+        //   clientId: revestimientoInfo.id,
+        //   data: clientToSubmit,
+        // });
+        console.log("Editando cliente:", clientToSubmit);
       } else {
-        await createClientMutation.mutateAsync(clientToSubmit);
+        // await createClientMutation.mutateAsync(clientToSubmit);
+        console.log("Creando cliente:", clientToSubmit);
       }
       setSuccess(true);
       setLoading(false);
@@ -176,23 +178,15 @@ const CreateClientDialog = ({
   }, []);
 
   useEffect(() => {
-    if (isEditMode && clientInfo) {
-      setNameClient(clientInfo.nombre);
-      setdireccionClient(clientInfo.direccion);
-      setTelefonoClient(clientInfo.telefono);
-      settipoPiscinaClient(clientInfo.tipo_piscina);
-      setFechaIngreso(clientInfo.fecha_ingreso);
-      setcomunaClient(clientInfo.comuna);
-      setEmailClient(clientInfo.email);
-      setValorMantencionClient(clientInfo.valor_mantencion);
-      setDiaMantencionClient(clientInfo.dia_mantencion);
+    if (isEditMode && revestimientoInfo) {
+      setNameClient(revestimientoInfo.client.nombre);
     }
-  }, [clientInfo, isEditMode]);
+  }, [revestimientoInfo, isEditMode]);
 
   return (
     <Dialog fullWidth maxWidth="md" open={open} onClose={handleClose}>
       <DialogTitle className={style.dialogTitle}>
-        Crear Nuevo Cliente
+        Crear Nuevo Revestimiento
       </DialogTitle>
       <DialogContent>
         <div className={style.formContainer}>
@@ -309,4 +303,4 @@ const CreateClientDialog = ({
   );
 };
 
-export default CreateClientDialog;
+export default CreateRevestimientoDialog;

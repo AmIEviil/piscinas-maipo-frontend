@@ -1,11 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import style from "../client/BodyClients/BodyClients.module.css";
-// import Select from "../ui/Select/Select";
-// import InputText from "../ui/InputText/InputText";
+import InputText from "../ui/InputText/InputText";
 import TableGeneric from "../ui/table/Table";
-
-// import type { SelectChangeEvent } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 // import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -16,16 +13,27 @@ import { formatMoneyNumber } from "../../utils/formatTextUtils";
 import { titlesInventoryTable } from "../../constant/constantBodyClient";
 
 import { type IProducto } from "../../service/productsInterface";
-import { useProducts } from "../../hooks/ProductHooks";
+import { useDeleteProduct, useProducts } from "../../hooks/ProductHooks";
 import CreateProductDialog from "./CreateProduct/CreateProductDialog";
 import InfoProductDialog from "./InfoProduct/InfoDialogProduct";
 import PopUp from "../ui/PopUp/PopUp";
+import debounce from "lodash.debounce";
+import { formatNoResultsText } from "../../utils/FiltersUtils";
+import { useTypesProductStore } from "../../store/ProductStore";
+
+interface IfilterQuery {
+  nombre?: string;
+}
 
 const BodyInventory = () => {
   const productsMutation = useProducts();
+  const deleteProductMutation = useDeleteProduct();
+
+  const { productsTypes, fetchProductsTypes } = useTypesProductStore();
 
   const [products, setProducts] = useState<IProducto[]>();
   const [loadingTable, setLoadingTable] = useState(false);
+  const [filterQuery, setFilterQuery] = useState<IfilterQuery>({});
   const [selectedProduct, setSelectedProduct] = useState<IProducto | null>(
     null
   );
@@ -33,6 +41,12 @@ const BodyInventory = () => {
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [openPopUp, setOpenPopUp] = useState(false);
+
+  const [nombreInput, setNombreInput] = useState("");
+
+  const [kindToCreate, setKindToCreate] = useState<"product" | "type">(
+    "product"
+  );
 
   const fetchData = async () => {
     setLoadingTable(true);
@@ -47,30 +61,43 @@ const BodyInventory = () => {
   };
 
   useEffect(() => {
+    if (productsTypes.length === 0) {
+      fetchProductsTypes();
+    }
+  }, [productsTypes.length, fetchProductsTypes]);
+
+  const handleFilterName = useMemo(
+    () =>
+      debounce((value: string) => {
+        setFilterQuery((prev) => {
+          if (value.length >= 3) {
+            return { ...prev, nombre: value };
+          } else if (value.length === 0) {
+            // eliminar filtro nombre cuando está vacío
+            const updated = { ...prev };
+            delete updated.nombre;
+            return updated;
+          }
+          return prev ?? {};
+        });
+      }, 500),
+    []
+  );
+
+  useEffect(() => {
     fetchData();
   }, []);
 
-  // const handleOpenDialog = async (product: IProducto) => {
-  //   setSelectedProduct(product);
-  //   handleSeeDetailsProduct(product);
-  //   setOpenDialog(true);
-  // };
+  const handleOpenCreateDialog = (kind: "product" | "type") => {
+    setKindToCreate(kind);
+    setOpenCreateDialog(true);
+  };
 
   const handleEditProduct = (product: IProducto) => {
     setSelectedProduct(product);
     setIsEditMode(true);
     setOpenCreateDialog(true);
   };
-
-  // const handleSeeDetailsProduct = async (product: IProducto) => {
-  //   setSelectedProduct(product);
-  //   try {
-  //     if (!product.id) return;
-  //     setOpenDialog(true);
-  //   } catch (error) {
-  //     console.error("Error cargando mantenciones:", error);
-  //   }
-  // };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
@@ -88,8 +115,8 @@ const BodyInventory = () => {
 
   const handleDeleteProduct = async (id: number) => {
     try {
-      // await deleteProductMutation.mutateAsync(id);
-      // fetchData();
+      await deleteProductMutation.mutateAsync(id);
+      fetchData();
       console.log("Producto eliminado:", id);
       setOpenPopUp(false);
     } catch (error) {
@@ -97,10 +124,21 @@ const BodyInventory = () => {
     }
   };
 
+  const handleClearFilter = () => {
+    setFilterQuery({});
+    setNombreInput("");
+  };
+
+  const handleTextNoResults = () => {
+    if (filterQuery.nombre) {
+      return formatNoResultsText(nombreInput, "productos");
+    }
+  };
+
   return (
     <div>
       <div className={style.filtersContainer}>
-        {/* <div className={style.filters}>
+        <div className={style.filters}>
           <InputText
             title="Buscar por Nombre"
             placeholder="Nombre"
@@ -108,42 +146,21 @@ const BodyInventory = () => {
             value={nombreInput}
           />
         </div>
-        <div className={style.filters}>
-          <InputText
-            title="Buscar por dirección"
-            placeholder="Dirección"
-            onChange={handleFilterDireccion}
-            value={direccionInput}
-          />
-        </div>
-        <div className={`${style.filters} select`}>
-          <Select
-            label="Dia Mantención"
-            options={dias}
-            onChange={handleChangeDiaMantencion}
-            value={selectedDay}
-          />
-        </div>
-        <div className={style.filters}>
-          <Select
-            label="Comuna"
-            options={comunas}
-            onChange={handleChangeComuna}
-            value={selectedComuna}
-          />
-        </div> */}
         <div className={style.actionsFilters}>
           <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
-            <button
-            // onClick={handleClearFilter} className={style.actionButton}
-            >
+            <button onClick={handleClearFilter} className={style.actionButton}>
               <SearchOffIcon />
             </button>
           </Tooltip>
           <Tooltip title="Agregar nuevo Producto" arrow leaveDelay={0}>
-            <button
-            // onClick={handleOpenCreateDialog}
-            >
+            <button onClick={() => handleOpenCreateDialog("product")}>
+              Agregar nuevo Producto
+              <AddIcon />
+            </button>
+          </Tooltip>
+          <Tooltip title="Agregar nuevo Tipo de Producto" arrow leaveDelay={0}>
+            <button onClick={() => handleOpenCreateDialog("type")}>
+              Agregar nuevo Tipo de Producto
               <AddIcon />
             </button>
           </Tooltip>
@@ -154,21 +171,14 @@ const BodyInventory = () => {
           titles={titlesInventoryTable}
           data={products ?? []}
           loading={loadingTable}
+          textNotFound={handleTextNoResults()}
           renderRow={(product) => (
             <tr key={product.id}>
               <td>{product.nombre}</td>
-              <td>{product.nombre}</td>
+              <td>{product.tipo?.nombre}</td>
               <td>{product.cant_disponible}</td>
               <td>{formatMoneyNumber(product.valor_unitario)}</td>
               <td>
-                {/* <Tooltip title="Ver detalles Cliente" arrow leaveDelay={0}>
-                  <button
-                    className="actions"
-                    onClick={() => handleOpenDialog(product)}
-                  >
-                    <VisibilityIcon />
-                  </button>
-                </Tooltip> */}
                 <Tooltip title="Editar Producto" arrow leaveDelay={0}>
                   <button onClick={() => handleEditProduct(product)}>
                     <EditIcon />
@@ -177,8 +187,7 @@ const BodyInventory = () => {
                 <Tooltip title="Eliminar Producto" arrow leaveDelay={0}>
                   <button
                     onClick={() =>
-                      product.id !== undefined &&
-                      handleOpenDeletePopUp(product)
+                      product.id !== undefined && handleOpenDeletePopUp(product)
                     }
                   >
                     <DeleteIcon className={style.iconAction} />
@@ -194,12 +203,13 @@ const BodyInventory = () => {
         onClose={handleCloseDialog}
         productInfo={selectedProduct ?? undefined}
       />
-
       <CreateProductDialog
         open={openCreateDialog}
         onClose={handleCloseDialog}
         isEditMode={isEditMode}
         productInfo={selectedProduct ?? undefined}
+        kind={kindToCreate}
+        productTypes={productsTypes}
       />
       <PopUp
         open={openPopUp}

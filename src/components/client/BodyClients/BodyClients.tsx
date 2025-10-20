@@ -1,7 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react";
 import debounce from "lodash.debounce";
 import {
-  useClient,
   useClientsByFilters,
   useDeleteClient,
 } from "../../../hooks/ClientHooks";
@@ -16,7 +16,7 @@ import TableGeneric from "../../ui/table/Table";
 import InfoClientDialog from "../InfoClient/InfoDialogClient";
 import CreateClientDialog from "../CreateClient/CreateClientDialog";
 
-import { Checkbox, type SelectChangeEvent } from "@mui/material";
+import { Checkbox } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -32,6 +32,10 @@ import {
 import { formatMoneyNumber } from "../../../utils/formatTextUtils";
 import { formatNoResultsText } from "../../../utils/FiltersUtils";
 import PopUp from "../../ui/PopUp/PopUp";
+import { CustomSnackBar } from "../../ui/snackBar/CustomSnackBar";
+import { useSnackBarModalStore } from "../../../store/snackBarStore";
+import { getWindowWidth } from "../../../utils/WindowUtils";
+import CaretIcon from "../../ui/Icons/CaretIcon";
 
 interface IfilterQuery {
   nombre?: string;
@@ -41,16 +45,21 @@ interface IfilterQuery {
 }
 
 const BodyClients = () => {
-  const clientMutation = useClient();
   const maintenanceByClient = useMaintenancesByClient();
   const clientFilterMutation = useClientsByFilters();
   const deleteClientMutation = useDeleteClient();
+
+  const { setSnackBar } = useSnackBarModalStore();
+  const [windowWidth, setWindowWidth] = useState(getWindowWidth());
 
   const [clients, setClients] = useState<Client[]>();
   const [filterQuery, setFilterQuery] = useState<IfilterQuery>({});
   const [loadingTable, setLoadingTable] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
+  const [currentClientIndex, setCurrentClientIndex] = useState(0);
+
   const [mantenciones, setMantenciones] = useState<IMaintenance[]>();
   const [openDialog, setOpenDialog] = useState(false);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
@@ -78,31 +87,46 @@ const BodyClients = () => {
 
   const fetchData = async () => {
     setLoadingTable(true);
-    try {
-      const clients = await clientMutation.mutateAsync();
-      setClients(clients);
-      setLoadingTable(false);
-    } catch (error) {
-      console.log("Error al cargar usuarios o clientes:", error);
-      setLoadingTable(false);
-    }
-  };
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
     const handler = setTimeout(async () => {
       try {
         const filtered = await clientFilterMutation.mutateAsync(filterQuery);
         setClients(filtered);
+        setLoadingTable(false);
       } catch (error) {
         console.error("Error al filtrar clientes:", error);
       }
     }, 500);
 
     return () => clearTimeout(handler);
-  }, [JSON.stringify(filterQuery)]);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [filterQuery]);
+
+  useEffect(() => {
+    if (selectedClients.length > 0) {
+      setSnackBar(
+        true,
+        `Ver detalles de ${selectedClients.length} cliente(s).`
+      );
+    } else {
+      setSnackBar(false, "");
+    }
+  }, [selectedClients, setSnackBar]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    // Limpieza al desmontar
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const handleFilterName = useMemo(
     () =>
@@ -111,7 +135,6 @@ const BodyClients = () => {
           if (value.length >= 3) {
             return { ...prev, nombre: value };
           } else if (value.length === 0) {
-            // eliminar filtro nombre cuando está vacío
             const updated = { ...prev };
             delete updated.nombre;
             return updated;
@@ -129,7 +152,6 @@ const BodyClients = () => {
           if (value.length >= 3) {
             return { ...prev, direccion: value };
           } else if (value.length === 0) {
-            // eliminar filtro direccion cuando está vacío
             const updated = { ...prev };
             delete updated.direccion;
             return updated;
@@ -140,19 +162,25 @@ const BodyClients = () => {
     []
   );
 
-  const handleChangeComuna = (event: SelectChangeEvent) => {
-    setSelectedComuna(event.target.value);
-    setFilterQuery((prev) => ({ ...prev, comuna: event.target.value }));
+  const handleChangeComuna = (value: string) => {
+    setSelectedComuna(value);
+    setFilterQuery((prev) => ({ ...prev, comuna: value }));
   };
 
-  const handleChangeDiaMantencion = (event: SelectChangeEvent) => {
-    setSelectedDay(event.target.value);
-    setFilterQuery((prev) => ({ ...prev, dia: event.target.value }));
+  const handleChangeDiaMantencion = (value: string) => {
+    setSelectedDay(value);
+    setFilterQuery((prev) => ({ ...prev, dia: value }));
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setOpenCreateDialog(false);
+    if (selectedClients.length > 0) {
+      setSnackBar(
+        true,
+        `Ver detalles de ${selectedClients.length} cliente(s).`
+      );
+    }
   };
 
   const handleSeeDetailsClient = async (client: Client) => {
@@ -199,8 +227,12 @@ const BodyClients = () => {
       filterQuery.dia
     ) {
       return formatNoResultsText(
-        nombreInput || direccionInput || selectedComuna || selectedDay,
-        "clientes"
+        "clients",
+        filterQuery.nombre ||
+          filterQuery.direccion ||
+          filterQuery.comuna ||
+          filterQuery.dia ||
+          ""
       );
     }
   };
@@ -211,17 +243,58 @@ const BodyClients = () => {
   };
 
   const handleSelectClient = (client: Client) => {
-    setSelectedClients((prev) => [...prev, client]);
+    setSelectedClients((prev) => {
+      const alreadySelected = prev.some((c) => c.id === client.id);
+      if (alreadySelected) {
+        return prev.filter((c) => c.id !== client.id);
+      } else {
+        return [...prev, client];
+      }
+    });
+  };
+
+  const handleSeeMultiSelectClients = async (index: number) => {
+    if (selectedClients.length === 0) return;
+    try {
+      const client = selectedClients[index];
+      console.log("Cliente seleccionado para ver detalles:", client);
+      if (!client.id) return;
+      const mantenciones = await maintenanceByClient.mutateAsync(client.id);
+      setMantenciones(mantenciones);
+      setSelectedClient(client);
+      setCurrentClientIndex(index);
+      setOpenDialog(true);
+      setSnackBar(false, "");
+    } catch (error) {
+      console.error("Error cargando mantenciones:", error);
+    }
+  };
+
+  const handleNextClient = async () => {
+    const nextIndex = currentClientIndex + 1;
+    if (nextIndex < selectedClients.length) {
+      await handleSeeMultiSelectClients(nextIndex);
+    }
+  };
+
+  const handlePreviousClient = async () => {
+    const prevIndex = currentClientIndex - 1;
+    if (prevIndex >= 0) {
+      await handleSeeMultiSelectClients(prevIndex);
+    }
   };
 
   return (
-    <div className="pt-4">
+    <div className="pt-4 ">
       <div className={style.filtersContainer}>
         <div className={style.filters}>
           <InputText
             title="Buscar por Nombre"
             placeholder="Nombre"
-            onChange={handleFilterName}
+            onChange={(value: string) => {
+              setNombreInput(value);
+              handleFilterName(value);
+            }}
             value={nombreInput}
           />
         </div>
@@ -229,7 +302,10 @@ const BodyClients = () => {
           <InputText
             title="Buscar por dirección"
             placeholder="Dirección"
-            onChange={handleFilterDireccion}
+            onChange={(value: string) => {
+              setDireccionInput(value);
+              handleFilterDireccion(value);
+            }}
             value={direccionInput}
           />
         </div>
@@ -237,7 +313,9 @@ const BodyClients = () => {
           <Select
             label="Dia Mantención"
             options={dias}
-            onChange={handleChangeDiaMantencion}
+            onChange={(event) =>
+              handleChangeDiaMantencion(String(event.target.value))
+            }
             value={selectedDay}
           />
         </div>
@@ -245,7 +323,7 @@ const BodyClients = () => {
           <Select
             label="Comuna"
             options={comunas}
-            onChange={handleChangeComuna}
+            onChange={(event) => handleChangeComuna(String(event.target.value))}
             value={selectedComuna}
           />
         </div>
@@ -262,17 +340,62 @@ const BodyClients = () => {
           </Tooltip>
         </div>
       </div>
+      {windowWidth < 600 && selectedClients.length > 0 && (
+        <div className="flex flex-row w-full items-center justify-center pt-4">
+          <button
+            onClick={() => handleSeeMultiSelectClients(currentClientIndex)}
+            className={style.addButton}
+          >
+            Ver detalles de {selectedClients.length} cliente(s).
+          </button>
+        </div>
+      )}
       <div className={style.tableContainer}>
         <TableGeneric
           titles={titlesTable}
           data={clients ?? []}
           loading={loadingTable}
           textNotFound={handleTextNoResults()}
+          renderHeader={(title, index) => {
+            if (index === 0) {
+              const allSelected =
+                clients &&
+                clients.length > 0 &&
+                selectedClients.length === clients.length;
+              const someSelected =
+                selectedClients.length > 0 &&
+                selectedClients.length < (clients?.length ?? 0);
+
+              return (
+                <th key={index}>
+                  <Checkbox
+                    checked={allSelected}
+                    indeterminate={someSelected}
+                    onChange={(e) => {
+                      if (e.target.checked && clients) {
+                        setSelectedClients(clients);
+                      } else {
+                        setSelectedClients([]);
+                      }
+                    }}
+                  />
+                </th>
+              );
+            }
+            return (
+              <th key={index}>
+                <span className="flex flex-row items-center gap-2">
+                  {title.label}
+                  {title.showOrderBy && <CaretIcon color="#0289c7" />}
+                </span>
+              </th>
+            );
+          }}
           renderRow={(client) => (
             <tr key={client.id}>
               <td>
                 <Checkbox
-                  checked={selectedClients.includes(client)}
+                  checked={selectedClients.some((c) => c.id === client.id)}
                   onChange={() => handleSelectClient(client)}
                 />
               </td>
@@ -283,7 +406,7 @@ const BodyClients = () => {
               <td>{client.email ? client.email : "No tiene email asociado"}</td>
               <td>{client.dia_mantencion}</td>
               <td>{formatMoneyNumber(client.valor_mantencion)}</td>
-              <td className="flex flex-col gap-2  sm:gap-4 items-center justify-center">
+              <td className="flex flex-col gap-2 sm:gap-4 items-center justify-center">
                 <Tooltip title="Ver detalles Cliente" arrow leaveDelay={0}>
                   <button
                     className="actions"
@@ -324,6 +447,10 @@ const BodyClients = () => {
             setMantenciones(updatedMaintenances);
           }
         }}
+        onNextClient={handleNextClient}
+        onPreviousClient={handlePreviousClient}
+        totalRecords={selectedClients.length}
+        currentIndex={currentClientIndex}
       />
       <CreateClientDialog
         open={openCreateDialog}
@@ -346,6 +473,9 @@ const BodyClients = () => {
           <p>Esta acción no se puede deshacer.</p>
         </div>
       </PopUp>
+      <CustomSnackBar
+        onClick={() => handleSeeMultiSelectClients(currentClientIndex)}
+      />
     </div>
   );
 };
