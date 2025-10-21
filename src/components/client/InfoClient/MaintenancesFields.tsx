@@ -80,7 +80,6 @@ const MaintenanceFields = ({
         <CustomInputText
           title="Fecha"
           type="date"
-          customClass="pl-2!"
           value={maintenance.fechaMantencion}
           onChange={(value) =>
             setMaintenance({ ...maintenance, fechaMantencion: value })
@@ -146,7 +145,7 @@ const MaintenanceFields = ({
                 <CustomInputText
                   title="Cantidad"
                   type="number"
-                  customClass="pl-2! w-32!"
+                  customClass="w-32!"
                   value={cantidad}
                   onChange={(value) => setCantidad(Number(value))}
                 />

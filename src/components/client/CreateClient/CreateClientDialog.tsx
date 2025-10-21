@@ -31,7 +31,6 @@ import { green } from "@mui/material/colors";
 import Fab from "@mui/material/Fab";
 import CheckIcon from "@mui/icons-material/Check";
 import SaveIcon from "@mui/icons-material/Save";
-import type { SelectChangeEvent } from "@mui/material";
 
 interface CreateClientDialogProps {
   open: boolean;
@@ -69,14 +68,14 @@ const CreateClientDialog = ({
   const handleTelefono = (value: string) => {
     setTelefonoClient(value);
   };
-  const handleTipoPiscina = (event: SelectChangeEvent) => {
-    settipoPiscinaClient(event.target.value);
+  const handleTipoPiscina = (value: string) => {
+    settipoPiscinaClient(value);
   };
   const handleFechaIngreso = (value: Date) => {
     setFechaIngreso(value);
   };
-  const handleComuna = (event: SelectChangeEvent) => {
-    setcomunaClient(event.target.value);
+  const handleComuna = (value: string) => {
+    setcomunaClient(value);
   };
   const handleEmail = (value: string) => {
     setEmailClient(value);
@@ -99,8 +98,8 @@ const CreateClientDialog = ({
     }
   };
 
-  const handleDiaMantencion = (event: SelectChangeEvent) => {
-    setDiaMantencionClient(event.target.value);
+  const handleDiaMantencion = (value: string) => {
+    setDiaMantencionClient(value);
   };
 
   const handleButtonClick = async () => {
@@ -132,7 +131,6 @@ const CreateClientDialog = ({
       }
       setSuccess(true);
       setLoading(false);
-      // Opcional: cerrar el modal si todo salió bien
       onClose();
     } catch (error) {
       console.error("Error creando cliente:", error);
@@ -142,6 +140,7 @@ const CreateClientDialog = ({
   };
 
   const handleClose = () => {
+    clearForm();
     onClose();
   };
 
@@ -169,6 +168,19 @@ const CreateClientDialog = ({
     }),
   };
 
+  const clearForm = () => {
+    setNameClient("");
+    setdireccionClient("");
+    setTelefonoClient("");
+    settipoPiscinaClient("");
+    setFechaIngreso(undefined);
+    setcomunaClient("");
+    setEmailClient("");
+    setValorMantencionClient(0);
+    setDiaMantencionClient("");
+    setInputValue("");
+  };
+
   useEffect(() => {
     return () => {
       clearTimeout(timer.current);
@@ -186,6 +198,12 @@ const CreateClientDialog = ({
       setEmailClient(clientInfo.email);
       setValorMantencionClient(clientInfo.valor_mantencion);
       setDiaMantencionClient(clientInfo.dia_mantencion);
+      setInputValue(
+        Intl.NumberFormat("es-CL", {
+          style: "currency",
+          currency: "CLP",
+        }).format(clientInfo.valor_mantencion)
+      );
     }
   }, [clientInfo, isEditMode]);
 
@@ -253,7 +271,7 @@ const CreateClientDialog = ({
               <CustomSelect
                 label=""
                 options={comunas}
-                onChange={() => handleComuna}
+                onChange={(event) => handleComuna(String(event.target.value))}
                 value={comunaClient}
               />
             </div>
@@ -265,7 +283,9 @@ const CreateClientDialog = ({
               <CustomSelect
                 label=""
                 options={dias}
-                onChange={() => handleDiaMantencion}
+                onChange={(event) =>
+                  handleDiaMantencion(String(event.target.value))
+                }
                 value={diaMantencionClient}
               />
             </div>
@@ -277,7 +297,9 @@ const CreateClientDialog = ({
               <CustomSelect
                 label=""
                 options={tiposPiscinasMaterial}
-                onChange={() => handleTipoPiscina}
+                onChange={(event) =>
+                  handleTipoPiscina(String(event.target.value))
+                }
                 value={tipoPiscinaClient}
               />
             </div>
@@ -299,7 +321,7 @@ const CreateClientDialog = ({
           color="primary"
           sx={buttonSx}
           onClick={handleButtonClick}
-          disabled={!isValidForm || loading}
+          disabled={!isValidForm}
         >
           {success ? <CheckIcon /> : <SaveIcon />}
         </Fab>

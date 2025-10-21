@@ -7,6 +7,8 @@ import style from "./SelectStyle.module.css";
 import type { ReactNode } from "react";
 
 interface CustomSelectProps {
+  title?: string;
+  required?: boolean;
   label?: string;
   options?: { value: string | number; label: string }[];
   value?: string | number;
@@ -19,6 +21,8 @@ interface CustomSelectProps {
 }
 
 const CustomSelect = ({
+  title = "Soy un titulo",
+  required = false,
   label = "Soy un select",
   options,
   value,
@@ -37,6 +41,9 @@ const CustomSelect = ({
 
   return (
     <div>
+      <label className="input-title" htmlFor={`input-field-${title}`}>
+        {title} {required && <span className="required">*</span>}
+      </label>
       <FormControl sx={{ m: 0.5, minWidth: 150, width: "100%" }}>
         <InputLabel
           className={`${style.customInputLabel} ${icon ? style.withIcon : ""}`}

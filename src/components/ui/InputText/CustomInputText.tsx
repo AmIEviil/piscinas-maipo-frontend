@@ -45,9 +45,9 @@ const CustomInputText = ({
       <div className="input-wrapper">
         {icon && <span className="input-icon">{icon}</span>}
         <input
-          className={`input-field ${customClass} ${disabled ? "disabled" : ""} ${
-            icon ? "with-icon" : ""
-          }`}
+          className={`input-field ${customClass} ${
+            disabled ? "disabled" : ""
+          } ${icon ? "with-icon" : "pl-2!"}`}
           type={type}
           id={`input-field-${title}`}
           value={value}

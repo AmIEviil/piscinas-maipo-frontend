@@ -170,6 +170,15 @@ const CreateProductDialog = ({
   useEffect(() => {
     if (isEditMode && productInfo) {
       setNameProduct(productInfo.nombre);
+      setTipoProducto(productInfo.tipo.id);
+      setCantidadDisponibleProduct(productInfo.cant_disponible);
+      setValorUnitarioProduct(productInfo.valor_unitario);
+      setInputValue(
+        Intl.NumberFormat("es-CL", {
+          style: "currency",
+          currency: "CLP",
+        }).format(productInfo.valor_unitario)
+      );
     }
   }, [productInfo, isEditMode]);
 
@@ -202,7 +211,6 @@ const CreateProductDialog = ({
           <>
             <CustomInputText
               title="Nombre del Producto"
-              customClass="pl-2!"
               require
               onChange={handleName}
               value={nameProduct}
@@ -215,14 +223,12 @@ const CreateProductDialog = ({
             />
             <CustomInputText
               title="Cantidad Disponible"
-              customClass="pl-2!"
               require
               onChange={(value) => handleCantidadDisponible(Number(value))}
               value={cantidadDisponibleProduct}
             />
             <CustomInputText
               title="Valor Unitario"
-              customClass="pl-2!"
               require
               onChange={handleChange}
               onBlur={handleBlur}
@@ -237,7 +243,6 @@ const CreateProductDialog = ({
             <h3>Tipo de Producto</h3>
             <CustomInputText
               title="Nombre del Tipo"
-              customClass="pl-2!"
               require
               onChange={setNameProductType}
               value={nameProductType}
