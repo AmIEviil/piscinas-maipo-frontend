@@ -72,10 +72,9 @@ const RevestimientoFields = ({
       value.valorM2 !== undefined &&
       value.areaPiscina !== undefined
     ) {
-      const costoTotal =
-        (value.costoManoObra + value.costoMateriales) *
-        value.valorM2 *
-        value.areaPiscina;
+      const costoArea = value.valorM2 * value.areaPiscina;
+      const costoTotal = costoArea + value.costoManoObra;
+      
       onChange((prev) => ({
         ...prev,
         costoTotal,
