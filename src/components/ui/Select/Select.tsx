@@ -21,7 +21,7 @@ interface CustomSelectProps {
 }
 
 const CustomSelect = ({
-  title = "Soy un titulo",
+  title,
   required = false,
   label = "Soy un select",
   options,
