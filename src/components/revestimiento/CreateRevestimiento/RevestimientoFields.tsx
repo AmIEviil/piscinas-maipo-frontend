@@ -381,7 +381,7 @@ const RevestimientoFields = ({
                 onClick={() => {
                   onChange((prev) => ({
                     ...prev,
-                    imagenes: prev.imagenes?.filter((x, idx) => idx !== i),
+                    imagenes: prev.imagenes?.filter((_, idx) => idx !== i),
                   }));
                 }}
               >

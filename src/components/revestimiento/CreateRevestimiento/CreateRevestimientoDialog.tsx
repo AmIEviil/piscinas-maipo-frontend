@@ -53,11 +53,11 @@ CreateRevestimientoDialogProps) => {
       const created = await revestimientoService.createNewRevestimiento(
         revestimientoData
       );
-      // 2) si hay urls en state, asociarlas en bulk
-      if (revestimientoData.urls?.length) {
+      // 2) si hay imagenes en state, asociarlas en bulk
+      if (revestimientoData.imagenes?.length) {
         await revestimientoService.addImagesBulk(
           created.id,
-          revestimientoData.urls
+          revestimientoData.imagenes?.map((img) => img.url) || []
         );
       }
       // hecho
