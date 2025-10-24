@@ -1,4 +1,8 @@
-import type { IRevestimiento } from "../../service/revestimientoInterface";
+import type {
+  ICloudinaryImage,
+  IRevestimiento,
+  IRevestimientoCreate,
+} from "../../service/revestimientoInterface";
 import { REVESTIMIENTO_API } from "../api/revestimiento/api";
 import apiClient from "../client/client";
 
@@ -16,7 +20,7 @@ export const revestimientoService = {
   },
 
   createNewRevestimiento: async (
-    data: IRevestimiento
+    data: Partial<IRevestimientoCreate>
   ): Promise<IRevestimiento> => {
     const response = await apiClient.post<IRevestimiento>(
       REVESTIMIENTO_API.revestimientos,
@@ -38,8 +42,31 @@ export const revestimientoService = {
 
   deleteRevestimiento: async (id: number): Promise<{ message: string }> => {
     const response = await apiClient.delete<{ message: string }>(
-      `${REVESTIMIENTO_API.revestimientoId}/${id}`
+      REVESTIMIENTO_API.revestimientoId.replace(":id", id.toString())
     );
     return response.data;
+  },
+
+  uploadImagen: async (file: File): Promise<ICloudinaryImage> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await apiClient.post<ICloudinaryImage>(
+      `api/upload`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  },
+
+  addImagesBulk: async (revestimientoId: number, urls: string[]) => {
+    const res = await apiClient.post(
+      `/api/upload/revestimiento/${revestimientoId}/imagenes/bulk`,
+      { urls }
+    );
+    return res.data;
   },
 };

@@ -94,3 +94,8 @@ export const titlesInventoryTable = [
   { label: "Valor Unitario", showOrderBy: false },
   { label: "Acciones", showOrderBy: false },
 ];
+
+export const tiposRevestimientos = [
+  { value: "Marble Dust", label: "Marble Dust" },
+  { value: "Fibra de Vidrio", label: "Fibra de Vidrio" },
+];
