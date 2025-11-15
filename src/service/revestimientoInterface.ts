@@ -24,7 +24,7 @@ export interface IRevestimientoCreate {
   fechaInicio?: string;
   fechaTermino?: string;
   clienteId: number;
-
+  client?: Client;
   imagenes: ICloudinaryImage[];
 }
 

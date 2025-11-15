@@ -3,13 +3,11 @@ import { authService } from "../core/services/AuthService";
 
 export const useLogin = () => {
   const loginMutation = useMutation({
-    mutationFn: authService.login,
-    onError: (error: unknown) => {
-      console.log(error);
+    mutationFn: async (payload: { user_name: string; password: string }) =>
+      authService.login(payload),
+    onError: (error) => {
+      console.error("Login error:", error);
     },
-    // onSuccess: (data) => {
-    //   console.log(data);
-    // },
   });
   return loginMutation;
 };

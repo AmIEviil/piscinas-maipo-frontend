@@ -7,9 +7,9 @@ export const useDailyMetrics = () => {
     onError: (error: unknown) => {
       console.log(error);
     },
-    onSuccess: (data) => {
-      console.log(data);
-    },
+    // onSuccess: (data) => {
+    //   console.log(data);
+    // },
   });
   return metricsDailyMutation;
 };
