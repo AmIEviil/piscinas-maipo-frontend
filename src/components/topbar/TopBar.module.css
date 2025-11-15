@@ -7,7 +7,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--color-celeste-oscuro);
+  background-color: var(--color-primario);
   color: white;
   padding: 1rem 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -21,40 +21,4 @@
   font-size: 1.25rem;
   font-weight: bold;
   text-transform: capitalize;
-}
-
-.tabsContainer {
-  display: flex;
-  gap: 1rem;
-}
-
-.tabsContainer button {
-  background-color: transparent;
-  border: none;
-  color: var(--color-fondo);
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease-in-out;
-}
-
-.activeTab{
-  background-color: red;
-}
-
-.tabsContainer button:hover {
-  border-bottom: 2px solid var(--color-secundario);
-  color: var(--color-secundario);
-}
-
-.tabsContainer button:focus {
-  outline: none;
-}
-
-@media screen and (max-width: 580px) {
-  .tabsContainer {
-    display: flex;
-    gap: 0rem;
-  }
 }

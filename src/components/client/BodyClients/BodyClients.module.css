@@ -3,7 +3,7 @@
   justify-content: space-between;
   gap: 1.5rem;
   padding: 1rem;
-  background-color: var(--color-fondo);
+  background-color: var(--color-fondo-suave);
   border-radius: 16px;
   margin-bottom: 1rem;
   flex-wrap: wrap;
@@ -71,5 +71,4 @@
     flex-wrap: nowrap;
     flex-direction: column;
   }
-
 }

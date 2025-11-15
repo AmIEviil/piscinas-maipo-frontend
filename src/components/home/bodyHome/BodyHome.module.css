@@ -49,20 +49,10 @@
   }
 
   .chartsContainer {
-    align-items: center;
-    display: flex;
-    flex-wrap: nowrap;
-    flex-direction: column;
-    max-height: 260px;
-    overflow: auto;
+    gap: 2rem;
   }
 
   .resumeMaintenance {
-    align-items: center;
-    display: flex;
-    flex-wrap: nowrap;
-    flex-direction: column;
-    max-height: 560px;
-    overflow: auto;
+    gap: 3rem;
   }
 }

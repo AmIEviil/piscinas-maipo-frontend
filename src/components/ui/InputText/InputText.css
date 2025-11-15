@@ -34,6 +34,15 @@
   pointer-events: none;
 }
 
+.input-icon-password {
+  position: absolute;
+  right: 12px;
+  color: var(--color-secundario);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
 .input-field {
   width: 100%;
   padding: 10px 12px;

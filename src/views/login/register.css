@@ -1,0 +1,163 @@
+.register-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 56px;
+  align-self: stretch;
+  justify-content: center;
+  /* z-index: 3; */
+  position: relative;
+}
+.register-form-container {
+  padding: 64.5px 100px 63.5px 100px;
+}
+
+.register-container {
+  background-size: auto, auto, 80% 100vh, 40% 100vh, 33% 100vh;
+  background: linear-gradient(
+      180deg,
+      rgba(0, 57, 115, 0.32) 0%,
+      rgba(0, 108, 217, 0) 29.02%
+    ),
+    linear-gradient(to left, #fff 60%, transparent 60%),
+    url("/src/assets/fondo_login.webp");
+  background-position: -100% 0%;
+  background-size: cover;
+}
+
+.register-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Capa base con la imagen de fondo */
+.register-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0.3) 100%
+    ),
+    url("/src/assets/fondo_login.webp") left center/cover no-repeat;
+  /* z-index: 1; */
+}
+
+/* Capa de overlay con el filtro azul */
+.register-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 29, 57, 0.82) 50%,
+    rgba(0, 179, 152, 0.82) 100%
+  );
+  mix-blend-mode: overlay;
+  /* z-index: 2; */
+}
+
+.register-title {
+  align-self: stretch;
+  color: var(--black-900);
+  text-align: center;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 29px;
+}
+.register-subtitle {
+  align-self: stretch;
+  color: var(--black-900);
+  text-align: center;
+  font-size: var(--Size-P1, 16px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 25.9px;
+}
+
+.pdc-label {
+  color: var(--blue-600);
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 29px;
+}
+
+.title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  align-self: stretch;
+  margin-top: 0px;
+}
+
+.requisitos-container {
+  display: flex;
+  padding: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  border-radius: 8px;
+  border: 1px solid var(--black-400);
+  background: var(--black-100);
+}
+
+.requisitos-title {
+  align-self: stretch;
+  color: var(--black-900);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 22.7px;
+}
+.requisitos-list-item {
+  color: var(--black-900);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22.7px;
+}
+ul {
+  margin-bottom: 0px;
+}
+.centered-list {
+  list-style-position: outside;
+  padding-inline: 10px;
+  margin-right: 10px;
+}
+
+@media (max-width: 1024px) {
+  .register-container {
+    background: none;
+  }
+  .register-container::before {
+    background: linear-gradient(
+        to right,
+        var(--black-50) 100%,
+        transparent 100%
+      ),
+      url("/src/assets/fondo_login.webp") center center no-repeat;
+    background-size: cover;
+  }
+
+  .register-container::after {
+    background: white;
+    mix-blend-mode: overlay;
+  }
+  .register-form-container{
+    padding: 1rem;
+  }
+}

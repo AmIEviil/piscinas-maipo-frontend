@@ -1,0 +1,209 @@
+/* general config */
+.btn-primary,
+.btn-secondary,
+.btn-tertiary,
+.btn-destructive,
+.btn-tool,
+.btn-tool-no-stroke {
+  display: inline-flex;
+  padding: 7px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--Value-Corner-radius-8px, 8px);
+  font-weight: 700;
+  font-family: "Calibri", sans-serif;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-tertiary:disabled,
+.btn-destructive:disabled,
+.btn-tool:disabled,
+.btn-tool-no-stroke {
+  background-color: var(--black-400);
+  border-color: var(--black-400);
+  color: var(--color-primario);
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--color-primario);
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--color-primario);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid var(--gold-500);
+  color: var(--color-primario);
+}
+
+.btn-tertiary {
+  color: var(--color-primario);
+}
+
+.btn-destructive {
+  background-color: var(--red-600);
+  border-color: var(--red-600);
+  color: white;
+}
+
+.btn-tool {
+  background-color: var(--black-50) !important;
+  border: 1px solid var(--black-400) !important;
+  color: var(--black-900) !important;
+}
+
+.btn-tool-no-stroke {
+  background-color: transparent;
+  border: none;
+}
+
+/* primary btn config */
+.btn-primary:hover {
+  background-color: var(--color-secundario);
+  border-color: var(--black-50);
+}
+
+.btn-primary:active {
+  background-color: var(--color-secundario) !important;
+  border-color: var(--color-secundario) !important;
+}
+
+.btn-primary:focus {
+  outline: none;
+  border: 2px solid var(--black-50);
+  box-shadow: 0 0 0 3px var(--blue-600);
+}
+
+/* secondary btn config */
+.btn-secondary:hover {
+  border-radius: var(--Value-Corner-radius-8px, 8px);
+  border: 1px solid var(--gold-400);
+  background: var(--black-100);
+  color: var(--gold-400);
+}
+
+.btn-secondary:active {
+  background-color: var(--black-100) !important;
+  border: 1px solid var(--primary-gold-600) !important;
+  color: var(--primary-gold-600) !important;
+}
+
+.btn-secondary:focus {
+  position: relative;
+  border: 2px solid var(--gold-500);
+  outline: none;
+}
+
+.btn-secondary:focus::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid white;
+  outline: 3px solid var(--blue-600);
+  border-radius: 0.5rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* terciary btn config */
+.btn-tertiary:hover {
+  background-color: var(--black-100);
+  border-color: var(--gold-400);
+  color: var(--gold-400);
+}
+
+.btn-tertiary:active {
+  background-color: var(--black-100) !important;
+  border-color: var(--gold-600);
+  color: var(--gold-600);
+}
+
+.btn-tertiary:focus {
+  color: var(--color-primario);
+}
+
+/* destructive btn config */
+.btn-destructive:hover {
+  background-color: var(--red-800);
+  border-color: var(--red-800);
+  color: white;
+}
+
+.btn-destructive:active {
+  background-color: var(--red-900) !important;
+  border-color: var(--red-900) !important;
+  color: white !important;
+}
+
+.btn-destructive:focus {
+  outline: none;
+  border: 2px solid var(--black-50);
+  box-shadow: 0 0 0 3px var(--blue-600);
+}
+
+/* tool btn config */
+.btn-tool:hover {
+  background-color: var(--black-100);
+  border-color: var(--black-800);
+}
+
+.btn-tool:active {
+  background-color: var(--black-300) !important;
+  border-color: var(--black-800) !important;
+  color: var(--black-900) !important;
+}
+
+.btn-tool:focus {
+  background-color: var(--black-50);
+  position: relative;
+  border: 1px solid var(--black-400);
+  outline: none;
+}
+
+.btn-tool:focus::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid white;
+  outline: 3px solid var(--blue-600);
+  border-radius: 0.5rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* tool-no-stroke btn config */
+.btn-tool-no-stroke:hover {
+  background-color: var(--black-100) !important;
+  border-color: var(--black-900);
+}
+
+.btn-tool-no-stroke:active {
+  background-color: var(--black-300) !important;
+  border: none !important;
+  color: var(--black-900);
+}
+
+.btn-tool-no-stroke:focus {
+  background-color: var(--black-50);
+  position: relative;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--blue-600);
+  color: var(--black-900);
+}
+
+.Linkbutton {
+  font-size: 14px;
+  text-decoration: underline;
+  color: var(--primary-gold-300-cta);
+}

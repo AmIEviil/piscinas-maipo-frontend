@@ -1,0 +1,15 @@
+.tabsContainer {
+  display: flex;
+  width: fit-content;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.tabOption {
+  cursor: pointer;
+  gap: 0.5rem;
+}
+
+.tabOption.selected {
+  border-bottom: 2px solid var(--color-secundario);
+}
