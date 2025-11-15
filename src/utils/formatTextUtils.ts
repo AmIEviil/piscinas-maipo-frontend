@@ -5,3 +5,8 @@ export const formatMoneyNumber = (value: number | undefined) => {
     currency: "CLP",
   }).format(value);
 };
+
+export const toUpperCaseFirstLetter = (text: string) => {
+  if (!text) return "";
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
