@@ -1,0 +1,12 @@
+{
+  "modules": {
+    "login": {
+      "form": {
+        "forgot_your_password": "Forgot your password?",
+        "login": "Login",
+        "password": "Password",
+        "sign_in": "Sign In"
+      }
+    }
+  }
+}

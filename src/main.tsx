@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import { RouterProvider } from "react-router";
 import { router } from "./router/index.ts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import "./i18n.ts";
 
 const queryClient = new QueryClient();
 

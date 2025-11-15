@@ -1,0 +1,12 @@
+{
+  "modules": {
+    "login": {
+      "form": {
+        "forgot_your_password": "¿Olvidaste tu contraseña?",
+        "login": "Iniciar sesión",
+        "password": "Contraseña",
+        "sign_in": "Registrarse"
+      }
+    }
+  }
+}
