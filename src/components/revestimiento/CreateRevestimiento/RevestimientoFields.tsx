@@ -74,7 +74,7 @@ const RevestimientoFields = ({
     ) {
       const costoArea = value.valorM2 * value.areaPiscina;
       const costoTotal = costoArea + value.costoManoObra;
-      
+
       onChange((prev) => ({
         ...prev,
         costoTotal,
@@ -113,7 +113,9 @@ const RevestimientoFields = ({
             required
             label=""
             options={optionsClients}
-            value={value.clienteId?.toString() || ""}
+            value={
+              value.clienteId?.toString() || value.client?.id?.toString() || ""
+            }
             onChange={(event) =>
               onChange((prev) => ({
                 ...prev,

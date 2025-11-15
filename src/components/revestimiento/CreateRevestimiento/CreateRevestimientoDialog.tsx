@@ -6,8 +6,6 @@ import style from "./CreateRevestimientoDialog.module.css";
 
 import { useEffect, useState } from "react";
 
-import { green } from "@mui/material/colors";
-import Fab from "@mui/material/Fab";
 import CheckIcon from "@mui/icons-material/Check";
 import SaveIcon from "@mui/icons-material/Save";
 import type {
@@ -17,6 +15,7 @@ import type {
 import RevestimientoFields from "./RevestimientoFields";
 import { useClientStore } from "../../../store/ClientStore";
 import { revestimientoService } from "../../../core/services/RevestimientoService";
+import Button from "../../ui/button/Button";
 
 interface CreateRevestimientoDialogProps {
   open: boolean;
@@ -28,8 +27,8 @@ interface CreateRevestimientoDialogProps {
 const CreateRevestimientoDialog = ({
   open = false,
   onClose,
-}: // revestimientoInfo,
-// isEditMode,
+  revestimientoInfo,
+}: // isEditMode,
 CreateRevestimientoDialogProps) => {
   const { clients, fetchClients } = useClientStore();
 
@@ -45,6 +44,12 @@ CreateRevestimientoDialogProps) => {
       fetchClients();
     }
   }, [clients.length, fetchClients]);
+
+  useEffect(() => {
+    if (revestimientoInfo) {
+      setRevestimientoData(revestimientoInfo);
+    }
+  }, [revestimientoInfo]);
 
   const handleButtonClick = async () => {
     setLoading(true);
@@ -74,15 +79,6 @@ CreateRevestimientoDialogProps) => {
     onClose();
   };
 
-  const buttonSx = {
-    ...(success && {
-      bgcolor: green[500],
-      "&:hover": {
-        bgcolor: green[700],
-      },
-    }),
-  };
-
   return (
     <Dialog fullWidth maxWidth="md" open={open} onClose={handleClose}>
       <DialogTitle className={style.dialogTitle}>
@@ -98,16 +94,15 @@ CreateRevestimientoDialogProps) => {
         </div>
       </DialogContent>
       <DialogActions className={style.dialogActions}>
-        <Fab
-          aria-label="save"
-          color="primary"
-          sx={buttonSx}
+        <button onClick={onClose} disabled={loading || success}>
+          Cancelar
+        </button>
+        <Button
           onClick={handleButtonClick}
-          disabled={loading}
-        >
-          {success ? <CheckIcon /> : <SaveIcon />}
-        </Fab>
-        <button onClick={onClose}>Cancelar</button>
+          label="Guardar"
+          disabled={loading || success}
+          icon={success ? <CheckIcon /> : <SaveIcon />}
+        />
       </DialogActions>
     </Dialog>
   );

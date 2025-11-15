@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import { getWindowWidth } from "../../../utils/WindowUtils";
 //Icons
 import { useProductStore } from "../../../store/ProductStore";
 import type { IProducto } from "../../../service/productsInterface";
@@ -19,7 +18,6 @@ const InfoProductDialog = ({
   productInfo,
   onClose,
 }: InfoProductDialogProps) => {
-  const [windowWidth, setWindowWidth] = useState(getWindowWidth());
   const { products, fetchProducts } = useProductStore();
 
   useEffect(() => {
@@ -27,20 +25,6 @@ const InfoProductDialog = ({
       fetchProducts();
     }
   }, [products.length, fetchProducts]);
-
-  useEffect(() => {
-    console.log("Window width:", windowWidth);
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    // Limpieza al desmontar
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
 
   const handleClose = () => {
     onClose();

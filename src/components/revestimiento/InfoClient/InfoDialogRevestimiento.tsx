@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -6,7 +6,7 @@ import DialogContent from "@mui/material/DialogContent";
 import { DialogTitle } from "@mui/material";
 import style from "./InfoDialogRevestimiento.module.css";
 import { formatMoneyNumber } from "../../../utils/formatTextUtils";
-import { getWindowWidth } from "../../../utils/WindowUtils";
+// import { getWindowWidth } from "../../../utils/WindowUtils";
 
 //Icons
 import PersonIcon from "@mui/icons-material/Person";
@@ -38,21 +38,20 @@ const InfoRevestimientoDialog = ({
   onClose,
 }: InfoRevestimientoDialogProps) => {
   // const createRevestimiento = useCreateRevestimiento();
-  const [windowWidth, setWindowWidth] = useState(getWindowWidth());
-  console.log("width:", windowWidth);
+  // const [windowWidth, setWindowWidth] = useState(getWindowWidth());
 
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
+  // useEffect(() => {
+  //   const handleResize = () => {
+  //     setWindowWidth(window.innerWidth);
+  //   };
 
-    window.addEventListener("resize", handleResize);
+  //   window.addEventListener("resize", handleResize);
 
-    // Limpieza al desmontar
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  //   // Limpieza al desmontar
+  //   return () => {
+  //     window.removeEventListener("resize", handleResize);
+  //   };
+  // }, []);
 
   const handleClose = () => {
     onClose();

@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import "./InputText.css";
+import EyeIcon from "../Icons/EyeIcon";
 
 interface InputTextProps {
   title?: string;
@@ -13,6 +14,7 @@ interface InputTextProps {
   onBlur?: () => void;
   icon?: ReactNode;
   customClass?: string;
+  customClassTitle?: string;
 }
 
 const CustomInputText = ({
@@ -26,6 +28,7 @@ const CustomInputText = ({
   require = true,
   icon,
   customClass = "",
+  customClassTitle = "",
 }: InputTextProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!disabled) {
@@ -33,11 +36,30 @@ const CustomInputText = ({
     }
   };
 
+  const isPasswordType = type === "password";
+
+  const handleSeePassword = () => {
+    const inputField = document.getElementById(
+      `input-field-${title}`
+    ) as HTMLInputElement;
+    if (isPasswordType && inputField.type === "password") {
+      inputField.type = "text";
+    } else {
+      inputField.type = "password";
+    }
+  };
+
+  const handleIconClick = () => {
+    if (type === "password") {
+      handleSeePassword();
+    }
+  };
+
   return (
     <div
       className={`input-text-container ${disabled ? "disabled-container" : ""}`}
     >
-      <div className="title-container">
+      <div className={`title-container ${customClassTitle}`}>
         <label className="input-title" htmlFor={`input-field-${title}`}>
           {title} {require && <span className="required">*</span>}
         </label>
@@ -56,6 +78,11 @@ const CustomInputText = ({
           placeholder={placeholder}
           onBlur={onBlur}
         />
+        {isPasswordType && (
+          <span className="input-icon-password" onClick={handleIconClick}>
+            <EyeIcon size={16} color={disabled ? "#A0A0A0" : "#131313"} />
+          </span>
+        )}
       </div>
     </div>
   );
