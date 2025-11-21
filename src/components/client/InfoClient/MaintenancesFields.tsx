@@ -7,7 +7,7 @@ import CustomSelect from "../../ui/Select/Select";
 import AddIcon from "@mui/icons-material/Add";
 
 interface MaintenanceFieldsProps {
-  clientId: number;
+  clientId: string;
   valorMantencion: number;
   productosList: IProducto[];
   onAccept: (maintenance: IMaintenanceCreate) => void;
@@ -27,7 +27,7 @@ const MaintenanceFields = ({
     recibioPago: false,
     valorMantencion: valorMantencion,
     client: { id: clientId },
-    productosUsados: [] as { productId: number; cantidad: number }[],
+    productosUsados: [] as { productId: string; cantidad: number }[],
   };
 
   const [maintenance, setMaintenance] = useState(initial_maintenance);
@@ -39,7 +39,7 @@ const MaintenanceFields = ({
 
   const productOptions = productosList
     .filter(
-      (p): p is IProducto & { id: number } =>
+      (p): p is IProducto & { id: string } =>
         p.id !== undefined && p.id !== null
     )
     .map((product) => ({
@@ -60,7 +60,7 @@ const MaintenanceFields = ({
     setError("");
 
     const newProduct = {
-      productId: Number(selectedProduct),
+      productId: String(selectedProduct),
       cantidad: Number(cantidad),
     };
 

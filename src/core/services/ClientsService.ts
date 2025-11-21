@@ -27,13 +27,13 @@ export const clientService = {
     return response.data;
   },
 
-  updateNewClient: async (id: number, data: Client): Promise<Client> => {
+  updateNewClient: async (id: string, data: Client): Promise<Client> => {
     const url = CLIENT_API.updateClient.replace(":id", id.toString());
     const response = await apiClient.put<Client>(url, data);
     return response.data;
   },
 
-  deleteClient: async (id: number): Promise<{ message: string }> => {
+  deleteClient: async (id: string): Promise<{ message: string }> => {
     const url = CLIENT_API.deleteClient.replace(":id", id.toString());
     const response = await apiClient.delete(url);
     return response.data;

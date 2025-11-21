@@ -113,7 +113,7 @@ const BodyInventory = () => {
     setOpenPopUp(true);
   };
 
-  const handleDeleteProduct = async (id: number) => {
+  const handleDeleteProduct = async (id: string) => {
     try {
       await deleteProductMutation.mutateAsync(id);
       fetchData();
@@ -215,7 +215,7 @@ const BodyInventory = () => {
         open={openPopUp}
         onClose={handleClosePopUp}
         onConfirm={() => {
-          handleDeleteProduct(selectedProduct?.id ?? 0);
+          handleDeleteProduct(selectedProduct?.id?? "");
         }}
         title="Confirmar eliminación"
         confirmText="Eliminar"

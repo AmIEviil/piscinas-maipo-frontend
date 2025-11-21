@@ -30,7 +30,7 @@ export const useCreateClient = () => {
 
 export const useUpdateClient = () => {
   const updateClientMutation = useMutation({
-    mutationFn: ({ clientId, data }: { clientId: number; data: Client }) =>
+    mutationFn: ({ clientId, data }: { clientId: string; data: Client }) =>
       clientService.updateNewClient(clientId, data),
     onError: (error: unknown) => {
       console.log(error);

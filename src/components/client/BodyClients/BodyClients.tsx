@@ -209,7 +209,7 @@ const BodyClients = () => {
     setOpenCreateDialog(true);
   };
 
-  const handleDeleteClient = async (id: number) => {
+  const handleDeleteClient = async (id: string) => {
     try {
       await deleteClientMutation.mutateAsync(id);
       fetchData();
@@ -462,7 +462,7 @@ const BodyClients = () => {
         open={openPopUp}
         onClose={handleClosePopUp}
         onConfirm={() => {
-          handleDeleteClient(selectedClient?.id ?? 0);
+          handleDeleteClient(selectedClient?.id?? "");
         }}
         title="Confirmar eliminación"
         confirmText="Eliminar"

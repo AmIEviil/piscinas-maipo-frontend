@@ -155,7 +155,7 @@ const BodyRevestimiento = () => {
     setOpenCreateDialog(true);
   };
 
-  const handleDeleteRevestimiento = async (id: number) => {
+  const handleDeleteRevestimiento = async (id string) => {
     try {
       await deleteRevestimientoMutation.mutateAsync(id);
       fetchRevestimientos();
@@ -303,7 +303,7 @@ const BodyRevestimiento = () => {
         open={openPopUp}
         onClose={handleClosePopUp}
         onConfirm={() => {
-          handleDeleteRevestimiento(selectedRevestimiento?.id ?? 0);
+          handleDeleteRevestimiento(selectedRevestimiento?.id?? "");
         }}
         title="Confirmar eliminación"
         confirmText="Eliminar"

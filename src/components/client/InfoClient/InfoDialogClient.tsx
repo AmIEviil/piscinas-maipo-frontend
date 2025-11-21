@@ -440,7 +440,7 @@ const InfoClientDialog = ({
 
         {isAddingMaintenance && (
           <MaintenanceFields
-            clientId={clientInfo?.id ?? 0}
+            clientId={clientInfo?.id ?? ""}
             valorMantencion={clientInfo?.valor_mantencion ?? 0}
             productosList={products}
             onAccept={handleAcceptMaintenance}

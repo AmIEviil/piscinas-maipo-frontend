@@ -12,7 +12,7 @@ export const revestimientoService = {
     return response.data;
   },
 
-  getRevestimientoById: async (id: number): Promise<IRevestimiento> => {
+  getRevestimientoById: async (id string): Promise<IRevestimiento> => {
     const response = await apiClient.get(
       REVESTIMIENTO_API.revestimientoId.replace(":id", id.toString())
     );
@@ -30,7 +30,7 @@ export const revestimientoService = {
   },
 
   updateRevestimiento: async (
-    id: number,
+    id string,
     data: IRevestimiento
   ): Promise<IRevestimiento> => {
     const response = await apiClient.put<IRevestimiento>(
@@ -40,7 +40,7 @@ export const revestimientoService = {
     return response.data;
   },
 
-  deleteRevestimiento: async (id: number): Promise<{ message: string }> => {
+  deleteRevestimiento: async (id string): Promise<{ message: string }> => {
     const response = await apiClient.delete<{ message: string }>(
       REVESTIMIENTO_API.revestimientoId.replace(":id", id.toString())
     );
@@ -62,7 +62,7 @@ export const revestimientoService = {
     return response.data;
   },
 
-  addImagesBulk: async (revestimientoId: number, urls: string[]) => {
+  addImagesBulk: async (revestimientoId string, urls: string[]) => {
     const res = await apiClient.post(
       `/api/upload/revestimiento/${revestimientoId}/imagenes/bulk`,
       { urls }

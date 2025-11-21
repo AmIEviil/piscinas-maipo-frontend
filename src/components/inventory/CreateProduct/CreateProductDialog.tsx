@@ -53,7 +53,7 @@ const CreateProductDialog = ({
   const [nameProductType, setNameProductType] = useState<string>();
 
   const [nameProduct, setNameProduct] = useState<string>();
-  const [tipoProducto, setTipoProducto] = useState<number | string>("");
+  const [tipoProducto, setTipoProducto] = useState<string>("");
   const [cantidadDisponibleProduct, setCantidadDisponibleProduct] =
     useState<number>();
   const [valorUnitarioProduct, setValorUnitarioProduct] = useState<
@@ -102,7 +102,7 @@ const CreateProductDialog = ({
       nombre: nameProduct ?? "",
       cant_disponible: cantidadDisponibleProduct ?? 0,
       valor_unitario: valorUnitarioProduct ?? 0,
-      tipo: (tipoProducto as number) ?? 0,
+      tipo: (tipoProducto as string) ?? "",
     };
 
     const productTypeToSubmit: ICreateTypeProductPayload = {
@@ -218,7 +218,7 @@ const CreateProductDialog = ({
             <CustomSelect
               label="Tipo de Producto"
               options={typeOptions}
-              onChange={(event) => setTipoProducto(Number(event.target.value))}
+              onChange={(event) => setTipoProducto(String(event.target.value))}
               value={tipoProducto}
             />
             <CustomInputText

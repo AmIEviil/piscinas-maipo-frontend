@@ -39,7 +39,7 @@ export const productsService = {
   },
 
   updateProduct: async (
-    productId: number,
+    productId: string,
     productData: Partial<ICreateProductPayload>
   ): Promise<IProducto> => {
     const response = await apiClient.put(
@@ -50,7 +50,7 @@ export const productsService = {
   },
 
   updateProductType: async (
-    typeId: number,
+    typeId: string,
     typeData: Partial<ICreateTypeProductPayload>
   ): Promise<ITypeProduct> => {
     const response = await apiClient.put(
@@ -60,11 +60,11 @@ export const productsService = {
     return response.data;
   },
 
-  deleteProduct: async (productId: number): Promise<void> => {
+  deleteProduct: async (productId: string): Promise<void> => {
     await apiClient.delete(`${PRODUCTS_API.products}/${productId}`);
   },
 
-  deleteProductType: async (typeId: number): Promise<void> => {
+  deleteProductType: async (typeId: string): Promise<void> => {
     await apiClient.delete(`${PRODUCTS_API.types}/${typeId}`);
   },
 };

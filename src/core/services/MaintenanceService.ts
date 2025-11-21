@@ -11,7 +11,7 @@ export const maintenanceService = {
     return response.data;
   },
 
-  getMaintenancesByClientId: async (id: number): Promise<IMaintenance[]> => {
+  getMaintenancesByClientId: async (id: string): Promise<IMaintenance[]> => {
     const url = MAINTENANCE_API.maintenancesByClientId.replace(
       ":id",
       id.toString()
