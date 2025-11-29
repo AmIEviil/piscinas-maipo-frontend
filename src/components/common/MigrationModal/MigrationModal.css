@@ -1,0 +1,39 @@
+.modal-dialog.migration-modal.modal-dialog-centered {
+  width: 100%;
+  border-radius: 24px;
+}
+
+.modal-content {
+  border-radius: 16px;
+}
+.migration-modal-header {
+  border: none;
+}
+.migration-modal-body {
+  display: flex;
+  flex-direction: column;
+  font-size: 18px;
+  width: 100%;
+}
+
+.text-migration-modal {
+  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.migration-modal-footer {
+  border: none;
+}
+
+.inactive-btn {
+  display: flex;
+  height: 40px;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  background-color: #c8a064;
+  border-radius: 8px;
+  color: #fff;
+}

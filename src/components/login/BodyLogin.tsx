@@ -5,12 +5,14 @@ import style from "./BodyLogin.module.css";
 import { useState } from "react";
 import { type IAuthPayload } from "../../service/authinterface";
 import { useLogin } from "../../hooks/LoginHooks";
-import { useLoginStore } from "../../store/AuthStore";
+import { useBoundStore } from "../../store/BoundedStore";
+import { useNavigate } from "react-router";
 
 const BodyLogin = () => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
-  const setUserData = useLoginStore((state) => state.setUserData);
-  const setToken = useLoginStore((state) => state.setToken);
+  const setUserData = useBoundStore((state) => state.setUserData);
+  const setToken = useBoundStore((state) => state.setToken);
 
   const loginMutation = useLogin();
 
@@ -18,6 +20,8 @@ const BodyLogin = () => {
     user_name: "",
     password: "",
   });
+
+  const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (value: string, name: keyof IAuthPayload) => {
     setCredentials((prev) => ({
@@ -29,16 +33,24 @@ const BodyLogin = () => {
   const handleLogin = async () => {
     try {
       const loginResponse = await loginMutation.mutateAsync(credentials);
-      console.log(loginResponse);
       setUserData(loginResponse);
       setToken(loginResponse.accessToken);
+      navigate("/");
     } catch (error) {
-      console.error("Login failed:", error);
+      setError(
+        (error as unknown as { response?: { data?: { message?: string } } })
+          ?.response?.data?.message || "An error occurred during login."
+      );
     }
   };
 
   return (
     <div className={style.bodyLogin}>
+      {error && (
+        <div className={style.errorMessageContainer}>
+          <span className={style.errorMessage}>{error}</span>
+        </div>
+      )}
       <div className={style.bodyContent}>
         <CustomInputText
           title="Usuario"

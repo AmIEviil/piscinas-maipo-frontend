@@ -5,6 +5,8 @@ import CaretIcon from "../Icons/CaretIcon";
 interface Title {
   label: string;
   showOrderBy?: boolean;
+  minWidth?: string;
+  maxWidth?: string;
 }
 
 interface TableGenericProps<T> {
@@ -21,11 +23,11 @@ const TableGeneric = <T,>({
   data,
   renderRow,
   loading,
-  textNotFound = "prueba",
+  textNotFound = "Sin Resultados",
   renderHeader,
 }: TableGenericProps<T>) => {
   return (
-    <div className={style.tableContainer}>
+    <div className={`${style.tableContainer} custom-scrollbar`}>
       <div>
         <table>
           <thead>

@@ -1,4 +1,4 @@
-import { useLoginStore } from "../store/AuthStore";
+import { useBoundStore } from "../store/BoundedStore";
 
 export const roles = {
   ADMIN: "Admin",
@@ -7,8 +7,7 @@ export const roles = {
 };
 
 export const usePermits = () => {
-  const role = useLoginStore((state) => state.userData?.roleUser.role.nombre);
-
+  const role = useBoundStore((state) => state.userData?.roleUser.role.nombre);
   return {
     isAdmin: role === roles.ADMIN,
     isClient: role === roles.CLIENT,

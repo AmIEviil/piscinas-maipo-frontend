@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create, type StateCreator } from "zustand";
 import { clientService } from "../core/services/ClientsService";
 import type { Client } from "../service/clientInterface";
 
@@ -13,3 +13,15 @@ export const useClientStore = create<ClientStore>((set) => ({
     set({ clients });
   },
 }));
+
+export interface ClientFilterSlice {
+  dayFilter: string;
+  setDayFilter: (day: string) => void;
+}
+
+export const createClientFilterSlice: StateCreator<ClientFilterSlice> = (
+  set
+) => ({
+  dayFilter: "",
+  setDayFilter: (day: string) => set({ dayFilter: day }),
+});

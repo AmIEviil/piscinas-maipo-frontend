@@ -7,6 +7,7 @@ export interface IMaintenance {
   otros: string;
   realizada: true;
   recibioPago: false;
+  observaciones: string;
   productos: IProductosUtilizados[];
 }
 export interface IProductosUtilizados {
@@ -28,5 +29,6 @@ export interface IMaintenanceCreate {
   recibioPago: boolean;
   valorMantencion: number;
   client: { id: string };
-  productosUsados: { productId: string; cantidad : number }[];
+  productosUsados: { productId: string; cantidad: number }[];
+  observaciones: string;
 }

@@ -10,17 +10,13 @@ import TableGeneric from "../ui/table/Table";
 import Tooltip from "@mui/material/Tooltip";
 
 // Icons
-import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import AddIcon from "@mui/icons-material/Add";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-
 import { formatMoneyNumber } from "../../utils/formatTextUtils";
 import { formatNoResultsText } from "../../utils/FiltersUtils";
 import InputText from "../ui/InputText/InputText";
 import debounce from "lodash.debounce";
-import SearchOffIcon from "@mui/icons-material/SearchOff";
 import PopUp from "../ui/PopUp/PopUp";
 import InfoRevestimientoDialog from "./InfoClient/InfoDialogRevestimiento";
 import CreateRevestimientoDialog from "./CreateRevestimiento/CreateRevestimientoDialog";
@@ -28,6 +24,7 @@ import CustomSelect from "../ui/Select/Select";
 import { tiposPiscinasMaterial } from "../../constant/constantBodyClient";
 import DatePickers from "../ui/calendar/DatePicker";
 import dayjs from "dayjs";
+import TrashIcon from "../ui/Icons/TrashIcon";
 
 const titlesTable = [
   { label: "Cliente", showOrderBy: false },
@@ -155,7 +152,7 @@ const BodyRevestimiento = () => {
     setOpenCreateDialog(true);
   };
 
-  const handleDeleteRevestimiento = async (id string) => {
+  const handleDeleteRevestimiento = async (id: string) => {
     try {
       await deleteRevestimientoMutation.mutateAsync(id);
       fetchRevestimientos();
@@ -211,10 +208,6 @@ const BodyRevestimiento = () => {
           />
         </div>
         <div className={style.filters}>
-          <span className={style.labelField}>
-            <CalendarMonthIcon />
-            Fecha de Ingreso
-          </span>
           <DatePickers
             value={fechaCreacionFilter ? dayjs(fechaCreacionFilter) : undefined}
             onChange={() => setFechaCreacionFilter}
@@ -231,7 +224,7 @@ const BodyRevestimiento = () => {
         <div className={style.actionsFilters}>
           <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
             <button onClick={handleClearFilter} className={style.actionButton}>
-              <SearchOffIcon />
+              <TrashIcon />
             </button>
           </Tooltip>
           <Tooltip title="Crear nuevo Revestimiento" arrow leaveDelay={0}>
@@ -279,7 +272,7 @@ const BodyRevestimiento = () => {
                         handleOpenDeletePopUp(revestimiento)
                       }
                     >
-                      <DeleteIcon className={style.iconAction} />
+                      <TrashIcon className={style.iconAction} />
                     </button>
                   </Tooltip>
                 </td>
@@ -303,7 +296,7 @@ const BodyRevestimiento = () => {
         open={openPopUp}
         onClose={handleClosePopUp}
         onConfirm={() => {
-          handleDeleteRevestimiento(selectedRevestimiento?.id?? "");
+          handleDeleteRevestimiento(selectedRevestimiento?.id ?? "");
         }}
         title="Confirmar eliminación"
         confirmText="Eliminar"

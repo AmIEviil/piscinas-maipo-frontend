@@ -17,3 +17,16 @@
   width: 100%;
   z-index: 2;
 }
+
+.errorMessageContainer {
+  background-color: var(--color-fondo);
+  width: 100%;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.errorMessage {
+  color: red;
+  margin-bottom: 10px;
+}

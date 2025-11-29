@@ -3,6 +3,7 @@
   justify-content: center;
   padding-top: 1rem;
   gap: 1rem;
+  color: var(--color-fondo);
 }
 .chartsHomeContainer {
   display: flex;
@@ -14,7 +15,15 @@
   font-size: 24px;
 }
 
-.chartsContainer,
+.chartsContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 0.5rem;
+  background-color: var(--color-gris-oscuro);
+  border-radius: 16px;
+}
+
 .resumeMaintenance {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -54,5 +63,6 @@
 
   .resumeMaintenance {
     gap: 3rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }

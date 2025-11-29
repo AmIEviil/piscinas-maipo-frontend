@@ -1,3 +1,9 @@
+import BodyUsers from "../../components/users/BodyUsers";
+
 export const UsuariosView = () => {
-  return <div>Usuarios View</div>;
+  return (
+    <div>
+      <BodyUsers />
+    </div>
+  );
 };

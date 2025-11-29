@@ -12,7 +12,9 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 
+  --background-color-primary: #242424;
   --color-primario: #1a1a1a; /* Negro profundo */
   --color-secundario: #0289c7; /* Celeste brillante */
   --color-fondo: #ffffff; /* Blanco */
@@ -39,6 +41,7 @@
 body {
   margin: 0;
   min-height: 100vh;
+  background: var(--background-color-primary) !important;
 }
 
 .custom-scrollbar {
@@ -62,4 +65,20 @@ body {
   &::-webkit-scrollbar-thumb:hover {
     background: #555;
   }
+}
+
+button.secondary {
+  background-color: var(--color-fondo);
+  color: var(--color-secundario);
+  border: 2px solid var(--color-secundario);
+  padding: 0.5rem 0.8rem;
+  margin-right: 0.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button.secondary:hover {
+  background-color: var(--color-secundario);
+  color: var(--color-fondo);
 }

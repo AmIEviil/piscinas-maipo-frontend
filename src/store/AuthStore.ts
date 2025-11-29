@@ -1,5 +1,6 @@
-import { create, type StateCreator } from "zustand";
+import { type StateCreator } from "zustand";
 import type { LoginResponse } from "../core/models/login/LoginResponse";
+import { StorageUtils } from "../utils/StorageUtils";
 
 export interface LoginSlice {
   userData: LoginResponse | undefined;
@@ -9,23 +10,21 @@ export interface LoginSlice {
   logOutUser: () => void;
 }
 
-export const useLoginStore = create<LoginSlice>((set) => ({
+export const createLoginSlice: StateCreator<LoginSlice> = (set) => ({
   userData: undefined,
   token: undefined,
-  setUserData: (userData: LoginResponse | undefined) => {
-    set(() => ({ userData }));
-  },
-  setToken: (token: string) => {
+  setUserData: (userData) => set({ userData }),
+  setToken: (token) => {
     localStorage.setItem("token", token);
-    set(() => ({ token: token }));
+    set({ token });
   },
 
   logOutUser: () => {
-    localStorage.removeItem("token");
     set(() => ({ token: undefined }));
     set(() => ({ userData: undefined }));
+    StorageUtils.clearAllStorage();
   },
-}));
+});
 
 export interface RecoverPassSlice {
   email: string | undefined;

@@ -1,5 +1,5 @@
 export interface Client {
-  id? : string;
+  id?: string;
   nombre: string;
   direccion: string;
   comuna: string;
@@ -9,4 +9,11 @@ export interface Client {
   tipo_piscina: string;
   fecha_ingreso?: Date;
   valor_mantencion: number;
+}
+
+export interface ClientFilters {
+  nombre?: string;
+  direccion?: string;
+  comuna?: string;
+  dia?: string;
 }
