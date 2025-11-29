@@ -59,13 +59,13 @@ const BodyUsers = () => {
     []
   );
 
-  const handleFilterIsActive = (value: boolean) => {
-    setFilterQuery((prev) => ({ ...prev, isActive: value }));
-  };
+  // const handleFilterIsActive = (value: boolean) => {
+  //   setFilterQuery((prev) => ({ ...prev, isActive: value }));
+  // };
 
-  const handleFilterRole = (value: string) => {
-    setFilterQuery((prev) => ({ ...prev, role: value }));
-  };
+  // const handleFilterRole = (value: string) => {
+  //   setFilterQuery((prev) => ({ ...prev, role: value }));
+  // };
 
   const handleClearFilters = () => {
     setFilterQuery({});

@@ -56,7 +56,7 @@ const Button = ({
   const sizeProp = size === "md" ? undefined : size;
   const customClass = styles[`btn-${variant}`] || "";
 
-  const timerRef = useRef<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handlePressStart = () => {
     if (!requireLongPress) return;
