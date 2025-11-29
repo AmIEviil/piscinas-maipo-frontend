@@ -1,16 +1,17 @@
 import { type IProducto } from "../service/productsInterface";
 export interface IMaintenance {
-  id: number;
+  id: string;
   fechaMantencion: Date;
   cantBidones: number;
   cantTabletas: number;
   otros: string;
   realizada: true;
   recibioPago: false;
+  observaciones: string;
   productos: IProductosUtilizados[];
 }
 export interface IProductosUtilizados {
-  id: number;
+  id: string;
   product: IProducto;
   cantidad: number;
 }
@@ -27,6 +28,7 @@ export interface IMaintenanceCreate {
   realizada: boolean;
   recibioPago: boolean;
   valorMantencion: number;
-  client: { id: number };
-  productosUsados: { productId: number; cantidad: number }[];
+  client: { id: string };
+  productosUsados: { productId: string; cantidad: number }[];
+  observaciones: string;
 }

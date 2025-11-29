@@ -5,6 +5,7 @@ import {
   useGaugeState,
 } from "@mui/x-charts/Gauge";
 import style from "./GaugeChart.module.css";
+import { Tooltip } from "@mui/material";
 
 interface CustomGaugeChartProps {
   title?: string;
@@ -63,9 +64,15 @@ const GaugeChart = ({
         <GaugeReferenceArc />
       </GaugeContainer>
       <div className={style.spanGaugeContainer}>
-        <p className={style.minRange}>{minValue}</p>
-        <span className={style.actualValue}>{actualValue}</span>
-        <p className={style.maxRange}>{maxValue}</p>
+        <Tooltip title="Valor mínimo" arrow leaveDelay={0}>
+          <p className={style.minRange}>{minValue}</p>
+        </Tooltip>
+        <Tooltip title="Utilizado" arrow leaveDelay={0}>
+          <span className={style.actualValue}>{actualValue}</span>
+        </Tooltip>
+        <Tooltip title="Valor máximo" arrow leaveDelay={0}>
+          <p className={style.maxRange}>{maxValue}</p>
+        </Tooltip>
       </div>
     </div>
   );

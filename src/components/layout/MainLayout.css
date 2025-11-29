@@ -1,12 +1,10 @@
 .mainLayoutContainer {
-  /* background: var(--color-fondo); */
   padding: 16px;
   flex: 1;
   margin: 0 auto;
 }
 
 .main-content {
-  /* background: var(--color-fondo); */
   padding: 16px;
   flex: 1;
   margin: 0 auto;

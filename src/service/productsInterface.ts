@@ -1,10 +1,10 @@
 export interface ITypeProduct {
-  id: number;
+  id: string;
   nombre: string;
 }
 
 export interface IProducto {
-  id?: number;
+  id?: string;
   nombre: string;
   valor_unitario: number;
   cant_disponible: number;
@@ -19,7 +19,7 @@ export interface IMetricsProduct {
 }
 
 export interface ICreateProductPayload {
-  tipo: number;
+  tipo : string;
   nombre: string;
   valor_unitario: number;
   cant_disponible: number;

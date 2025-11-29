@@ -23,7 +23,7 @@ export interface IRevestimientoCreate {
   garantia?: string;
   fechaInicio?: string;
   fechaTermino?: string;
-  clienteId: number;
+  clienteId : string;
   client?: Client;
   imagenes: ICloudinaryImage[];
 }
@@ -34,7 +34,7 @@ export interface ICloudinaryImage {
 }
 
 export interface IRevestimiento {
-  id: number;
+  id : string;
   fechaPropuesta: string;
   largoPiscina: number;
   anchoPiscina: number;
@@ -58,9 +58,9 @@ export interface IRevestimiento {
 }
 
 export interface IExtraRevestimiento {
-  id: number;
+  id : string;
   nombre: string;
   valor: number;
   detalle: string;
-  revestimientoId: number;
+  revestimientoId : string;
 }

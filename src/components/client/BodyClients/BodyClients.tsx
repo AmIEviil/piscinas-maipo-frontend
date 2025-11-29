@@ -17,12 +17,10 @@ import InfoClientDialog from "../InfoClient/InfoDialogClient";
 import CreateClientDialog from "../CreateClient/CreateClientDialog";
 
 import { Checkbox } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import AddIcon from "@mui/icons-material/Add";
 import Tooltip from "@mui/material/Tooltip";
-import SearchOffIcon from "@mui/icons-material/SearchOff";
 
 import {
   comunas,
@@ -36,6 +34,8 @@ import { CustomSnackBar } from "../../ui/snackBar/CustomSnackBar";
 import { useSnackBarModalStore } from "../../../store/snackBarStore";
 import { getWindowWidth } from "../../../utils/WindowUtils";
 import CaretIcon from "../../ui/Icons/CaretIcon";
+import TrashIcon from "../../ui/Icons/TrashIcon";
+import { useBoundStore } from "../../../store/BoundedStore";
 
 interface IfilterQuery {
   nombre?: string;
@@ -60,7 +60,8 @@ const BodyClients = () => {
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
   const [currentClientIndex, setCurrentClientIndex] = useState(0);
 
-  const [mantenciones, setMantenciones] = useState<IMaintenance[]>();
+  const [mantenciones, setMantenciones] =
+    useState<Record<string, IMaintenance[]>>();
   const [openDialog, setOpenDialog] = useState(false);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -69,6 +70,9 @@ const BodyClients = () => {
   const [direccionInput, setDireccionInput] = useState("");
   const [selectedComuna, setSelectedComuna] = useState("");
   const [selectedDay, setSelectedDay] = useState("");
+
+  const selectedDayHome = useBoundStore((state) => state.dayFilter);
+  const setDayFilterStore = useBoundStore((state) => state.setDayFilter);
 
   const [openPopUp, setOpenPopUp] = useState(false);
 
@@ -127,6 +131,13 @@ const BodyClients = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    if (selectedDayHome) {
+      setSelectedDay(selectedDayHome);
+      setFilterQuery((prev) => ({ ...prev, dia: selectedDayHome }));
+    }
+  }, [selectedDayHome]);
 
   const handleFilterName = useMemo(
     () =>
@@ -201,6 +212,7 @@ const BodyClients = () => {
     setDireccionInput("");
     setSelectedComuna("");
     setSelectedDay("");
+    setDayFilterStore("");
   };
 
   const handleEditClient = (client: Client) => {
@@ -209,7 +221,7 @@ const BodyClients = () => {
     setOpenCreateDialog(true);
   };
 
-  const handleDeleteClient = async (id: number) => {
+  const handleDeleteClient = async (id: string) => {
     try {
       await deleteClientMutation.mutateAsync(id);
       fetchData();
@@ -309,7 +321,7 @@ const BodyClients = () => {
             value={direccionInput}
           />
         </div>
-        <div className={`${style.filters} select`}>
+        <div className={`${style.filters}`}>
           <Select
             label="Dia Mantención"
             options={dias}
@@ -330,7 +342,7 @@ const BodyClients = () => {
         <div className={style.actionsFilters}>
           <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
             <button onClick={handleClearFilter} className={style.actionButton}>
-              <SearchOffIcon />
+              <TrashIcon />
             </button>
           </Tooltip>
           <Tooltip title="Agregar nuevo Cliente" arrow leaveDelay={0}>
@@ -426,7 +438,7 @@ const BodyClients = () => {
                       client.id !== undefined && handleOpenDeletePopUp(client)
                     }
                   >
-                    <DeleteIcon className={style.iconAction} />
+                    <TrashIcon className={style.iconAction} />
                   </button>
                 </Tooltip>
               </td>
@@ -462,7 +474,7 @@ const BodyClients = () => {
         open={openPopUp}
         onClose={handleClosePopUp}
         onConfirm={() => {
-          handleDeleteClient(selectedClient?.id ?? 0);
+          handleDeleteClient(selectedClient?.id ?? "");
         }}
         title="Confirmar eliminación"
         confirmText="Eliminar"

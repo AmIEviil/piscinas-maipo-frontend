@@ -4,6 +4,9 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px var(--color-sombra);
   border-radius: 16px;
+
+  overflow: auto;
+  max-height: 80dvh;
 }
 
 table {
@@ -26,6 +29,11 @@ th {
   letter-spacing: 0.5px;
   border-bottom: 2px solid var(--color-secundario);
   border-right: 1px solid var(--color-fondo-suave);
+
+  background-color: var(--color-primario);
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 th:last-child {
   border-right: none;
@@ -51,10 +59,6 @@ td {
   padding: 0.8rem 1.2rem;
   color: var(--color-gris-oscuro);
   border-bottom: 1px solid var(--color-detalle-claro);
-}
-
-.loadingContainer {
-  background-color: red;
 }
 
 .iconTd {

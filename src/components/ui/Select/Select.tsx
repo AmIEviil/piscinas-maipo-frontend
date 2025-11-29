@@ -34,16 +34,17 @@ const CustomSelect = ({
     child?: ReactNode
   ) => {
     if (onChange) {
-      console.log("Select changed:", event.target.value);
       onChange(event, child);
     }
   };
 
   return (
     <div>
-      <label className="input-title" htmlFor={`input-field-${title}`}>
-        {title} {required && <span className="required">*</span>}
-      </label>
+      {title && (
+        <label className="input-title" htmlFor={`input-field-${title}`}>
+          {title} {required && <span className="required">*</span>}
+        </label>
+      )}
       <FormControl sx={{ m: 0.5, minWidth: 150, width: "100%" }}>
         <InputLabel
           className={`${style.customInputLabel} ${icon ? style.withIcon : ""}`}

@@ -3,12 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import style from "../client/BodyClients/BodyClients.module.css";
 import InputText from "../ui/InputText/InputText";
 import TableGeneric from "../ui/table/Table";
-import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 // import VisibilityIcon from "@mui/icons-material/Visibility";
 import AddIcon from "@mui/icons-material/Add";
 import Tooltip from "@mui/material/Tooltip";
-import SearchOffIcon from "@mui/icons-material/SearchOff";
 import { formatMoneyNumber } from "../../utils/formatTextUtils";
 import { titlesInventoryTable } from "../../constant/constantBodyClient";
 
@@ -20,6 +18,7 @@ import PopUp from "../ui/PopUp/PopUp";
 import debounce from "lodash.debounce";
 import { formatNoResultsText } from "../../utils/FiltersUtils";
 import { useTypesProductStore } from "../../store/ProductStore";
+import TrashIcon from "../ui/Icons/TrashIcon";
 
 interface IfilterQuery {
   nombre?: string;
@@ -113,7 +112,7 @@ const BodyInventory = () => {
     setOpenPopUp(true);
   };
 
-  const handleDeleteProduct = async (id: number) => {
+  const handleDeleteProduct = async (id: string) => {
     try {
       await deleteProductMutation.mutateAsync(id);
       fetchData();
@@ -149,7 +148,7 @@ const BodyInventory = () => {
         <div className={style.actionsFilters}>
           <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
             <button onClick={handleClearFilter} className={style.actionButton}>
-              <SearchOffIcon />
+              <TrashIcon />
             </button>
           </Tooltip>
           <Tooltip title="Agregar nuevo Producto" arrow leaveDelay={0}>
@@ -178,7 +177,7 @@ const BodyInventory = () => {
               <td>{product.tipo?.nombre}</td>
               <td>{product.cant_disponible}</td>
               <td>{formatMoneyNumber(product.valor_unitario)}</td>
-              <td>
+              <td className="flex flex-col gap-2 sm:gap-4 items-center justify-center">
                 <Tooltip title="Editar Producto" arrow leaveDelay={0}>
                   <button onClick={() => handleEditProduct(product)}>
                     <EditIcon />
@@ -190,7 +189,7 @@ const BodyInventory = () => {
                       product.id !== undefined && handleOpenDeletePopUp(product)
                     }
                   >
-                    <DeleteIcon className={style.iconAction} />
+                    <TrashIcon className={style.iconAction} />
                   </button>
                 </Tooltip>
               </td>
@@ -215,7 +214,7 @@ const BodyInventory = () => {
         open={openPopUp}
         onClose={handleClosePopUp}
         onConfirm={() => {
-          handleDeleteProduct(selectedProduct?.id ?? 0);
+          handleDeleteProduct(selectedProduct?.id ?? "");
         }}
         title="Confirmar eliminación"
         confirmText="Eliminar"

@@ -1,0 +1,20 @@
+.filtersContainer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem;
+  background-color: var(--color-fondo-suave);
+  border-radius: 16px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.actionsFilters {
+  display: flex;
+  flex-direction: row;
+  margin-left: 0.5rem;
+}
+.tableContainer {
+  margin-top: 1.5rem;
+}

@@ -2,23 +2,26 @@ import { Outlet, useNavigate } from "react-router";
 import { TopBar } from "../topbar/TopBar";
 import "./MainLayout.css";
 import { useEffect } from "react";
-import { useLoginStore } from "../../store/AuthStore";
+import SnackBar from "../ui/snackBar/SnackBar";
+import { useBoundStore } from "../../store/BoundedStore";
 
 export const BodyLayout = () => {
   const navigate = useNavigate();
-  const tokenStore = useLoginStore((state) => state.token);
+  const tokenStore = useBoundStore((state) => state.token);
   const token = localStorage.getItem("token");
 
   // const currentPath = window.location.pathname;
-  
+
   useEffect(() => {
     if (tokenStore === undefined || token === undefined) {
       navigate("/login");
+      localStorage.removeItem("token");
+      localStorage.removeItem("bound-store");
     }
-    if (tokenStore !== undefined || token !== undefined) {
-      navigate("/");
+    if (tokenStore !== undefined) {
+      localStorage.setItem("token", tokenStore as string);
     }
-  }, [token]);
+  }, [tokenStore, token]);
 
   // useEffect(() => {
   //   if (validateToken.isSuccess) {
@@ -39,6 +42,7 @@ export const BodyLayout = () => {
       <TopBar />
       <div className="main-content">
         <Outlet />
+        <SnackBar />
       </div>
     </div>
   );

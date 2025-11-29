@@ -32,7 +32,7 @@ export const useUpdateRevestimiento = () => {
       revestimientoId,
       data,
     }: {
-      revestimientoId: number;
+      revestimientoId: string;
       data: IRevestimiento;
     }) => revestimientoService.updateRevestimiento(revestimientoId, data),
   });

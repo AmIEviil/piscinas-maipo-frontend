@@ -27,13 +27,17 @@ import CaretIcon from "../../ui/Icons/CaretIcon";
 import MaintenanceFields from "./MaintenancesFields";
 import { useCreateMaintenance } from "../../../hooks/MaintenanceHooks";
 import { useProductStore } from "../../../store/ProductStore";
-import { formatDateToDDMMYYYY } from "../../../utils/DateUtils";
+import {
+  formatDateToDDMMYYYY,
+  formatMonthTitle,
+} from "../../../utils/DateUtils";
 import CustomPagination from "../../ui/pagination/Pagination";
+import SeeMoreButton from "../../common/SeeMore/SeeMoreButton";
 
 interface InfoClientDialogProps {
   open: boolean;
   clientInfo?: Client;
-  maintenancesClient?: IMaintenance[];
+  maintenancesClient?: Record<string, IMaintenance[]>;
   onClose: () => void;
   onMaintenanceCreated?: () => void;
   onNextClient: () => void;
@@ -63,6 +67,16 @@ const InfoClientDialog = ({
   const [showClientInfo, setShowClientInfo] = useState(windowWidth > 720);
   const [showMaintenances, setShowMaintenances] = useState(windowWidth > 720);
   const { products, fetchProducts } = useProductStore();
+
+  const [months, setMonths] = useState<string[]>([]);
+  const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
+
+  const currentMonth = months[currentMonthIndex] ?? null;
+  const mantencionesMesActual = currentMonth
+    ? maintenancesClient?.[currentMonth].sort((a, b) =>
+        String(a.fechaMantencion).localeCompare(String(b.fechaMantencion))
+      ) ?? []
+    : [];
 
   const allProducts = products ?? [];
 
@@ -130,6 +144,21 @@ const InfoClientDialog = ({
     getCoordsFromAddress(direccion);
   }, [clientInfo]);
 
+  useEffect(() => {
+    if (!maintenancesClient) return;
+
+    const sortedMonths = Object.keys(maintenancesClient)
+      .map((m) => {
+        const [year, month] = m.split("-");
+        const mm = month.padStart(2, "0");
+        return `${year}-${mm}`;
+      })
+      .sort();
+
+    setMonths(sortedMonths);
+    setCurrentMonthIndex(sortedMonths.length - 1);
+  }, [maintenancesClient]);
+
   const handleClose = () => {
     setCoordenadas(undefined);
     onClose();
@@ -182,18 +211,17 @@ const InfoClientDialog = ({
     };
   };
 
-  const resumen =
-    clientInfo && maintenancesClient
-      ? calcularResumenMantenciones(
-          maintenancesClient,
-          clientInfo.valor_mantencion
-        )
-      : {
-          resumenMateriales: {},
-          totalMantencion: 0,
-          granTotal: 0,
-          totalProductos: 0,
-        };
+  const resumen = currentMonth
+    ? calcularResumenMantenciones(
+        mantencionesMesActual,
+        clientInfo?.valor_mantencion ?? 0
+      )
+    : {
+        resumenMateriales: {},
+        totalMantencion: 0,
+        granTotal: 0,
+        totalProductos: 0,
+      };
 
   const handleAcceptMaintenance = async (
     maintenanceData: IMaintenanceCreate
@@ -253,7 +281,7 @@ const InfoClientDialog = ({
       onClose={handleClose}
       style={{ borderRadius: 32 }}
     >
-      <DialogContent>
+      <DialogContent className="custom-scrollbar">
         {clientInfo && (
           <div className={style.clientInfoContainer}>
             <DialogTitle style={{ padding: 0 }}>
@@ -325,11 +353,6 @@ const InfoClientDialog = ({
                       <button
                         className={clsx(style.labelItem, style.buttonInfo)}
                       >
-                        Obtener control diario
-                      </button>
-                      <button
-                        className={clsx(style.labelItem, style.buttonInfo)}
-                      >
                         Generar Boleta
                       </button>
                     </div>
@@ -355,10 +378,10 @@ const InfoClientDialog = ({
             onClick={() => setShowMaintenances(!showMaintenances)}
             className="cursor-pointer flex items-center gap-1 font-medium mt-4 mb-2 select-none w-fit"
           >
-            {maintenancesClient?.length
+            {Object.keys(maintenancesClient ?? {}).length
               ? "Ver Mantenciones"
               : "Sin Mantenciones"}
-            {maintenancesClient?.length ? (
+            {Object.keys(maintenancesClient ?? {}).length ? (
               <CaretIcon direction={`${showMaintenances ? "down" : "up"}`} />
             ) : null}
           </span>
@@ -374,17 +397,37 @@ const InfoClientDialog = ({
 
         {showMaintenances && (
           <>
-            {maintenancesClient?.length ? (
+            {Object.keys(maintenancesClient ?? {}).length ? (
               <div className={style.maintenancesContainer}>
                 <div className={style.tableContainer}>
+                  <div className="flex items-center justify-between py-3">
+                    <button
+                      disabled={currentMonthIndex === 0}
+                      onClick={() => setCurrentMonthIndex((i) => i - 1)}
+                    >
+                      <CaretIcon direction="left" color="white" />
+                    </button>
+
+                    <h3 className="text-lg font-bold">
+                      {currentMonth ? formatMonthTitle(currentMonth) : ""}
+                    </h3>
+
+                    <button
+                      disabled={currentMonthIndex >= months.length - 1}
+                      onClick={() => setCurrentMonthIndex((i) => i + 1)}
+                    >
+                      <CaretIcon direction="right" color="white" />
+                    </button>
+                  </div>
                   <TableGeneric
                     titles={titlesTable}
-                    data={maintenancesClient ?? []}
+                    data={mantencionesMesActual}
                     renderRow={(mantencion) => (
                       <tr key={mantencion.id}>
                         <td>
                           {formatDateToDDMMYYYY(mantencion.fechaMantencion)}
                         </td>
+
                         {allProducts.map((prod) => {
                           const used = mantencion.productos.find(
                             (p) => p.product.id === prod.id
@@ -393,9 +436,20 @@ const InfoClientDialog = ({
                             <td key={prod.id}>{used ? used.cantidad : 0}</td>
                           );
                         })}
+
                         <td>{mantencion.otros}</td>
                         <td>{mantencion.realizada ? "Sí" : "No"}</td>
-                        <td>{mantencion.recibioPago ? "Sí" : "No"}</td>
+                        <td className="pr-0!">
+                          <span className="flex items-center gap-2 justify-between pr-0!">
+                            {mantencion.recibioPago ? "Sí" : "No"}
+
+                            {mantencion.observaciones && (
+                              <SeeMoreButton
+                                content={mantencion.observaciones}
+                              />
+                            )}
+                          </span>
+                        </td>
                       </tr>
                     )}
                   />
@@ -440,7 +494,7 @@ const InfoClientDialog = ({
 
         {isAddingMaintenance && (
           <MaintenanceFields
-            clientId={clientInfo?.id ?? 0}
+            clientId={clientInfo?.id ?? ""}
             valorMantencion={clientInfo?.valor_mantencion ?? 0}
             productosList={products}
             onAccept={handleAcceptMaintenance}

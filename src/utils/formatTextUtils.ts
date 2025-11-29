@@ -10,3 +10,6 @@ export const toUpperCaseFirstLetter = (text: string) => {
   if (!text) return "";
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
+
+export const toPascalCaseMonth = (str: string) =>
+  str.charAt(0).toUpperCase() + str.slice(1);

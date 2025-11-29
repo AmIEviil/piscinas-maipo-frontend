@@ -46,7 +46,7 @@ export const useUpdateProduct = () => {
       productId,
       productData,
     }: {
-      productId: number;
+      productId: string;
       productData: Partial<ICreateTypeProductPayload>;
     }) => productsService.updateProduct(productId, productData),
   });
@@ -59,7 +59,7 @@ export const useUpdateProductType = () => {
       typeId,
       typeData,
     }: {
-      typeId: number;
+      typeId: string;
       typeData: Partial<ITypeProduct>;
     }) => productsService.updateProductType(typeId, typeData),
   });
@@ -68,14 +68,14 @@ export const useUpdateProductType = () => {
 
 export const useDeleteProduct = () => {
   const deleteProductMutation = useMutation({
-    mutationFn: (productId: number) => productsService.deleteProduct(productId),
+    mutationFn: (productId: string) => productsService.deleteProduct(productId),
   });
   return deleteProductMutation;
 };
 
 export const useDeleteProductType = () => {
   const deleteProductTypeMutation = useMutation({
-    mutationFn: (typeId: number) => productsService.deleteProductType(typeId),
+    mutationFn: (typeId: string) => productsService.deleteProductType(typeId),
   });
   return deleteProductTypeMutation;
 };

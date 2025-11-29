@@ -11,7 +11,7 @@ interface EyeIconProps {
 }
 
 const EyeIcon: React.FC<EyeIconProps> = ({
-  color = "#131313",
+  color = "currentColor",
   size = 12,
   className = "",
   open = true,

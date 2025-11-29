@@ -26,7 +26,7 @@ const RevestimientoFields = ({
 }: RevestimientoFieldsProps) => {
   const optionsClients = clients
     .filter(
-      (c): c is Client & { id: number } => c.id !== undefined && c.id !== null
+      (c): c is Client & { id: string } => c.id !== undefined && c.id !== null
     )
     .map((client) => ({
       value: client.id.toString(),
@@ -119,7 +119,7 @@ const RevestimientoFields = ({
             onChange={(event) =>
               onChange((prev) => ({
                 ...prev,
-                clienteId: Number(event.target.value),
+                clienteid: String(event.target.value),
               }))
             }
           />

@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import CustomDropmenuV2 from "../../../ui/customdropmenu/CustomDropmenuV2";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { useBoundStore } from "../../../../store/BoundedStore";
 
 interface ProductsChart {
   showPercentage?: boolean;
@@ -21,6 +22,7 @@ const ChartDiario = ({
   const noMaintenancesToDo = productData.programadas === 0;
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const setDayFilter = useBoundStore((state) => state.setDayFilter);
 
   const options = [
     {
@@ -48,6 +50,11 @@ const ChartDiario = ({
     };
   }, []);
 
+  const handleSeeDayDetails = () => {
+    setDayFilter(productData.dia);
+    navigate("/clientes");
+  };
+
   return (
     <div className={style.diasChartContainer}>
       {loading && <CircularProgress />}
@@ -55,7 +62,12 @@ const ChartDiario = ({
         <>
           {windowWidth > 720 ? (
             <div className={style.actionsContainer}>
-              <button className={style.actionButton}>Detalles dia</button>
+              <button
+                className={style.actionButton}
+                onClick={handleSeeDayDetails}
+              >
+                Detalles dia
+              </button>
               <button
                 className={style.actionButton}
                 onClick={() => navigate("/clientes")}

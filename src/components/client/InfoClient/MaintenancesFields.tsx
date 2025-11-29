@@ -1,3 +1,4 @@
+import style from "./MaintenancesFields.module.css";
 import CustomInputText from "../../ui/InputText/CustomInputText";
 import { useState } from "react";
 import { CustomSwitch } from "../../ui/Switch/CustomSwitch";
@@ -5,9 +6,12 @@ import type { IMaintenanceCreate } from "../../../service/maintenanceInterface";
 import type { IProducto } from "../../../service/productsInterface";
 import CustomSelect from "../../ui/Select/Select";
 import AddIcon from "@mui/icons-material/Add";
+import { CustomTextArea } from "../../ui/InputText/CustonTextArea";
+import TrashIcon from "../../ui/Icons/TrashIcon";
+import { Divider } from "@mui/material";
 
 interface MaintenanceFieldsProps {
-  clientId: number;
+  clientId: string;
   valorMantencion: number;
   productosList: IProducto[];
   onAccept: (maintenance: IMaintenanceCreate) => void;
@@ -22,12 +26,13 @@ const MaintenanceFields = ({
   onCancel,
 }: MaintenanceFieldsProps) => {
   const initial_maintenance = {
-    fechaMantencion: "",
+    fechaMantencion: new Date().toISOString().split("T")[0],
     realizada: false,
     recibioPago: false,
     valorMantencion: valorMantencion,
     client: { id: clientId },
-    productosUsados: [] as { productId: number; cantidad: number }[],
+    productosUsados: [] as { productId: string; cantidad: number }[],
+    observaciones: "",
   };
 
   const [maintenance, setMaintenance] = useState(initial_maintenance);
@@ -39,7 +44,7 @@ const MaintenanceFields = ({
 
   const productOptions = productosList
     .filter(
-      (p): p is IProducto & { id: number } =>
+      (p): p is IProducto & { id: string } =>
         p.id !== undefined && p.id !== null
     )
     .map((product) => ({
@@ -49,18 +54,19 @@ const MaintenanceFields = ({
 
   const handleAddProduct = () => {
     if (!selectedProduct) {
-      setError("Debe seleccionar un producto");
+      setError("Selecciona un producto");
       return;
     }
     if (cantidad <= 0) {
-      setError("La cantidad debe ser mayor a 0");
+      setError("Ingresa una cantidad válida");
       return;
     }
 
     setError("");
 
+    // Verificar si ya existe para sumar cantidad (opcional, aquí solo agrega)
     const newProduct = {
-      productId: Number(selectedProduct),
+      productId: String(selectedProduct),
       cantidad: Number(cantidad),
     };
 
@@ -69,107 +75,158 @@ const MaintenanceFields = ({
       productosUsados: [...prev.productosUsados, newProduct],
     }));
 
-    // limpiar inputs
     setSelectedProduct("");
     setCantidad(0);
   };
 
+  const handleRemoveProduct = (index: number) => {
+    setMaintenance((prev) => ({
+      ...prev,
+      productosUsados: prev.productosUsados.filter((_, i) => i !== index),
+    }));
+  };
+
   return (
-    <div className="flex flex-row gap-2 items-center justify-center mt-4 w-full flex-wrap">
-      <div className="flex flex-row gap-4 flex-wrap justify-between w-full">
-        <CustomInputText
-          title="Fecha"
-          type="date"
-          value={maintenance.fechaMantencion}
-          onChange={(value) =>
-            setMaintenance({ ...maintenance, fechaMantencion: value })
-          }
-        />
-        <CustomSwitch
-          title="Realizada"
-          checked={maintenance.realizada}
-          onChange={(checked) =>
-            setMaintenance({ ...maintenance, realizada: checked })
-          }
-          required
-        />
-        <CustomSwitch
-          title="Pago"
-          checked={maintenance.recibioPago}
-          onChange={(checked) =>
-            setMaintenance({ ...maintenance, recibioPago: checked })
-          }
-        />
-        <CustomSwitch
-          title="Se utilizaron productos"
-          checked={showProducts}
-          customClass="flex flex-col items-center justify-center"
-          onChange={(checked) => setShowProducts(checked)}
-        />
+    <div className={style.container}>
+      <h3 className={style.title}>Nueva Mantención</h3>
 
+      <div className={style.formGrid}>
+        {/* Sección Izquierda: Datos Generales */}
+        <div className={style.sectionGeneral}>
+          <div className={style.dateInput}>
+            <CustomInputText
+              title="Fecha de Mantención"
+              type="date"
+              value={maintenance.fechaMantencion}
+              onChange={(value) =>
+                setMaintenance({ ...maintenance, fechaMantencion: value })
+              }
+            />
+          </div>
+
+          <div className={style.switchesContainer}>
+            <CustomSwitch
+              title="¿Realizada?"
+              checked={maintenance.realizada}
+              onChange={(checked) =>
+                setMaintenance({ ...maintenance, realizada: checked })
+              }
+              required
+            />
+            <CustomSwitch
+              title="¿Pagada?"
+              checked={maintenance.recibioPago}
+              onChange={(checked) =>
+                setMaintenance({ ...maintenance, recibioPago: checked })
+              }
+              required
+            />
+            <CustomSwitch
+              title="Incluir Productos"
+              checked={showProducts}
+              onChange={(checked) => setShowProducts(checked)}
+              required
+            />
+          </div>
+
+          <div className={style.observationContainer}>
+            <CustomTextArea
+              title="Observaciones"
+              placeholder="Detalles adicionales..."
+              value={maintenance.observaciones}
+              onChange={(value) =>
+                setMaintenance({ ...maintenance, observaciones: value })
+              }
+            />
+          </div>
+        </div>
+
+        {/* Sección Derecha (o Abajo): Productos (Condicional) */}
         {showProducts && (
-          <div className="flex flex-col gap-2 w-full">
-            <h3 className="font-semibold text-center">Productos utilizados</h3>
+          <div className={style.sectionProducts}>
+            <h4 className={style.subtitle}>Productos Utilizados</h4>
 
-            {/* Lista de productos ya agregados */}
-            {maintenance.productosUsados.length > 0 && (
-              <div className="flex flex-col gap-1 mb-2">
-                {maintenance.productosUsados.map((p, idx) => {
-                  const producto = productosList?.find(
-                    (prod) => prod.id === p.productId
-                  );
-                  return (
-                    <div
-                      key={idx}
-                      className="flex flex-row justify-between bg-gray-100 p-2 rounded-md"
-                    >
-                      <span>{producto?.nombre ?? "Producto desconocido"}</span>
-                      <span>x{p.cantidad}</span>
-                    </div>
-                  );
-                })}
+            {/* Formulario Agregar */}
+            <div className={style.addProductForm}>
+              <div className="grow">
+                <CustomSelect
+                  title="Seleccione un Producto"
+                  required
+                  label=""
+                  options={productOptions}
+                  value={selectedProduct}
+                  onChange={(event) =>
+                    setSelectedProduct(String(event.target.value))
+                  }
+                />
               </div>
-            )}
-
-            {/* Agregar nuevo producto */}
-            <div className="flex flex-col gap-2 justify-center w-full">
-              <CustomSelect
-                label=""
-                options={productOptions}
-                value={selectedProduct}
-                onChange={(event) =>
-                  setSelectedProduct(String(event.target.value))
-                }
-              />
-              <div className="flex flex-row gap-2 items-center justify-center">
+              <div className="w-24">
                 <CustomInputText
-                  title="Cantidad"
+                  title="Cant."
                   type="number"
-                  customClass="w-32!"
                   value={cantidad}
                   onChange={(value) => setCantidad(Number(value))}
                 />
               </div>
               <button
                 type="button"
-                className="buttonInfo"
+                className={style.addButton}
                 onClick={handleAddProduct}
+                title="Agregar"
               >
-                Agregar Producto
-                <AddIcon fontSize="small" />
+                <AddIcon />
               </button>
             </div>
+            {error && <span className={style.errorText}>{error}</span>}
 
-            {error && (
-              <p className="text-red-500 text-sm mt-1 text-center">{error}</p>
-            )}
+            <Divider className="my-2" />
+
+            {/* Lista de Productos */}
+            <div className={`${style.productsList} custom-scrollbar`}>
+              {maintenance.productosUsados.length > 0 ? (
+                maintenance.productosUsados.map((p, idx) => {
+                  const producto = productosList?.find(
+                    (prod) => prod.id === p.productId
+                  );
+                  return (
+                    <div key={idx} className={style.productItem}>
+                      <span className="font-medium text-sm">
+                        {producto?.nombre ?? "Desconocido"}
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-gray-600 text-sm">
+                          x{p.cantidad}
+                        </span>
+                        <button
+                          className={style.deleteButton}
+                          onClick={() => handleRemoveProduct(idx)}
+                        >
+                          <TrashIcon size={14} color="#ef4444" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className={style.emptyState}>
+                  No hay productos agregados aún.
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
 
-      <div className="flex flex-row gap-2 mt-4">
-        <button onClick={() => onAccept(maintenance)}>Aceptar</button>
-        <button onClick={onCancel}>Cancelar</button>
+      <div className={style.footerButtons}>
+        <button className="secondary" onClick={onCancel}>
+          Cancelar
+        </button>
+        <button
+          className={style.primaryButton}
+          onClick={() => onAccept(maintenance)}
+        >
+          Guardar Mantención
+        </button>
       </div>
     </div>
   );
