@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import type { CreateUser, UpdateUser } from "../service/usuariosInterface";
+import type { CreateUser, UpdateUser } from "../service/usuarios.interface";
 import { usuariosService } from "../core/services/UsuariosService";
 
 export const useUsers = () => {

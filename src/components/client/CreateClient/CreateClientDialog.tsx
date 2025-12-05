@@ -2,7 +2,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { type Client } from "../../../service/clientInterface";
+import { type Client } from "../../../service/client.interface";
 import CustomInputText from "../../ui/InputText/CustomInputText";
 import style from "./CreateClientDialog.module.css";
 

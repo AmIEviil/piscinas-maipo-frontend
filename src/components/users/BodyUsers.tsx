@@ -1,7 +1,7 @@
 import style from "./BodyUsers.module.css";
 import { useEffect, useMemo, useState } from "react";
 import { useDeleteUser, useUsers } from "../../hooks/UsersHooks";
-import { type User } from "../../service/usuariosInterface";
+import { type User } from "../../service/usuarios.interface";
 import debounce from "lodash.debounce";
 import InputText from "../ui/InputText/InputText";
 import TableGeneric from "../ui/table/Table";

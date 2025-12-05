@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { clientService } from "../core/services/ClientsService";
-import type { Client } from "../service/clientInterface";
+import type { Client } from "../service/client.interface";
 import { useSnackbar } from "../utils/snackBarHooks";
 
 export const useClient = () => {

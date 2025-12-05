@@ -1,5 +1,5 @@
 import { CircularProgress } from "@mui/material";
-import type { IResumeMaintenance } from "../../../../service/maintenanceInterface";
+import type { IResumeMaintenance } from "../../../../service/maintenance.interface";
 import GaugeChart from "../../../ui/charts/gauge/GaugeChart";
 import style from "./ChartsDiarios.module.css";
 import { useNavigate } from "react-router";
@@ -24,6 +24,11 @@ const ChartDiario = ({
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const setDayFilter = useBoundStore((state) => state.setDayFilter);
 
+  const handleSeeDayDetails = () => {
+    setDayFilter(productData.dia);
+    navigate("/clientes");
+  };
+
   const options = [
     {
       label: "Ir a Clientes",
@@ -32,7 +37,7 @@ const ChartDiario = ({
     {
       label: "Detalles dia",
       onClick: () => {
-        console.log("Detalles dia clicked");
+        handleSeeDayDetails();
       },
     },
   ];
@@ -49,11 +54,6 @@ const ChartDiario = ({
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
-  const handleSeeDayDetails = () => {
-    setDayFilter(productData.dia);
-    navigate("/clientes");
-  };
 
   return (
     <div className={style.diasChartContainer}>

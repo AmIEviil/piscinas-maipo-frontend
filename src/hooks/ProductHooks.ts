@@ -3,7 +3,7 @@ import { productsService } from "../core/services/ProductsService";
 import type {
   ICreateTypeProductPayload,
   ITypeProduct,
-} from "../service/productsInterface";
+} from "../service/products.interface";
 
 export const useProducts = () => {
   const productMutation = useMutation({

@@ -1,6 +1,6 @@
 import GaugeChart from "../../../ui/charts/gauge/GaugeChart";
 import style from "./BidonesChart.module.css";
-import { type IMetricsProduct } from "../../../../service/productsInterface";
+import { type IMetricsProduct } from "../../../../service/products.interface";
 import { CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useSolicitudProductosStore } from "../../../../store/SolicitudProductosStore";

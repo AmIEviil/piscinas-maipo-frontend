@@ -1,7 +1,7 @@
 import {
   type IMaintenance,
   type IMaintenanceCreate,
-} from "../../service/maintenanceInterface";
+} from "../../service/maintenance.interface";
 import { MAINTENANCE_API } from "../api/maintenance/api";
 import apiClient from "../client/client";
 

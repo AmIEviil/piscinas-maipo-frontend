@@ -10,7 +10,7 @@ import Tooltip from "@mui/material/Tooltip";
 import { formatMoneyNumber } from "../../utils/formatTextUtils";
 import { titlesInventoryTable } from "../../constant/constantBodyClient";
 
-import { type IProducto } from "../../service/productsInterface";
+import { type IProducto } from "../../service/products.interface";
 import { useDeleteProduct, useProducts } from "../../hooks/ProductHooks";
 import CreateProductDialog from "./CreateProduct/CreateProductDialog";
 import InfoProductDialog from "./InfoProduct/InfoDialogProduct";
@@ -134,6 +134,8 @@ const BodyInventory = () => {
     }
   };
 
+  const hasFilters = filterQuery.nombre;
+
   return (
     <div>
       <div className={style.filtersContainer}>
@@ -146,11 +148,16 @@ const BodyInventory = () => {
           />
         </div>
         <div className={style.actionsFilters}>
-          <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
-            <button onClick={handleClearFilter} className={style.actionButton}>
-              <TrashIcon />
-            </button>
-          </Tooltip>
+          {hasFilters && (
+            <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
+              <button
+                onClick={handleClearFilter}
+                className={style.actionButton}
+              >
+                <TrashIcon />
+              </button>
+            </Tooltip>
+          )}
           <Tooltip title="Agregar nuevo Producto" arrow leaveDelay={0}>
             <button onClick={() => handleOpenCreateDialog("product")}>
               Agregar nuevo Producto

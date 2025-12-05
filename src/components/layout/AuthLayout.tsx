@@ -11,7 +11,6 @@ export const AuthLayout = () => {
 
   useEffect(() => {
     if (token !== undefined) {
-      console.log("Token found, navigating to home.");
       navigate("/");
       localStorage.setItem("token", token as string);
     }

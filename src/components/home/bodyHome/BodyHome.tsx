@@ -3,8 +3,8 @@ import ChartDiario from "./Charts/ChartsDiarios";
 import style from "./BodyHome.module.css";
 import { useEffect, useState } from "react";
 import { useProductsMetrics } from "../../../hooks/ProductHooks";
-import { type IMetricsProduct } from "../../../service/productsInterface";
-import { type IResumeMaintenance } from "../../../service/maintenanceInterface";
+import { type IMetricsProduct } from "../../../service/products.interface";
+import { type IResumeMaintenance } from "../../../service/maintenance.interface";
 import { useDailyMetrics } from "../../../hooks/MetricsHooks";
 
 export default function BodyHome() {

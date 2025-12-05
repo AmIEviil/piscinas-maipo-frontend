@@ -11,7 +11,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import type {
   IRevestimiento,
   IRevestimientoCreate,
-} from "../../../service/revestimientoInterface";
+} from "../../../service/revestimiento.interface";
 import RevestimientoFields from "./RevestimientoFields";
 import { useClientStore } from "../../../store/ClientStore";
 import { revestimientoService } from "../../../core/services/RevestimientoService";
@@ -28,8 +28,7 @@ const CreateRevestimientoDialog = ({
   open = false,
   onClose,
   revestimientoInfo,
-}: // isEditMode,
-CreateRevestimientoDialogProps) => {
+}: CreateRevestimientoDialogProps) => {
   const { clients, fetchClients } = useClientStore();
 
   const [loading, setLoading] = useState(false);
@@ -54,18 +53,15 @@ CreateRevestimientoDialogProps) => {
   const handleButtonClick = async () => {
     setLoading(true);
     try {
-      // 1) crear revestimiento
       const created = await revestimientoService.createNewRevestimiento(
         revestimientoData
       );
-      // 2) si hay imagenes en state, asociarlas en bulk
       if (revestimientoData.imagenes?.length) {
         await revestimientoService.addImagesBulk(
           created.id,
-          revestimientoData.imagenes?.map((img) => img.url) || []
+          revestimientoData.imagenes || []
         );
       }
-      // hecho
       setSuccess(true);
       onClose();
     } catch (err) {
@@ -84,7 +80,7 @@ CreateRevestimientoDialogProps) => {
       <DialogTitle className={style.dialogTitle}>
         Crear Nuevo Revestimiento
       </DialogTitle>
-      <DialogContent>
+      <DialogContent className="custom-scrollbar">
         <div className={style.formContainer}>
           <RevestimientoFields
             clients={clients}

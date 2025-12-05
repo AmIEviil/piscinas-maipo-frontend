@@ -2,7 +2,7 @@ import type {
   ICloudinaryImage,
   IRevestimiento,
   IRevestimientoCreate,
-} from "../../service/revestimientoInterface";
+} from "../../service/revestimiento.interface";
 import { REVESTIMIENTO_API } from "../api/revestimiento/api";
 import apiClient from "../client/client";
 
@@ -62,7 +62,13 @@ export const revestimientoService = {
     return response.data;
   },
 
-  addImagesBulk: async (revestimientoId: string, urls: string[]) => {
+  addImagesBulk: async (
+    revestimientoId: string,
+    urls: {
+      url: string;
+      public_id: string;
+    }[]
+  ) => {
     const res = await apiClient.post(
       `/api/upload/revestimiento/${revestimientoId}/imagenes/bulk`,
       { urls }

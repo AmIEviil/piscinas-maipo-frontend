@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { IProducto, ITypeProduct } from "../service/productsInterface";
+import type { IProducto, ITypeProduct } from "../service/products.interface";
 import { productsService } from "../core/services/ProductsService";
 
 interface ProductStore {

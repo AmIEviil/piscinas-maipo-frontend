@@ -1,0 +1,136 @@
+.collapsableTable_container {
+  width: 100%;
+  overflow: auto;
+  max-height: 80dvh;
+  border-radius: 16px;
+}
+.collapsableTable_element {
+  width: 100%;
+  border-radius: 16px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--black-400);
+  background-color: var(--black-50);
+}
+
+.collapsableTable_headerRow .collapsableTable_headerCell {
+  height: 32px;
+  padding: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border-collapse: collapse;
+  background-color: var(--black-50);
+  border-right: 1px solid var(--color-secundario);
+  border-bottom: 1px solid var(--color-secundario);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.collapsableTable_headerRow .collapsableTable_headerCell:first-child {
+  text-align: left;
+  border-top-left-radius: 16px;
+}
+.collapsableTable_headerRow .collapsableTable_headerCell:last-child {
+  border-top-right-radius: 16px;
+  border-right: none;
+}
+.collapsableTable_headerText {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.collapsableTable_groupRow {
+  cursor: pointer;
+}
+.collapsableTable_groupRow:last-child
+  .collapsableTable_groupCell_collapsed:last-child {
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.collapsableTable_groupCell {
+  border-bottom: 1px solid var(--color-secundario);
+  padding: 12px 16px;
+  height: 100%;
+}
+
+.collapsableTable_groupContent {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+.collapsableTable_groupContentContainer {
+  display: flex;
+  height: 2rem;
+  align-items: center;
+}
+.collapsableTable_bodyRow {
+  overflow: hidden;
+}
+
+.collapsableTable_bodyRow:hover {
+  background-color: var(--black-100);
+}
+.collapsableTable_bodyRow:last-child {
+  border-bottom-left-radius: 16px;
+}
+.collapsableTable_bodyCell {
+  height: 48px;
+  padding: 4px 8px;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  border: 1px solid var(--black-300);
+  font-size: 14px;
+  font-weight: 400;
+}
+.collapsableTable_bodyCell:last-child {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+.collapsableTable_bodyRow:last-child .collapsableTable_bodyCell:first-child {
+  border-bottom-left-radius: 16px;
+}
+.collapsableTable_bodyRow:last-child .collapsableTable_bodyCell:last-child {
+  border-bottom-right-radius: 16px;
+}
+
+.noApplyField {
+  text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 19.4px;
+  letter-spacing: 0.24px;
+  background-color: var(--black-100);
+  padding: 2px 8px 2px 8px;
+  border-radius: 2px;
+}
+
+.trSelected {
+  background-color: var(--blue-100);
+}
+
+.trSelected .checkIconBG {
+  border: 1px solid #2a5c16;
+  border-radius: 2px;
+}
+.trSelected .noApplyField {
+  border: 1px solid black;
+}
+.collapsableTable_caretIcon {
+  color: #00b398;
+}
+
+tr:hover .collapsableTable_groupContent,
+tr:hover .collapsableTable_checkbox {
+  color: white;
+}
+
+tr:hover .collapsableTable_checkbox {
+  color: white;
+}

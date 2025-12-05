@@ -5,11 +5,11 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import { DialogTitle } from "@mui/material";
 import clsx from "clsx";
-import { type Client } from "../../../service/clientInterface";
+import { type Client } from "../../../service/client.interface";
 import {
   type IMaintenance,
   type IMaintenanceCreate,
-} from "../../../service/maintenanceInterface";
+} from "../../../service/maintenance.interface";
 import style from "./InfoDialogClient.module.css";
 import GoogleMapFromAddress from "../../ui/googleMapEmbed.tsx/GoogleMapEmbed";
 import TableGeneric from "../../ui/table/Table";

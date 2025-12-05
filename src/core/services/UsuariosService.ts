@@ -3,7 +3,7 @@ import type {
   CreateUserResponse,
   UpdateUser,
   User,
-} from "../../service/usuariosInterface";
+} from "../../service/usuarios.interface";
 import { USER_API } from "../api/users/api";
 import apiClient from "../client/client";
 

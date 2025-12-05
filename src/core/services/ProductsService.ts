@@ -4,7 +4,7 @@ import type {
   ITypeProduct,
   ICreateProductPayload,
   ICreateTypeProductPayload,
-} from "../../service/productsInterface";
+} from "../../service/products.interface";
 import { PRODUCTS_API } from "../api/products/api";
 import apiClient from "../client/client";
 

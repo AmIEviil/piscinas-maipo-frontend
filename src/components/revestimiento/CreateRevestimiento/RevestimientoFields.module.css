@@ -1,0 +1,120 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  background-color: #f9fafb; /* Fondo suave para separar secciones */
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-primario);
+  margin-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-secundario);
+  padding-bottom: 0.5rem;
+  display: inline-block;
+  width: fit-content;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  align-items: end; /* Alinea los inputs al fondo si tienen alturas distintas */
+}
+
+/* Estilos específicos para la sección de imágenes */
+.imageUploadContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fileInputLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-fondo);
+  color: var(--color-secundario);
+  border: 2px dashed var(--color-secundario);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.fileInputLabel:hover {
+  background-color: var(--color-fondo-suave);
+  border-color: var(--color-primario);
+  color: var(--color-primario);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.previewGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.imageCard {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  aspect-ratio: 1; /* Mantiene las imágenes cuadradas */
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.deleteButton {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #ef4444; /* Rojo */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.deleteButton:hover {
+  transform: scale(1.1);
+  background-color: #fff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .gridContainer {
+    grid-template-columns: 1fr; /* Una columna en móviles */
+  }
+
+  .section {
+    padding: 1rem;
+  }
+}

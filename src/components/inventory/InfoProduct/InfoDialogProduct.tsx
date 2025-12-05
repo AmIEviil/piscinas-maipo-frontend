@@ -5,7 +5,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 //Icons
 import { useProductStore } from "../../../store/ProductStore";
-import type { IProducto } from "../../../service/productsInterface";
+import type { IProducto } from "../../../service/products.interface";
 
 interface InfoProductDialogProps {
   open: boolean;

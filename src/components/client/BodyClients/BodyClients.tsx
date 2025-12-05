@@ -5,14 +5,13 @@ import {
   useClientsByFilters,
   useDeleteClient,
 } from "../../../hooks/ClientHooks";
-import type { Client } from "../../../service/clientInterface";
+import type { Client } from "../../../service/client.interface";
 import { useMaintenancesByClient } from "../../../hooks/MaintenanceHooks";
-import { type IMaintenance } from "../../../service/maintenanceInterface";
+import { type IMaintenance } from "../../../service/maintenance.interface";
 import style from "./BodyClients.module.css";
 
 import Select from "../../ui/Select/Select";
 import InputText from "../../ui/InputText/InputText";
-import TableGeneric from "../../ui/table/Table";
 import InfoClientDialog from "../InfoClient/InfoDialogClient";
 import CreateClientDialog from "../CreateClient/CreateClientDialog";
 
@@ -28,20 +27,22 @@ import {
   titlesTable,
 } from "../../../constant/constantBodyClient";
 import { formatMoneyNumber } from "../../../utils/formatTextUtils";
-import { formatNoResultsText } from "../../../utils/FiltersUtils";
 import PopUp from "../../ui/PopUp/PopUp";
 import { CustomSnackBar } from "../../ui/snackBar/CustomSnackBar";
 import { useSnackBarModalStore } from "../../../store/snackBarStore";
 import { getWindowWidth } from "../../../utils/WindowUtils";
-import CaretIcon from "../../ui/Icons/CaretIcon";
 import TrashIcon from "../../ui/Icons/TrashIcon";
 import { useBoundStore } from "../../../store/BoundedStore";
+import CollapsableTable from "../../ui/collapsable-table/CollapsableTable";
+import { formatNoResultsText } from "../../../utils/FiltersUtils";
 
 interface IfilterQuery {
   nombre?: string;
   direccion?: string;
   dia?: string;
   comuna?: string;
+  orderBy?: string;
+  orderDirection?: "ASC" | "DESC";
 }
 
 const BodyClients = () => {
@@ -52,7 +53,7 @@ const BodyClients = () => {
   const { setSnackBar } = useSnackBarModalStore();
   const [windowWidth, setWindowWidth] = useState(getWindowWidth());
 
-  const [clients, setClients] = useState<Client[]>();
+  const [clients, setClients] = useState<Record<string, Client[]>>();
   const [filterQuery, setFilterQuery] = useState<IfilterQuery>({});
   const [loadingTable, setLoadingTable] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -192,6 +193,9 @@ const BodyClients = () => {
         `Ver detalles de ${selectedClients.length} cliente(s).`
       );
     }
+    setMantenciones(undefined);
+    setSelectedClient(null);
+    setIsEditMode(false);
   };
 
   const handleSeeDetailsClient = async (client: Client) => {
@@ -265,11 +269,31 @@ const BodyClients = () => {
     });
   };
 
+  const handleSelectAllInGroup = (key: string, clientsInGroup: Client[]) => {
+    console.log("Clients in group:", key);
+    setSelectedClients((prev) => {
+      const allSelected = clientsInGroup.every((client) =>
+        prev.some((c) => c.id === client.id)
+      );
+      if (allSelected) {
+        // Remove all clients in the group from the selection
+        return prev.filter(
+          (client) => !clientsInGroup.some((c) => c.id === client.id)
+        );
+      } else {
+        // Add all clients in the group to the selection
+        const newSelections = clientsInGroup.filter(
+          (client) => !prev.some((c) => c.id === client.id)
+        );
+        return [...prev, ...newSelections];
+      }
+    });
+  };
+
   const handleSeeMultiSelectClients = async (index: number) => {
     if (selectedClients.length === 0) return;
     try {
       const client = selectedClients[index];
-      console.log("Cliente seleccionado para ver detalles:", client);
       if (!client.id) return;
       const mantenciones = await maintenanceByClient.mutateAsync(client.id);
       setMantenciones(mantenciones);
@@ -295,6 +319,12 @@ const BodyClients = () => {
       await handleSeeMultiSelectClients(prevIndex);
     }
   };
+
+  const hasFilters =
+    filterQuery.nombre ||
+    filterQuery.direccion ||
+    filterQuery.comuna ||
+    filterQuery.dia;
 
   return (
     <div className="pt-4 ">
@@ -340,11 +370,16 @@ const BodyClients = () => {
           />
         </div>
         <div className={style.actionsFilters}>
-          <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
-            <button onClick={handleClearFilter} className={style.actionButton}>
-              <TrashIcon />
-            </button>
-          </Tooltip>
+          {hasFilters && (
+            <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
+              <button
+                onClick={handleClearFilter}
+                className={style.actionButton}
+              >
+                <TrashIcon />
+              </button>
+            </Tooltip>
+          )}
           <Tooltip title="Agregar nuevo Cliente" arrow leaveDelay={0}>
             <button onClick={handleOpenCreateDialog}>
               <AddIcon />
@@ -363,45 +398,22 @@ const BodyClients = () => {
         </div>
       )}
       <div className={style.tableContainer}>
-        <TableGeneric
-          titles={titlesTable}
-          data={clients ?? []}
+        <CollapsableTable
+          titlesTable={titlesTable}
+          showCheckBoxes
+          data={clients ?? {}}
+          emptyMessage={handleTextNoResults()}
           loading={loadingTable}
-          textNotFound={handleTextNoResults()}
-          renderHeader={(title, index) => {
-            if (index === 0) {
-              const allSelected =
-                clients &&
-                clients.length > 0 &&
-                selectedClients.length === clients.length;
-              const someSelected =
-                selectedClients.length > 0 &&
-                selectedClients.length < (clients?.length ?? 0);
-
-              return (
-                <th key={index}>
-                  <Checkbox
-                    checked={allSelected}
-                    indeterminate={someSelected}
-                    onChange={(e) => {
-                      if (e.target.checked && clients) {
-                        setSelectedClients(clients);
-                      } else {
-                        setSelectedClients([]);
-                      }
-                    }}
-                  />
-                </th>
-              );
-            }
-            return (
-              <th key={index}>
-                <span className="flex flex-row items-center gap-2">
-                  {title.label}
-                  {title.showOrderBy && <CaretIcon color="#0289c7" />}
-                </span>
-              </th>
-            );
+          selectedItems={selectedClients}
+          onSelectAllInGroup={handleSelectAllInGroup}
+          orderBy={filterQuery.orderBy}
+          orderDirection={filterQuery.orderDirection}
+          onOrderChange={(key, direction) => {
+            setFilterQuery({
+              ...filterQuery,
+              orderBy: key,
+              orderDirection: direction,
+            });
           }}
           renderRow={(client) => (
             <tr key={client.id}>

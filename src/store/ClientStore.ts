@@ -1,6 +1,6 @@
 import { create, type StateCreator } from "zustand";
 import { clientService } from "../core/services/ClientsService";
-import type { Client } from "../service/clientInterface";
+import type { Client } from "../service/client.interface";
 
 interface ClientStore {
   clients: Client[];

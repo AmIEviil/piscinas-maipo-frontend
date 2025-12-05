@@ -82,3 +82,14 @@ button.secondary:hover {
   background-color: var(--color-secundario);
   color: var(--color-fondo);
 }
+
+button.normal {
+  background-color: transparent;
+  color: var(--color-secundario);
+  padding: 0;
+}
+
+button.normal:hover {
+  background-color: transparent;
+  
+}

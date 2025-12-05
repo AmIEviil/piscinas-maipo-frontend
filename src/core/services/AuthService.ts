@@ -1,7 +1,7 @@
 import type {
   IAuthPayload,
   ILogoutResponse,
-} from "../../service/authinterface";
+} from "../../service/auth.interface";
 import { AUTH_API } from "../api/auth/api";
 import apiClient from "../client/client";
 import type { LoginResponse } from "../models/login/LoginResponse";

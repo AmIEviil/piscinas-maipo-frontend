@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { revestimientoService } from "../core/services/RevestimientoService";
-import type { IRevestimiento } from "../service/revestimientoInterface";
+import type { IRevestimiento } from "../service/revestimiento.interface";
 
 export const useRevestimiento = () => {
   const revestimientoMutation = useMutation({

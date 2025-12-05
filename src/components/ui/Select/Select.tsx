@@ -101,7 +101,11 @@ const CustomSelect = ({
           }}
         >
           {options?.map((option, index) => (
-            <MenuItem key={index} value={option.value}>
+            <MenuItem
+              key={index}
+              value={option.value}
+              className="custom-scrollbar"
+            >
               {option.label}
             </MenuItem>
           ))}

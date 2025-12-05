@@ -1,4 +1,4 @@
-import type { IResumeMaintenance } from "../../service/maintenanceInterface";
+import type { IResumeMaintenance } from "../../service/maintenance.interface";
 import { METRICS_API } from "../api/metrics/api";
 import apiClient from "../client/client";
 

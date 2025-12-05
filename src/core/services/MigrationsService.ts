@@ -1,4 +1,4 @@
-import type { User } from "../../service/usuariosInterface";
+import type { User } from "../../service/usuarios.interface";
 import apiClient from "../client/client";
 
 export interface Migration {

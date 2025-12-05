@@ -62,15 +62,15 @@ export const comunas = [
   { value: "Vitacura", label: "Vitacura" },
 ];
 export const titlesTable = [
-  { label: "", showOrderBy: false },
-  { label: "Nombre", showOrderBy: false },
-  { label: "Dirección", showOrderBy: false },
-  { label: "Comuna", showOrderBy: true },
-  { label: "Telefono", showOrderBy: true },
-  { label: "Email", showOrderBy: true },
-  { label: "Dia de Mantención", showOrderBy: true },
-  { label: "Valor Mantención", showOrderBy: true },
-  { label: "Acciones", showOrderBy: false },
+  { label: "", key: "", showOrder: false },
+  { label: "Nombre", key: "nombre", showOrder: true },
+  { label: "Dirección", key: "direccion", showOrder: true },
+  { label: "Comuna", key: "comuna", showOrder: true },
+  { label: "Telefono", key: "telefono", showOrder: true },
+  { label: "Email", key: "email", showOrder: true },
+  { label: "Dia de Mantención", key: "dia_mantencion", showOrder: true },
+  { label: "Valor Mantención", key: "valor_mantencion", showOrder: true },
+  { label: "Acciones", key: "actions", showOrder: false },
 ];
 
 export const tiposPiscinasMaterial = [

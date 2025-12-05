@@ -15,7 +15,7 @@ import type {
   ICreateTypeProductPayload,
   IProducto,
   ITypeProduct,
-} from "../../../service/productsInterface";
+} from "../../../service/products.interface";
 import CustomSelect from "../../ui/Select/Select";
 import {
   useCreateProduct,

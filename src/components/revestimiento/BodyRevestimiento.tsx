@@ -4,7 +4,7 @@ import {
   useRevestimiento,
   useRevestimientoById,
 } from "../../hooks/RevestimientoHooks";
-import type { IRevestimiento } from "../../service/revestimientoInterface";
+import type { IRevestimiento } from "../../service/revestimiento.interface";
 import style from "../client/BodyClients/BodyClients.module.css";
 import TableGeneric from "../ui/table/Table";
 import Tooltip from "@mui/material/Tooltip";
@@ -25,6 +25,7 @@ import { tiposPiscinasMaterial } from "../../constant/constantBodyClient";
 import DatePickers from "../ui/calendar/DatePicker";
 import dayjs from "dayjs";
 import TrashIcon from "../ui/Icons/TrashIcon";
+import SeeMoreButton from "../common/SeeMore/SeeMoreButton";
 
 const titlesTable = [
   { label: "Cliente", showOrderBy: false },
@@ -185,6 +186,12 @@ const BodyRevestimiento = () => {
     setOpenPopUp(true);
   };
 
+  const hasFilters =
+    filterQuery.nombreCliente ||
+    filterQuery.fechaCreacion ||
+    filterQuery.tipoRevestimiento ||
+    filterQuery.estado;
+
   return (
     <div>
       <div className={style.filtersContainer}>
@@ -222,11 +229,16 @@ const BodyRevestimiento = () => {
           />
         </div>
         <div className={style.actionsFilters}>
-          <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
-            <button onClick={handleClearFilter} className={style.actionButton}>
-              <TrashIcon />
-            </button>
-          </Tooltip>
+          {hasFilters && (
+            <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
+              <button
+                onClick={handleClearFilter}
+                className={style.actionButton}
+              >
+                <TrashIcon />
+              </button>
+            </Tooltip>
+          )}
           <Tooltip title="Crear nuevo Revestimiento" arrow leaveDelay={0}>
             <button onClick={handleOpenCreateDialog}>
               <AddIcon />
@@ -248,7 +260,30 @@ const BodyRevestimiento = () => {
                 <td>{revestimiento.tipoRevestimiento}</td>
                 <td>{revestimiento.detalles}</td>
                 <td>{formatMoneyNumber(revestimiento.valorTotal)}</td>
-                <td>--</td>
+                <td>
+                  {revestimiento.extras?.length
+                    ? revestimiento.extras.map((extra) => (
+                        <div
+                          className="flex justify-between gap-2 border rounded-md py-2.5 px-2.5 items-center"
+                          key={extra.id}
+                        >
+                          {extra.nombre}
+                          <SeeMoreButton
+                            labelTooltip="Ver detalles del extra"
+                            customClassName="-mr-2"
+                            customContent={
+                              <div className="flex flex-col gap-2">
+                                <span>{extra.detalle}</span>
+                                <span>
+                                  Valor: {formatMoneyNumber(extra.valor)}
+                                </span>
+                              </div>
+                            }
+                          />
+                        </div>
+                      ))
+                    : "N/A"}
+                </td>
                 <td className="flex flex-col gap-2 sm:gap-4 items-center justify-center">
                   <Tooltip title="Ver detalles Cliente" arrow leaveDelay={0}>
                     <button

@@ -4,10 +4,18 @@ import EyeIcon from "../../ui/Icons/EyeIcon";
 import { Tooltip } from "@mui/material";
 
 interface SeeMoreButtonProps {
+  labelTooltip?: string;
   content?: string;
+  customClassName?: string;
+  customContent?: React.ReactNode;
 }
 
-const SeeMoreButton = ({ content }: SeeMoreButtonProps) => {
+const SeeMoreButton = ({
+  labelTooltip,
+  content,
+  customClassName,
+  customContent,
+}: SeeMoreButtonProps) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -30,8 +38,8 @@ const SeeMoreButton = ({ content }: SeeMoreButtonProps) => {
   }, [isOpen]);
 
   return (
-    <div className={s.dropmenuContainer}>
-      <Tooltip title="Ver Observaciones" arrow leaveDelay={0}>
+    <div className={`${s.dropmenuContainer} ${customClassName}`}>
+      <Tooltip title={labelTooltip || "Ver Observaciones"} arrow leaveDelay={0}>
         <span
           className={`${s.dropmenuLabel} ${isOpen ? s.active : ""}`}
           onClick={() => setIsOpen(!isOpen)}
@@ -48,7 +56,8 @@ const SeeMoreButton = ({ content }: SeeMoreButtonProps) => {
         style={{ display: isOpen ? "block" : "none" }}
         className={s.dropmenuOptionsContainer}
       >
-        <div className={s.optionLabel}>{content}</div>
+        {content && <div className={s.optionLabel}>{content}</div>}
+        {customContent && <div className={s.optionLabel}>{customContent}</div>}
       </div>
     </div>
   );

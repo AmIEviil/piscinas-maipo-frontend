@@ -3,7 +3,7 @@ import Button from "../ui/button/Button";
 import CustomInputText from "../ui/InputText/CustomInputText";
 import style from "./BodyLogin.module.css";
 import { useState } from "react";
-import { type IAuthPayload } from "../../service/authinterface";
+import { type IAuthPayload } from "../../service/auth.interface";
 import { useLogin } from "../../hooks/LoginHooks";
 import { useBoundStore } from "../../store/BoundedStore";
 import { useNavigate } from "react-router";

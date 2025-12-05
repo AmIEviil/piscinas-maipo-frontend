@@ -1,13 +1,29 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect } from "react";
-import type { Client } from "../../../service/clientInterface";
+import { useEffect, useState } from "react";
 import CustomInputText from "../../ui/InputText/CustomInputText";
 import CustomSelect from "../../ui/Select/Select";
-import type { IRevestimientoCreate } from "../../../service/revestimientoInterface";
 import DatePicker from "../../ui/calendar/DatePicker";
 import dayjs from "dayjs";
 import { tiposRevestimientos } from "../../../constant/constantBodyClient";
 import { revestimientoService } from "../../../core/services/RevestimientoService";
+import style from "./RevestimientoFields.module.css"; // Asegúrate de importar el nuevo CSS
+
+// Icons (puedes ajustar las importaciones según tus iconos disponibles)
+import PersonIcon from "@mui/icons-material/Person";
+import PoolIcon from "@mui/icons-material/Pool";
+import ConstructionIcon from "@mui/icons-material/Construction";
+import ImageIcon from "@mui/icons-material/Image";
+import DescriptionIcon from "@mui/icons-material/Description";
+import DeleteIcon from "@mui/icons-material/Delete";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import type { Client } from "../../../service/client.interface";
+import type {
+  IExtraRevestimientoCreate,
+  IRevestimientoCreate,
+} from "../../../service/revestimiento.interface";
+import { CustomTextArea } from "../../ui/InputText/CustonTextArea";
 
 interface RevestimientoFieldsProps {
   clients: Client[];
@@ -24,6 +40,11 @@ const RevestimientoFields = ({
   value,
   onChange,
 }: RevestimientoFieldsProps) => {
+  const [isAddingExtra, setIsAddingExtra] = useState(false);
+  const [newExtraName, setNewExtraName] = useState("");
+  const [newExtraValue, setNewExtraValue] = useState<number>(0);
+  const [newExtraDetail, setNewExtraDetail] = useState("");
+
   const optionsClients = clients
     .filter(
       (c): c is Client & { id: string } => c.id !== undefined && c.id !== null
@@ -33,7 +54,6 @@ const RevestimientoFields = ({
       label: client.nombre,
     }));
 
-  // Auto calculate fields
   // Area
   useEffect(() => {
     if (value.largoPiscina && value.anchoPiscina) {
@@ -73,7 +93,8 @@ const RevestimientoFields = ({
       value.areaPiscina !== undefined
     ) {
       const costoArea = value.valorM2 * value.areaPiscina;
-      const costoTotal = costoArea + value.costoManoObra;
+      const costoTotal =
+        costoArea + value.costoManoObra + value.costoMateriales;
 
       onChange((prev) => ({
         ...prev,
@@ -93,21 +114,60 @@ const RevestimientoFields = ({
       value.costoTotal !== undefined &&
       value.porcentajeGanancia !== undefined
     ) {
-      const valorTotal =
-        value.costoTotal * (1 + value.porcentajeGanancia / 100);
+      let total = value.costoTotal * (1 + value.porcentajeGanancia / 100);
+
+      if (value.extras && value.extras.length > 0) {
+        const totalExtras = value.extras.reduce(
+          (sum, extra) => sum + (Number(extra.valor) || 0),
+          0
+        );
+        total += totalExtras;
+      }
 
       onChange((prev) => ({
         ...prev,
-        valorTotal,
+        valorTotal: total,
       }));
     }
-  }, [value.costoTotal, value.porcentajeGanancia]);
+  }, [value.costoTotal, value.porcentajeGanancia, value.extras]);
+
+  const handleAddExtra = () => {
+    if (!newExtraName || newExtraValue <= 0) return; // Validación básica
+
+    const newExtra: IExtraRevestimientoCreate = {
+      nombre: newExtraName,
+      valor: newExtraValue,
+      detalle: newExtraDetail,
+    };
+
+    onChange((prev) => ({
+      ...prev,
+      extras: [...(prev.extras || []), newExtra as IExtraRevestimientoCreate],
+    }));
+
+    // Resetear campos
+    setNewExtraName("");
+    setNewExtraValue(0);
+    setNewExtraDetail("");
+    setIsAddingExtra(false);
+  };
+
+  const handleRemoveExtra = (index: number) => {
+    onChange((prev) => ({
+      ...prev,
+      extras: prev.extras?.filter((_, i) => i !== index),
+    }));
+  };
 
   return (
-    <div className="flex flex-row flex-wrap gap-4">
-      <div>
-        <span>Información del General</span>
-        <div className="flex flex-row flex-wrap gap-4">
+    <div className={style.container}>
+      {/* Sección 1: Información General */}
+      <div className={style.section}>
+        <h4 className={style.sectionTitle}>
+          <PersonIcon sx={{ mr: 1, verticalAlign: "middle" }} />
+          Información General
+        </h4>
+        <div className={style.gridContainer}>
           <CustomSelect
             title="Cliente"
             required
@@ -119,7 +179,7 @@ const RevestimientoFields = ({
             onChange={(event) =>
               onChange((prev) => ({
                 ...prev,
-                clienteid: String(event.target.value),
+                clienteId: String(event.target.value),
               }))
             }
           />
@@ -136,91 +196,74 @@ const RevestimientoFields = ({
           />
         </div>
       </div>
-      <div className="flex flex-col gap-4">
-        <span>Información de la Piscina</span>
-        <div className="flex flex-row flex-wrap gap-4">
+
+      {/* Sección 2: Dimensiones de la Piscina */}
+      <div className={style.section}>
+        <h4 className={style.sectionTitle}>
+          <PoolIcon sx={{ mr: 1, verticalAlign: "middle" }} />
+          Dimensiones de la Piscina
+        </h4>
+        <div className={style.gridContainer}>
           <CustomInputText
-            title="Largo"
+            title="Largo (m)"
             type="number"
             value={value.largoPiscina}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                largoPiscina: Number(value),
-              }))
+            onChange={(val) =>
+              onChange((prev) => ({ ...prev, largoPiscina: Number(val) }))
             }
           />
           <CustomInputText
-            title="Ancho"
+            title="Ancho (m)"
             type="number"
             value={value.anchoPiscina}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                anchoPiscina: Number(value),
-              }))
+            onChange={(val) =>
+              onChange((prev) => ({ ...prev, anchoPiscina: Number(val) }))
             }
           />
           <CustomInputText
-            title="Profundidad Minima"
+            title="Prof. Mínima (m)"
             type="number"
             value={value.profundidadMin}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                profundidadMin: Number(value),
-              }))
+            onChange={(val) =>
+              onChange((prev) => ({ ...prev, profundidadMin: Number(val) }))
             }
           />
           <CustomInputText
-            title="Profundidad Maxima"
+            title="Prof. Máxima (m)"
             type="number"
             value={value.profundidadMax}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                profundidadMax: Number(value),
-              }))
+            onChange={(val) =>
+              onChange((prev) => ({ ...prev, profundidadMax: Number(val) }))
             }
           />
           <CustomInputText
-            title="Profundidad Promedio"
+            title="Prof. Promedio (m)"
             type="number"
-            value={value.profundidadAvg}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                profundidadAvg: Number(value),
-              }))
-            }
+            value={value.profundidadAvg?.toFixed(2)}
+            onChange={() => {}}
           />
           <CustomInputText
-            title="Area"
+            title="Área (m²)"
             type="number"
-            value={value.areaPiscina}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                areaPiscina: Number(value),
-              }))
-            }
+            value={value.areaPiscina?.toFixed(2)}
+            onChange={() => {}}
           />
           <CustomInputText
-            title="Volumen"
+            title="Volumen (m³)"
             type="number"
-            value={value.volumenPiscina}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                volumenPiscina: Number(value),
-              }))
-            }
+            value={value.volumenPiscina?.toFixed(2)}
+            onChange={() => {}}
           />
         </div>
       </div>
-      <div className="flex flex-col gap-4">
-        <span>Información del Revestimiento</span>
-        <div className="flex flex-row flex-wrap gap-4">
+
+      {/* Sección 3: Costos y Revestimiento */}
+      <div className={style.section}>
+        <h4 className={style.sectionTitle}>
+          <ConstructionIcon sx={{ mr: 1, verticalAlign: "middle" }} />
+          Costos y Revestimiento
+        </h4>
+        <div className={style.gridContainer}>
           <CustomSelect
             title="Tipo de Revestimiento"
             required
@@ -238,91 +281,70 @@ const RevestimientoFields = ({
             title="Valor m²"
             type="number"
             value={value.valorM2}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                valorM2: Number(value),
-              }))
+            onChange={(val) =>
+              onChange((prev) => ({ ...prev, valorM2: Number(val) }))
             }
           />
           <CustomInputText
             title="Costo Mano de Obra"
             type="number"
             value={value.costoManoObra}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                costoManoObra: Number(value),
-              }))
+            onChange={(val) =>
+              onChange((prev) => ({ ...prev, costoManoObra: Number(val) }))
             }
           />
           <CustomInputText
             title="Costo Materiales"
             type="number"
             value={value.costoMateriales}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                costoMateriales: Number(value),
-              }))
+            onChange={(val) =>
+              onChange((prev) => ({ ...prev, costoMateriales: Number(val) }))
             }
           />
           <CustomInputText
             title="Costo Total"
             type="number"
             value={value.costoTotal}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                costoTotal: Number(value),
-              }))
-            }
+            onChange={() => {}}
           />
           <CustomInputText
-            title="Porcentaje de Ganancia"
+            title="% Ganancia"
             type="number"
             value={value.porcentajeGanancia}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                porcentajeGanancia: Number(value),
-              }))
+            onChange={(val) =>
+              onChange((prev) => ({ ...prev, porcentajeGanancia: Number(val) }))
             }
           />
           <CustomInputText
-            title="Valor Total"
+            title="Valor Total (Cliente)"
             type="number"
-            value={value.valorTotal}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                valorTotal: Number(value),
-              }))
-            }
+            value={Math.round(value.valorTotal || 0)}
+            onChange={() => {}}
           />
         </div>
       </div>
-      <div className="flex flex-col gap-4">
-        <span>Información Adicional</span>
-        <div className="flex flex-row flex-wrap gap-4">
-          <CustomInputText
-            title="Detalles"
-            value={value.detalles}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                detalles: String(value),
-              }))
-            }
-          />
+
+      {/* Sección 4: Detalles Adicionales */}
+      <div className={style.section}>
+        <h4 className={style.sectionTitle}>
+          <DescriptionIcon sx={{ mr: 1, verticalAlign: "middle" }} />
+          Detalles y Fechas
+        </h4>
+        <div className={style.gridContainer}>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <CustomTextArea
+              title="Detalles / Observaciones"
+              value={value.detalles}
+              onChange={(val) =>
+                onChange((prev) => ({ ...prev, detalles: String(val) }))
+              }
+            />
+          </div>
           <CustomInputText
             title="Garantía"
             value={value.garantia}
-            onChange={(value) =>
-              onChange((prev) => ({
-                ...prev,
-                garantia: String(value),
-              }))
+            onChange={(val) =>
+              onChange((prev) => ({ ...prev, garantia: String(val) }))
             }
           />
           <DatePicker
@@ -349,48 +371,155 @@ const RevestimientoFields = ({
           />
         </div>
       </div>
-      <div className="flex flex-col gap-2">
-        <span>Imágenes del Revestimiento</span>
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={async (e) => {
-            const files = e.target.files;
-            if (!files) return;
-            const arr = Array.from(files);
-            const results = await Promise.all(
-              arr.map((f) => revestimientoService.uploadImagen(f))
-            );
-            onChange((prev) => ({
-              ...prev,
-              imagenes: [...(prev.imagenes || []), ...results],
-            }));
-          }}
-        />
 
-        {/* previsualizacion */}
-        <div className="flex gap-2 mt-2">
-          {value.imagenes?.map((u, i) => (
-            <div key={i} className="relative">
-              <img
-                src={u.url}
-                className="w-24 h-24 object-cover"
-                alt={`img-${i}`}
+      {/* Sección 5: Imágenes */}
+      <div className={style.section}>
+        <h4 className={style.sectionTitle}>
+          <ImageIcon sx={{ mr: 1, verticalAlign: "middle" }} />
+          Imágenes del Proyecto
+        </h4>
+        <div className={style.imageUploadContainer}>
+          <label className={style.fileInputLabel}>
+            <CloudUploadIcon sx={{ mr: 1 }} />
+            Subir Imágenes
+            <input
+              className={style.hiddenInput}
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={async (e) => {
+                const files = e.target.files;
+                if (!files) return;
+                const arr = Array.from(files);
+                // Aquí podrías agregar un estado de carga si lo deseas
+                const results = await Promise.all(
+                  arr.map((f) => revestimientoService.uploadImagen(f))
+                );
+                onChange((prev) => ({
+                  ...prev,
+                  imagenes: [...(prev.imagenes || []), ...results],
+                }));
+              }}
+            />
+          </label>
+
+          {/* Galería de Previsualización */}
+          <div className={style.previewGrid}>
+            {value.imagenes?.map((u, i) => (
+              <div key={i} className={style.imageCard}>
+                <img
+                  src={u.url}
+                  className={style.previewImage}
+                  alt={`preview-${i}`}
+                />
+                <button
+                  className={style.deleteButton}
+                  type="button"
+                  onClick={() => {
+                    onChange((prev) => ({
+                      ...prev,
+                      imagenes: prev.imagenes?.filter((_, idx) => idx !== i),
+                    }));
+                  }}
+                  title="Eliminar imagen"
+                >
+                  <DeleteIcon fontSize="small" />
+                </button>
+              </div>
+            ))}
+            {(!value.imagenes || value.imagenes.length === 0) && (
+              <span style={{ color: "#888", fontStyle: "italic" }}>
+                No hay imágenes seleccionadas
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      {/* Sección 6: Extras */}
+
+      <div className={style.section}>
+        <div className="flex justify-between items-center border-b pb-2 mb-4 border-[#0289c7]">
+          <h4 className="text-[1.1rem] font-semibold text-[#1a1a1a] m-0">
+            <LibraryAddIcon sx={{ mr: 1, verticalAlign: "middle" }} />
+            Extras
+          </h4>
+          <button
+            type="button"
+            className={style.addExtraButton}
+            onClick={() => setIsAddingExtra(!isAddingExtra)}
+          >
+            <AddCircleOutlineIcon sx={{ mr: 0.5 }} />
+            {isAddingExtra ? "Cerrar" : "Agregar Extra"}
+          </button>
+        </div>
+
+        {/* Lista de Extras Agregados */}
+        {value.extras && value.extras.length > 0 && (
+          <div className={style.extrasList}>
+            {value.extras.map((extra, index) => (
+              <div key={index} className={style.extraItem}>
+                <div className="flex-1">
+                  <span className="font-bold block">{extra.nombre}</span>
+                  <span className="text-sm text-gray-600">{extra.detalle}</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="font-semibold text-[#0289c7]">
+                    ${extra.valor.toLocaleString()}
+                  </span>
+                  <button
+                    type="button"
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => handleRemoveExtra(index)}
+                  >
+                    <DeleteIcon />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Formulario para Nuevo Extra */}
+        {isAddingExtra && (
+          <div className={style.newExtraForm}>
+            <div className={style.gridContainer}>
+              <CustomInputText
+                title="Nombre del Extra"
+                value={newExtraName}
+                onChange={(val) => setNewExtraName(String(val))}
               />
+              <CustomInputText
+                title="Valor ($)"
+                type="number"
+                value={newExtraValue}
+                onChange={(val) => setNewExtraValue(Number(val))}
+              />
+              <div style={{ gridColumn: "1 / -1" }}>
+                <CustomTextArea
+                  title="Detalle (Opcional)"
+                  value={newExtraDetail}
+                  onChange={(val) => setNewExtraDetail(String(val))}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end mt-4">
               <button
-                onClick={() => {
-                  onChange((prev) => ({
-                    ...prev,
-                    imagenes: prev.imagenes?.filter((_, idx) => idx !== i),
-                  }));
-                }}
+                type="button"
+                className={style.saveExtraButton}
+                onClick={handleAddExtra}
+                disabled={!newExtraName || newExtraValue <= 0}
               >
-                Eliminar
+                Guardar Extra
               </button>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
+
+        {(!value.extras || value.extras.length === 0) && !isAddingExtra && (
+          <p className="text-gray-500 italic text-center py-4">
+            No hay extras agregados.
+          </p>
+        )}
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ interface CustomTextAreaProps {
   value?: string;
   disabled?: boolean;
   placeholder?: string;
+  required?: boolean;
   onChange?: (value: string) => void;
 }
 
@@ -16,6 +17,7 @@ export const CustomTextArea = ({
   value,
   disabled = false,
   placeholder,
+  required = false,
   onChange = () => {},
 }: CustomTextAreaProps) => {
   const [internalValue, setInternalValue] = useState(
@@ -64,7 +66,11 @@ export const CustomTextArea = ({
 
   return (
     <div>
-      <label className="block mb-1 font-medium">{title}</label>
+      <label className="block mb-1 font-medium">
+        {title}
+
+        {required && <span className="required">*</span>}
+      </label>
       <textarea
         className="w-full h-32 p-2 border border-gray-300 rounded-md custom-scrollbar resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
         value={internalValue}

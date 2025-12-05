@@ -1,4 +1,4 @@
-import { type IProducto } from "../service/productsInterface";
+import { type IProducto } from "./products.interface";
 export interface IMaintenance {
   id: string;
   fechaMantencion: Date;

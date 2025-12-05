@@ -1,6 +1,7 @@
 import { useState } from "react";
 import BodyRevestimiento from "../../components/revestimiento/BodyRevestimiento";
 import { Tabs } from "../../components/ui/Tab/Tabs";
+import BodyRepairs from "../../components/repairs/BodyRepairs";
 
 export const ReparacionesView = () => {
   const options = [
@@ -21,7 +22,7 @@ export const ReparacionesView = () => {
       case 0:
         return <BodyRevestimiento />;
       case 1:
-        return <div>Reparaciones Content</div>;
+        return <BodyRepairs />;
       default:
         return null;
     }
