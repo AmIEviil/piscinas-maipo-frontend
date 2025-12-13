@@ -6,11 +6,15 @@ import Select from "@mui/material/Select";
 import style from "./SelectStyle.module.css";
 import type { ReactNode } from "react";
 
+export interface IOptionsSelect {
+  value: string | number;
+  label: string;
+}
 interface CustomSelectProps {
   title?: string;
   required?: boolean;
   label?: string;
-  options?: { value: string | number; label: string }[];
+  options?: IOptionsSelect[];
   value?: string | number;
   disabled?: boolean;
   onChange?: (

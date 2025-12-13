@@ -15,20 +15,22 @@ interface InputTextProps {
   icon?: ReactNode;
   customClass?: string;
   customClassTitle?: string;
+  customClassContainer?: string;
 }
 
 const CustomInputText = ({
-  title = "Soy un título",
+  title = "",
   value = "",
   disabled = false,
   type = "text",
   placeholder,
   onChange = () => {},
   onBlur = () => {},
-  require = true,
+  require = false,
   icon,
   customClass = "",
   customClassTitle = "",
+  customClassContainer = "",
 }: InputTextProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!disabled) {
@@ -57,13 +59,17 @@ const CustomInputText = ({
 
   return (
     <div
-      className={`input-text-container ${disabled ? "disabled-container" : ""}`}
+      className={`input-text-container ${customClassContainer} ${
+        disabled ? "disabled-container" : ""
+      }`}
     >
-      <div className={`title-container ${customClassTitle}`}>
-        <label className="input-title" htmlFor={`input-field-${title}`}>
-          {title} {require && <span className="required">*</span>}
-        </label>
-      </div>
+      {title && (
+        <div className={`title-container ${customClassTitle}`}>
+          <label className="input-title" htmlFor={`input-field-${title}`}>
+            {title} {require && <span className="required">*</span>}
+          </label>
+        </div>
+      )}
       <div className="input-wrapper">
         {icon && <span className="input-icon">{icon}</span>}
         <input

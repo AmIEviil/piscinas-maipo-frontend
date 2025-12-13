@@ -1,0 +1,84 @@
+.inputEditField {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  width: fit-content !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.inputEditElement {
+  padding: 4px 8px !important;
+  font-size: 14px !important;
+  border: 1px solid var(--color-secundario) !important;
+  border-radius: 8px !important;
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.inputContainer {
+  transition: visibility 0.3s ease-in-out;
+  gap: 0.5rem;
+}
+
+.clientInfoContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 1rem;
+}
+
+.detailsInfoContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+.labelsContainer {
+  display: grid;
+  grid-auto-flow: column; /* Llenar filas primero, luego columnas */
+  grid-auto-rows: min-content; /* Altura automática por fila */
+  grid-template-rows: repeat(4, auto); /* Máximo 4 filas */
+  gap: 1rem;
+  align-items: start;
+}
+.labelItemContainer {
+  display: flex;
+  flex-wrap: wrap;
+  width: fit-content;
+}
+
+.labelItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: var(--color-fondo-suave);
+  margin: 10px;
+  height: fit-content;
+  padding: 10px;
+  border-radius: 16px;
+  width: fit-content;
+  gap: 0.5rem;
+}
+
+.iconItem {
+  margin-right: 0.5rem;
+}
+
+@media (max-width: 720px) {
+  .labelsContainer {
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+}

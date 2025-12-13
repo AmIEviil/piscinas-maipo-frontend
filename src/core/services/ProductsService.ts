@@ -42,6 +42,7 @@ export const productsService = {
     productId: string,
     productData: Partial<ICreateProductPayload>
   ): Promise<IProducto> => {
+    console.log("Updating product:", productId, productData);
     const response = await apiClient.put(
       `${PRODUCTS_API.products}/${productId}`,
       productData

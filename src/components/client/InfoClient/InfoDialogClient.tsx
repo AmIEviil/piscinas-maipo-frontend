@@ -1,30 +1,22 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useMemo, useState } from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import { DialogTitle } from "@mui/material";
-import clsx from "clsx";
-import { type Client } from "../../../service/client.interface";
+
 import {
   type IMaintenance,
   type IMaintenanceCreate,
 } from "../../../service/maintenance.interface";
 import style from "./InfoDialogClient.module.css";
-import GoogleMapFromAddress from "../../ui/googleMapEmbed.tsx/GoogleMapEmbed";
 import TableGeneric from "../../ui/table/Table";
-import { formatMoneyNumber } from "../../../utils/formatTextUtils";
 import { getWindowWidth } from "../../../utils/WindowUtils";
 
 //Icons
-import EmailIcon from "@mui/icons-material/Email";
 import AddIcon from "@mui/icons-material/Add";
-import PaidIcon from "@mui/icons-material/Paid";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import PoolIcon from "@mui/icons-material/Pool";
-import ExploreIcon from "@mui/icons-material/Explore";
 import CaretIcon from "../../ui/Icons/CaretIcon";
-import MaintenanceFields from "./MaintenancesFields";
+import MaintenanceFields from "./maintenancesFields/MaintenancesFields";
 import { useCreateMaintenance } from "../../../hooks/MaintenanceHooks";
 import { useProductStore } from "../../../store/ProductStore";
 import {
@@ -33,10 +25,13 @@ import {
 } from "../../../utils/DateUtils";
 import CustomPagination from "../../ui/pagination/Pagination";
 import SeeMoreButton from "../../common/SeeMore/SeeMoreButton";
+import ClientFields, {
+  type IClientForm,
+} from "./clientInfoFields/ClientInfoFields";
 
 interface InfoClientDialogProps {
   open: boolean;
-  clientInfo?: Client;
+  clientInfo?: IClientForm;
   maintenancesClient?: Record<string, IMaintenance[]>;
   onClose: () => void;
   onMaintenanceCreated?: () => void;
@@ -64,7 +59,6 @@ const InfoClientDialog = ({
 
   const [isAddingMaintenance, setIsAddingMaintenance] = useState(false);
   const [windowWidth, setWindowWidth] = useState(getWindowWidth());
-  const [showClientInfo, setShowClientInfo] = useState(windowWidth > 720);
   const [showMaintenances, setShowMaintenances] = useState(windowWidth > 720);
   const { products, fetchProducts } = useProductStore();
 
@@ -72,11 +66,12 @@ const InfoClientDialog = ({
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
 
   const currentMonth = months[currentMonthIndex] ?? null;
-  const mantencionesMesActual = currentMonth
-    ? maintenancesClient?.[currentMonth].sort((a, b) =>
-        String(a.fechaMantencion).localeCompare(String(b.fechaMantencion))
-      ) ?? []
-    : [];
+  const mantencionesMesActual =
+    currentMonth && Array.isArray(maintenancesClient?.[currentMonth])
+      ? [...maintenancesClient[currentMonth]].sort((a, b) =>
+          String(a.fechaMantencion).localeCompare(String(b.fechaMantencion))
+        )
+      : [];
 
   const allProducts = products ?? [];
 
@@ -116,7 +111,7 @@ const InfoClientDialog = ({
   useEffect(() => {
     if (!clientInfo?.direccion || !clientInfo?.comuna) return;
 
-    const direccion = `${clientInfo.direccion}, ${clientInfo.comuna}, Chile`;
+    const direccion = `${clientInfo.direccion.value}, ${clientInfo.comuna.value}, Chile`;
 
     const getCoordsFromAddress = async (address: string) => {
       try {
@@ -126,7 +121,6 @@ const InfoClientDialog = ({
           )}&format=json`
         );
         const data = await response.json();
-
         if (!data[0]) {
           setCoordenadas(undefined);
           return;
@@ -147,11 +141,12 @@ const InfoClientDialog = ({
   useEffect(() => {
     if (!maintenancesClient) return;
 
-    const sortedMonths = Object.keys(maintenancesClient)
+    const sortedMonths = Object.entries(maintenancesClient)
+      .filter(([_, value]) => Array.isArray(value) && value.length > 0)
+      .map(([key]) => key)
       .map((m) => {
         const [year, month] = m.split("-");
-        const mm = month.padStart(2, "0");
-        return `${year}-${mm}`;
+        return `${year}-${month.padStart(2, "0")}`;
       })
       .sort();
 
@@ -214,7 +209,7 @@ const InfoClientDialog = ({
   const resumen = currentMonth
     ? calcularResumenMantenciones(
         mantencionesMesActual,
-        clientInfo?.valor_mantencion ?? 0
+        clientInfo?.valor_mantencion.value ?? 0
       )
     : {
         resumenMateriales: {},
@@ -283,95 +278,7 @@ const InfoClientDialog = ({
     >
       <DialogContent className="custom-scrollbar">
         {clientInfo && (
-          <div className={style.clientInfoContainer}>
-            <DialogTitle style={{ padding: 0 }}>
-              {clientInfo?.nombre} - {clientInfo?.direccion} -{" "}
-              {clientInfo?.comuna}
-            </DialogTitle>
-            <div
-              className="flex flex-row items-center text-center align-middle w-full gap-2"
-              onClick={() =>
-                windowWidth < 720 ? setShowClientInfo(!showClientInfo) : null
-              }
-            >
-              <span className="font-medium ">Info Cliente</span>
-              {windowWidth < 720 && (
-                <span className="cursor-pointer">
-                  <CaretIcon direction="down" />
-                </span>
-              )}
-            </div>
-            <div className={style.detailsInfoContainer}>
-              {showClientInfo && (
-                <div className={style.labelsContainer}>
-                  <div className={style.labelItemContainer}>
-                    <span className={style.labelItem}>
-                      <CalendarMonthIcon className={style.iconItem} /> Dia de
-                      Mantención: {clientInfo.dia_mantencion}
-                    </span>
-                    <span className={style.labelItem}>
-                      <PaidIcon className={style.iconItem} /> Valor Mantención:{" "}
-                      {formatMoneyNumber(clientInfo.valor_mantencion)}
-                    </span>
-                    <span className={style.labelItem}>
-                      <PoolIcon className={style.iconItem} /> Tipo Piscina:{" "}
-                      {clientInfo.tipo_piscina}
-                    </span>
-                  </div>
-                  <div className={style.labelItemContainer}>
-                    <span className={`${style.labelItem} text-left bg-red-500`}>
-                      <EmailIcon className={style.iconItem} /> Email:{" "}
-                      {clientInfo.email
-                        ? clientInfo.email
-                        : "Sin correo electrónico"}
-                    </span>
-                    <span className={style.labelItem}>
-                      <CalendarMonthIcon className={style.iconItem} /> Fecha
-                      Ingreso:{" "}
-                      {clientInfo.fecha_ingreso
-                        ? formatDateToDDMMYYYY(clientInfo.fecha_ingreso)
-                        : "No tiene fecha de ingreso"}
-                    </span>
-                    <span className={style.labelItem}>
-                      <a
-                        href={`https://www.google.com/maps?q=${coordenadas?.lat},${coordenadas?.lng}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: "#1976d2",
-                          textDecoration: "underline",
-                        }}
-                        className={style.googleLink}
-                      >
-                        <ExploreIcon className={style.iconItem} />
-                        Ver en Google Maps
-                      </a>
-                    </span>
-                  </div>
-                  {windowWidth > 720 && (
-                    <div>
-                      <button
-                        className={clsx(style.labelItem, style.buttonInfo)}
-                      >
-                        Generar Boleta
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-              {windowWidth > 720 && (
-                <div>
-                  <GoogleMapFromAddress
-                    lat={coordenadas?.lat ?? 0}
-                    lng={coordenadas?.lng ?? 0}
-                    width="300px"
-                    height="200px"
-                    zoom={200}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
+          <ClientFields clientInfo={clientInfo} coordenadas={coordenadas} />
         )}
         <div className="flex flex-row justify-between items-center ">
           <span
@@ -494,8 +401,8 @@ const InfoClientDialog = ({
 
         {isAddingMaintenance && (
           <MaintenanceFields
-            clientId={clientInfo?.id ?? ""}
-            valorMantencion={clientInfo?.valor_mantencion ?? 0}
+            clientId={clientInfo?.id.value ?? ""}
+            valorMantencion={clientInfo?.valor_mantencion.value ?? 0}
             productosList={products}
             onAccept={handleAcceptMaintenance}
             onCancel={handleCancelMaintenance}

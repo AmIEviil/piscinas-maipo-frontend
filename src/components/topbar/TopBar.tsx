@@ -1,6 +1,6 @@
 import style from "./TopBar.module.css";
 import PiscinasElMaipoIcon from "../ui/Icons/piscinasDelMaipoIcon";
-import CustomDropmenu from "../ui/customdropmenu/CustomDropmenu";
+import CustomDropmenu from "../ui/customdropmenu/NavBarComponent";
 
 export const TopBar = () => {
   return (

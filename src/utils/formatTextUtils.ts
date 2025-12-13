@@ -8,7 +8,8 @@ export const formatMoneyNumber = (value: number | undefined) => {
 
 export const toUpperCaseFirstLetter = (text: string) => {
   if (!text) return "";
-  return text.charAt(0).toUpperCase() + text.slice(1);
+  const normalizedText = text.toLowerCase().replace(/_/g, " ");
+  return normalizedText.charAt(0).toUpperCase() + normalizedText.slice(1);
 };
 
 export const toPascalCaseMonth = (str: string) =>

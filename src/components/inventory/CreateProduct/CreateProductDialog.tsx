@@ -6,8 +6,6 @@ import CustomInputText from "../../ui/InputText/CustomInputText";
 import style from "./CreateProductDialog.module.css";
 
 import { useEffect, useRef, useState } from "react";
-import { green } from "@mui/material/colors";
-import Fab from "@mui/material/Fab";
 import CheckIcon from "@mui/icons-material/Check";
 import SaveIcon from "@mui/icons-material/Save";
 import type {
@@ -23,13 +21,14 @@ import {
   useUpdateProduct,
   useUpdateProductType,
 } from "../../../hooks/ProductHooks";
+import Button from "../../ui/button/Button";
 
 interface CreateClientDialogProps {
   open: boolean;
   onClose: () => void;
   productInfo?: IProducto;
   isEditMode?: boolean;
-  kind?: "product" | "type";
+  kind?: string;
   productTypes: ITypeProduct[];
 }
 
@@ -114,13 +113,11 @@ const CreateProductDialog = ({
         case "product":
           if (isEditMode) {
             if (!productInfo?.id) return;
-            console.log("Editar producto:", productToSubmit);
             await updateProduct.mutateAsync({
-              productId: productInfo.id,
+              productId: productInfo.id.toString(),
               productData: productToSubmit,
             });
           } else {
-            console.log("Crear producto:", productToSubmit);
             await createProduct.mutateAsync(productToSubmit);
           }
           break;
@@ -131,16 +128,14 @@ const CreateProductDialog = ({
               typeId: productInfo.tipo.id,
               typeData: productTypeToSubmit,
             });
-            console.log("Editar tipo de producto:", productTypeToSubmit);
           } else {
-            console.log("Crear tipo de producto:", productTypeToSubmit);
             await createTypeProduct.mutateAsync(productTypeToSubmit);
           }
           break;
       }
       setSuccess(true);
       setLoading(false);
-      onClose();
+      handleClose();
     } catch (error) {
       console.error("Error creando producto:", error);
       setSuccess(false);
@@ -150,15 +145,8 @@ const CreateProductDialog = ({
 
   const handleClose = () => {
     onClose();
-  };
-
-  const buttonSx = {
-    ...(success && {
-      bgcolor: green[500],
-      "&:hover": {
-        bgcolor: green[700],
-      },
-    }),
+    setTipoProducto("");
+    setSuccess(false);
   };
 
   useEffect(() => {
@@ -255,16 +243,13 @@ const CreateProductDialog = ({
   const renderFooterDialog = () => {
     return (
       <DialogActions className={style.dialogActions}>
-        <Fab
-          aria-label="save"
-          color="primary"
-          sx={buttonSx}
+        <button onClick={handleClose}>Cancelar</button>
+        <Button
           onClick={handleAcceptButton}
           disabled={!isValidForm || loading}
-        >
-          {success ? <CheckIcon /> : <SaveIcon />}
-        </Fab>
-        <button onClick={onClose}>Cancelar</button>
+          label={isEditMode ? "Guardar Cambios" : "Crear Producto"}
+          icon={success ? <CheckIcon /> : <SaveIcon />}
+        ></Button>
       </DialogActions>
     );
   };

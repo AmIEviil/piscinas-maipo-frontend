@@ -25,6 +25,11 @@
   --color-fondo-suave: #e9e9e9; /* Blanco grisáceo */
   --color-celeste-oscuro: #1e293b; /* Celeste oscuro */
 
+  --blue-600: #73a9dc;
+  --red-500: #df5475;
+  --green-700: #54a036;
+  --yellow-500: #ce9612;
+
   [data-theme="dark"] {
     --color-primario: #0289c7; /* Celeste brillante, se mantiene como acento */
     --color-secundario: #ffffff; /* Blanco para textos principales */
@@ -91,5 +96,4 @@ button.normal {
 
 button.normal:hover {
   background-color: transparent;
-  
 }

@@ -3,6 +3,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  max-width: 60%;
 }
 
 .headerContent {
@@ -24,4 +25,13 @@
 .textHeader {
   width: 50%;
   text-align: center;
+}
+
+@media (max-width: 1000px) {
+  .textHeader {
+    width: 100%;
+  }
+  .headerLogin {
+    max-width: 100%;
+  }
 }

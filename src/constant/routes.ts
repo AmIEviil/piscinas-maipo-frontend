@@ -16,7 +16,7 @@ export const topbarOptions = [
     name: "Inicio",
     path: "/",
     icon: "home",
-    canAccess: [roles.ADMIN, roles.TEC],
+    canAccess: [roles.SUPER_ADMIN, roles.ADMIN, roles.TEC],
   },
   {
     name: "Clientes",
@@ -39,13 +39,13 @@ export const topbarOptions = [
   {
     name: "Usuarios",
     path: PAGE_ROUTES.Usuarios,
-    canAccess: [roles.ADMIN],
+    canAccess: [roles.SUPER_ADMIN],
     icon: "users",
   },
   {
     name: "Migraciones",
     path: PAGE_ROUTES.Migraciones,
-    canAccess: [roles.ADMIN],
+    canAccess: [roles.SUPER_ADMIN],
     icon: "migration",
   },
   {

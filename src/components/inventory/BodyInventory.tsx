@@ -19,6 +19,7 @@ import debounce from "lodash.debounce";
 import { formatNoResultsText } from "../../utils/FiltersUtils";
 import { useTypesProductStore } from "../../store/ProductStore";
 import TrashIcon from "../ui/Icons/TrashIcon";
+import { useRefetchStore } from "../../store/refetchStore";
 
 interface IfilterQuery {
   nombre?: string;
@@ -28,6 +29,7 @@ const BodyInventory = () => {
   const productsMutation = useProducts();
   const deleteProductMutation = useDeleteProduct();
 
+  const { shouldRefetch } = useRefetchStore();
   const { productsTypes, fetchProductsTypes } = useTypesProductStore();
 
   const [products, setProducts] = useState<IProducto[]>();
@@ -43,9 +45,7 @@ const BodyInventory = () => {
 
   const [nombreInput, setNombreInput] = useState("");
 
-  const [kindToCreate, setKindToCreate] = useState<"product" | "type">(
-    "product"
-  );
+  const [kindToCreate, setKindToCreate] = useState<string>("");
 
   const fetchData = async () => {
     setLoadingTable(true);
@@ -85,14 +85,15 @@ const BodyInventory = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [shouldRefetch]);
 
-  const handleOpenCreateDialog = (kind: "product" | "type") => {
+  const handleOpenCreateDialog = (kind: string) => {
     setKindToCreate(kind);
     setOpenCreateDialog(true);
   };
 
   const handleEditProduct = (product: IProducto) => {
+    setKindToCreate("product");
     setSelectedProduct(product);
     setIsEditMode(true);
     setOpenCreateDialog(true);
@@ -101,6 +102,9 @@ const BodyInventory = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setOpenCreateDialog(false);
+    setSelectedProduct(null);
+    setIsEditMode(false);
+    setKindToCreate("");
   };
 
   const handleClosePopUp = () => {
@@ -116,8 +120,7 @@ const BodyInventory = () => {
     try {
       await deleteProductMutation.mutateAsync(id);
       fetchData();
-      console.log("Producto eliminado:", id);
-      setOpenPopUp(false);
+      handleClosePopUp();
     } catch (error) {
       console.error("Error eliminando al producto:", id, error);
     }
@@ -210,6 +213,7 @@ const BodyInventory = () => {
         productInfo={selectedProduct ?? undefined}
       />
       <CreateProductDialog
+        key={`dialog-${selectedProduct?.id}`}
         open={openCreateDialog}
         onClose={handleCloseDialog}
         isEditMode={isEditMode}

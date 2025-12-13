@@ -94,7 +94,7 @@ export default function Calendar({
   className,
   buttonClassName,
   minDate,
-  maxDate,
+  maxDate = new Date(),
   title,
   required,
 }: CalendarProps) {
@@ -143,7 +143,7 @@ export default function Calendar({
     <div className={`custom-datepicker-header ${className}`}>
       <div className="custom-datepicker-selects">
         <select
-          className="custom-select z-[100000]"
+          className="custom-select z-100000"
           value={date.getMonth()}
           onChange={({ target: { value } }) => changeMonth(Number(value))}
         >
@@ -206,7 +206,7 @@ export default function Calendar({
     return (
       <div className="flex flex-col">
         {title && (
-          <label className="datepicker-title">
+          <label className="datepicker-title text-sm font-semibold mb-2">
             {title} {required && <span className="required">*</span>}
           </label>
         )}
@@ -257,7 +257,7 @@ export default function Calendar({
   return (
     <div className="flex flex-col">
       {title && (
-        <label className="datepicker-title">
+        <label className="datepicker-title text-sm font-semibold mb-2">
           {title} {required && <span className="required">*</span>}
         </label>
       )}

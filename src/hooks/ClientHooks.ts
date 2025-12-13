@@ -2,12 +2,20 @@ import { useMutation } from "@tanstack/react-query";
 import { clientService } from "../core/services/ClientsService";
 import type { Client } from "../service/client.interface";
 import { useSnackbar } from "../utils/snackBarHooks";
+import type { IFieldPayload } from "../utils/formUtils";
+import { useRefetchStore } from "../store/refetchStore";
 
 export const useClient = () => {
   const clientMutation = useMutation({
     mutationFn: clientService.getClients,
   });
   return clientMutation;
+};
+
+export const useClientsById = () => {
+  return useMutation({
+    mutationFn: (id: string) => clientService.getClientById(id),
+  });
 };
 
 export const useClientsByFilters = () => {
@@ -20,6 +28,7 @@ export const useClientsByFilters = () => {
 };
 
 export const useCreateClient = () => {
+  const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
   const { showSnackbar } = useSnackbar();
   const createClientMutation = useMutation({
     mutationFn: clientService.createNewClient,
@@ -27,6 +36,7 @@ export const useCreateClient = () => {
       console.log(error);
     },
     onSuccess: () => {
+      setShouldRefetch(true);
       showSnackbar("Cliente creado exitosamente", "success");
     },
   });
@@ -34,6 +44,7 @@ export const useCreateClient = () => {
 };
 
 export const useUpdateClient = () => {
+  const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
   const { showSnackbar } = useSnackbar();
   const updateClientMutation = useMutation({
     mutationFn: ({ clientId, data }: { clientId: string; data: Client }) =>
@@ -42,20 +53,50 @@ export const useUpdateClient = () => {
       console.log(error);
     },
     onSuccess: () => {
+      setShouldRefetch(true);
       showSnackbar("Cliente actualizado exitosamente", "success");
     },
   });
   return updateClientMutation;
 };
 
-export const useDeleteClient = () => {
+export const useUpdateClientField = () => {
+  const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
   const { showSnackbar } = useSnackbar();
+
+  const updateClientFieldMutation = useMutation({
+    mutationFn: ({
+      clientId,
+      dto,
+    }: {
+      clientId: string;
+      dto: IFieldPayload[];
+    }) => clientService.updateClientField(clientId, dto),
+    onError: (error: unknown) => {
+      showSnackbar(
+        `Error al actualizar el campo del cliente. Error: ${error}`,
+        "error"
+      );
+    },
+    onSuccess: () => {
+      setShouldRefetch(true);
+      showSnackbar("Campo del cliente actualizado exitosamente", "success");
+    },
+  });
+  return updateClientFieldMutation;
+};
+
+export const useDeleteClient = () => {
+  const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
+  const { showSnackbar } = useSnackbar();
+
   const deleteClientMutation = useMutation({
     mutationFn: clientService.deleteClient,
     onError: (error: unknown) => {
       console.log(error);
     },
     onSuccess: () => {
+      setShouldRefetch(true);
       showSnackbar("Cliente eliminado exitosamente", "success");
     },
   });

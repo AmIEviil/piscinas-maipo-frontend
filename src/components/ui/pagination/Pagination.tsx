@@ -1,3 +1,4 @@
+import ArrowIcon from "../Icons/ArrowIcon";
 import "./Pagination.css";
 
 interface PaginationProps {
@@ -171,7 +172,7 @@ const CustomPagination = ({
         disabled={actualPage === 1 || disabled}
         onClick={() => onPageChange(actualPage - 1)}
       >
-        ‹
+        <ArrowIcon direction="left" />
       </button>
       {generatePageItems()}
       <button
@@ -179,7 +180,7 @@ const CustomPagination = ({
         disabled={actualPage === totalPages || disabled}
         onClick={() => onPageChange(actualPage + 1)}
       >
-        ›
+        <ArrowIcon direction="right" />
       </button>
     </div>
   );

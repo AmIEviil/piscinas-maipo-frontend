@@ -1,0 +1,52 @@
+/* Custom Style for Dropdown or CustomDropdown */
+.custom-dropdown-toggle::after {
+  display: none !important;
+}
+.custom-menu-dropdown {
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.dropdown-toggle {  
+  color: var(--black-900);
+  background-color: var(--blue-50);
+  border-color: var(--black-400);
+  height: 40px;
+}
+
+.dropdown-toggle:hover {
+  background-color: #e9ecef;
+  color: var(--black-900);
+  box-shadow: 0px 0px 4px 0px var(--blue-600);
+  border: 1px solid var(--blue-600);
+}
+
+.dropdown-item {
+  color: var(--black-900);
+  padding: 0.5rem 1rem;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22.7px;
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.dropdown-item.active {
+  background-color: transparent;
+  color: var(--black-900);
+}
+.dropdown-item.active:hover {
+  background-color: #e9ecef;
+  color: var(--black-900);
+}
+
+/* Custom style for ReactDropdown or ActionDropdown */
+.custom-action-menu-dropdown {
+  padding: 0.5rem;
+}

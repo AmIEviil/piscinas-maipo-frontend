@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react";
 import debounce from "lodash.debounce";
 import {
   useClientsByFilters,
+  useClientsById,
   useDeleteClient,
 } from "../../../hooks/ClientHooks";
-import type { Client } from "../../../service/client.interface";
+import type { Client, IClientForm } from "../../../service/client.interface";
 import { useMaintenancesByClient } from "../../../hooks/MaintenanceHooks";
 import { type IMaintenance } from "../../../service/maintenance.interface";
 import style from "./BodyClients.module.css";
@@ -24,6 +26,7 @@ import Tooltip from "@mui/material/Tooltip";
 import {
   comunas,
   dias,
+  rutas,
   titlesTable,
 } from "../../../constant/constantBodyClient";
 import { formatMoneyNumber } from "../../../utils/formatTextUtils";
@@ -35,29 +38,45 @@ import TrashIcon from "../../ui/Icons/TrashIcon";
 import { useBoundStore } from "../../../store/BoundedStore";
 import CollapsableTable from "../../ui/collapsable-table/CollapsableTable";
 import { formatNoResultsText } from "../../../utils/FiltersUtils";
+import { useRefetchStore } from "../../../store/refetchStore";
 
 interface IfilterQuery {
   nombre?: string;
   direccion?: string;
   dia?: string;
   comuna?: string;
+  ruta?: string;
+  isActive?: boolean;
   orderBy?: string;
   orderDirection?: "ASC" | "DESC";
 }
 
+const initial_filters: IfilterQuery = {
+  nombre: "",
+  direccion: "",
+  dia: "",
+  comuna: "",
+  ruta: "",
+  isActive: true,
+  orderBy: "nombre",
+  orderDirection: "ASC",
+};
+
 const BodyClients = () => {
   const maintenanceByClient = useMaintenancesByClient();
   const clientFilterMutation = useClientsByFilters();
+  const clientByIdMutation = useClientsById();
   const deleteClientMutation = useDeleteClient();
 
   const { setSnackBar } = useSnackBarModalStore();
+  const shouldRefetch = useRefetchStore((state) => state.shouldRefetch);
   const [windowWidth, setWindowWidth] = useState(getWindowWidth());
 
   const [clients, setClients] = useState<Record<string, Client[]>>();
-  const [filterQuery, setFilterQuery] = useState<IfilterQuery>({});
+  const [filterQuery, setFilterQuery] = useState<IfilterQuery>(initial_filters);
   const [loadingTable, setLoadingTable] = useState(false);
+  const [clientInfo, setClientInfo] = useState<IClientForm | null>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
   const [currentClientIndex, setCurrentClientIndex] = useState(0);
 
@@ -71,6 +90,8 @@ const BodyClients = () => {
   const [direccionInput, setDireccionInput] = useState("");
   const [selectedComuna, setSelectedComuna] = useState("");
   const [selectedDay, setSelectedDay] = useState("");
+  const [selectedRuta, setSelectedRuta] = useState("");
+  const [selectedIsActive, setSelectedIsActive] = useState(true);
 
   const selectedDayHome = useBoundStore((state) => state.dayFilter);
   const setDayFilterStore = useBoundStore((state) => state.setDayFilter);
@@ -88,6 +109,11 @@ const BodyClients = () => {
   };
   const handleOpenCreateDialog = () => {
     setOpenCreateDialog(true);
+    setSelectedClient(null);
+    setIsEditMode(false);
+    setCurrentClientIndex(0);
+    setMantenciones(undefined);
+    setSnackBar(false, "");
   };
 
   const fetchData = async () => {
@@ -106,8 +132,9 @@ const BodyClients = () => {
   };
 
   useEffect(() => {
+    console.log("Filter Query changed:", shouldRefetch, filterQuery);
     fetchData();
-  }, [filterQuery]);
+  }, [filterQuery, shouldRefetch]);
 
   useEffect(() => {
     if (selectedClients.length > 0) {
@@ -184,6 +211,16 @@ const BodyClients = () => {
     setFilterQuery((prev) => ({ ...prev, dia: value }));
   };
 
+  const handleChangeRuta = (value: string) => {
+    setSelectedRuta(value);
+    setFilterQuery((prev) => ({ ...prev, ruta: value }));
+  };
+
+  const handleChangeActive = (value: boolean) => {
+    setSelectedIsActive(value);
+    setFilterQuery((prev) => ({ ...prev, isActive: value }));
+  };
+
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setOpenCreateDialog(false);
@@ -196,12 +233,15 @@ const BodyClients = () => {
     setMantenciones(undefined);
     setSelectedClient(null);
     setIsEditMode(false);
+    setCurrentClientIndex(0);
   };
 
   const handleSeeDetailsClient = async (client: Client) => {
     setSelectedClient(client);
     try {
       if (!client.id) return;
+      const clientInfo = await clientByIdMutation.mutateAsync(client.id);
+      setClientInfo(clientInfo);
       const mantenciones = await maintenanceByClient.mutateAsync(client.id);
       setMantenciones(mantenciones);
       setOpenDialog(true);
@@ -295,6 +335,8 @@ const BodyClients = () => {
     try {
       const client = selectedClients[index];
       if (!client.id) return;
+      const clientInfo = await clientByIdMutation.mutateAsync(client.id);
+      setClientInfo(clientInfo);
       const mantenciones = await maintenanceByClient.mutateAsync(client.id);
       setMantenciones(mantenciones);
       setSelectedClient(client);
@@ -302,6 +344,7 @@ const BodyClients = () => {
       setOpenDialog(true);
       setSnackBar(false, "");
     } catch (error) {
+      setSnackBar(true, "Error cargando mantenciones");
       console.error("Error cargando mantenciones:", error);
     }
   };
@@ -351,6 +394,14 @@ const BodyClients = () => {
             value={direccionInput}
           />
         </div>
+        <div className={style.filters}>
+          <Select
+            label="Comuna"
+            options={comunas}
+            onChange={(event) => handleChangeComuna(String(event.target.value))}
+            value={selectedComuna}
+          />
+        </div>
         <div className={`${style.filters}`}>
           <Select
             label="Dia Mantención"
@@ -361,14 +412,33 @@ const BodyClients = () => {
             value={selectedDay}
           />
         </div>
-        <div className={style.filters}>
+        <div className={`${style.filters}`}>
           <Select
-            label="Comuna"
-            options={comunas}
-            onChange={(event) => handleChangeComuna(String(event.target.value))}
-            value={selectedComuna}
+            label="Ruta"
+            options={rutas}
+            onChange={(event) => handleChangeRuta(String(event.target.value))}
+            value={selectedRuta}
           />
         </div>
+        <div className={`${style.filters}`}>
+          <Select
+            label="Activo"
+            options={[
+              {
+                label: "Sí",
+                value: "true",
+              },
+              {
+                label: "No",
+                value: "false",
+              },
+            ]}
+            onChange={(event) =>
+              handleChangeActive(Boolean(event.target.value))
+            }
+            value={selectedIsActive.toString()}
+          />
+        </div>{" "}
         <div className={style.actionsFilters}>
           {hasFilters && (
             <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
@@ -429,6 +499,7 @@ const BodyClients = () => {
               <td>{client.telefono}</td>
               <td>{client.email ? client.email : "No tiene email asociado"}</td>
               <td>{client.dia_mantencion}</td>
+              <td>{client.ruta}</td>
               <td>{formatMoneyNumber(client.valor_mantencion)}</td>
               <td className="flex flex-col gap-2 sm:gap-4 items-center justify-center">
                 <Tooltip title="Ver detalles Cliente" arrow leaveDelay={0}>
@@ -461,7 +532,8 @@ const BodyClients = () => {
       <InfoClientDialog
         open={openDialog}
         onClose={handleCloseDialog}
-        clientInfo={selectedClient ?? undefined}
+        // @ts-ignore
+        clientInfo={clientInfo ?? undefined}
         maintenancesClient={mantenciones ?? undefined}
         onMaintenanceCreated={async () => {
           if (selectedClient?.id) {
