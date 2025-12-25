@@ -314,6 +314,7 @@ const BodyClients = () => {
   };
 
   const handleSelectAllInGroup = (key: string, clientsInGroup: Client[]) => {
+    console.log("Selecting all in group:", key, clientsInGroup);
     setSelectedClients((prev) => {
       const allSelected = clientsInGroup.every((client) =>
         prev.some((c) => c.id === client.id)
