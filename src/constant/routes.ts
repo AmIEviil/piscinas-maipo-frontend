@@ -22,19 +22,19 @@ export const topbarOptions = [
     name: "Clientes",
     path: PAGE_ROUTES.Clientes,
     icon: "clients",
-    canAccess: [roles.ADMIN, roles.TEC],
+    canAccess: [roles.SUPER_ADMIN, roles.ADMIN, roles.TEC],
   },
   {
     name: "Inventario",
     path: PAGE_ROUTES.Inventario,
     icon: "inventory",
-    canAccess: [roles.ADMIN],
+    canAccess: [roles.SUPER_ADMIN, roles.ADMIN],
   },
   {
     name: "Trabajos",
     path: PAGE_ROUTES.Trabajos,
     icon: "works",
-    canAccess: [roles.ADMIN],
+    canAccess: [roles.SUPER_ADMIN, roles.ADMIN],
   },
   {
     name: "Usuarios",
@@ -51,7 +51,7 @@ export const topbarOptions = [
   {
     name: "Cerrar Sesión",
     path: PAGE_ROUTES.Login,
-    canAccess: [roles.ADMIN, roles.TEC],
+    canAccess: [roles.SUPER_ADMIN, roles.ADMIN, roles.TEC],
     icon: "logout",
   },
 ];

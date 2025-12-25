@@ -2,8 +2,6 @@
 import { useEffect, useState } from "react";
 import CustomInputText from "../../ui/InputText/CustomInputText";
 import CustomSelect from "../../ui/Select/Select";
-import DatePicker from "../../ui/calendar/DatePicker";
-import dayjs from "dayjs";
 import { tiposRevestimientos } from "../../../constant/constantBodyClient";
 import { revestimientoService } from "../../../core/services/RevestimientoService";
 import style from "./RevestimientoFields.module.css"; // Asegúrate de importar el nuevo CSS
@@ -24,6 +22,7 @@ import type {
   IRevestimientoCreate,
 } from "../../../service/revestimiento.interface";
 import { CustomTextArea } from "../../ui/InputText/CustonTextArea";
+import Calendar from "../../ui/datepicker/DatePicker";
 
 interface RevestimientoFieldsProps {
   clients: Client[];
@@ -183,16 +182,20 @@ const RevestimientoFields = ({
               }))
             }
           />
-          <DatePicker
-            label="Fecha Propuesta"
+          <Calendar
+            title="Fecha Propuesta"
+            className="w-fit!"
             required
-            value={dayjs(value.fechaPropuesta)}
-            onChange={(date) =>
+            mode="day"
+            onChange={({ start }) =>
               onChange((prev) => ({
                 ...prev,
-                fechaPropuesta: date ? date.toISOString() : "",
+                fechaPropuesta: start
+                  ? start.toISOString().split("T")[0]
+                  : prev.fechaPropuesta,
               }))
             }
+            initialValue={new Date(value.fechaPropuesta || new Date())}
           />
         </div>
       </div>
@@ -347,25 +350,33 @@ const RevestimientoFields = ({
               onChange((prev) => ({ ...prev, garantia: String(val) }))
             }
           />
-          <DatePicker
-            label="Fecha Inicio Obra"
+          <Calendar
+            title="Fecha Inicio Obra"
+            className="w-fit!"
             required
-            value={dayjs(value.fechaInicio)}
-            onChange={(date) =>
+            mode="day"
+            onChange={({ start }) =>
               onChange((prev) => ({
                 ...prev,
-                fechaInicio: date ? date.toISOString() : "",
+                fechaInicio: start
+                  ? start.toISOString().split("T")[0]
+                  : prev.fechaInicio,
               }))
             }
+            initialValue={new Date(value.fechaInicio || new Date())}
           />
-          <DatePicker
-            label="Fecha Término Obra"
+          <Calendar
+            title="Fecha Término Obra"
+            className="w-fit!"
             required
-            value={dayjs(value.fechaTermino)}
-            onChange={(date) =>
+            mode="day"
+            initialValue={new Date(value.fechaTermino || new Date())}
+            onChange={({ start }) =>
               onChange((prev) => ({
                 ...prev,
-                fechaTermino: date ? date.toISOString() : "",
+                fechaTermino: start
+                  ? start.toISOString().split("T")[0]
+                  : prev.fechaTermino,
               }))
             }
           />

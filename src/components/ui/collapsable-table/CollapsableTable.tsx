@@ -150,7 +150,7 @@ const CollapsableTable: React.FC<CollapsableTableProps> = ({
                 onClick={() => toggleCollapse(groupKey)}
                 className={`${style.collapsableTable_groupContent} cursor-pointer w-full select-none`}
               >
-                <div className="flex items-center gap-2 text-sm font-bold uppercase ">
+                <div className="flex items-center gap-2 text-sm font-bold uppercase">
                   {label} ({groupItems.length})
                   <CaretIcon
                     color="currentColor"

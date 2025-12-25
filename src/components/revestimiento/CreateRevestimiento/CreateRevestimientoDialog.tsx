@@ -1,7 +1,3 @@
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
 import style from "./CreateRevestimientoDialog.module.css";
 
 import { useEffect, useState } from "react";
@@ -16,6 +12,7 @@ import RevestimientoFields from "./RevestimientoFields";
 import { useClientStore } from "../../../store/ClientStore";
 import { revestimientoService } from "../../../core/services/RevestimientoService";
 import Button from "../../ui/button/Button";
+import { Modal } from "react-bootstrap";
 
 interface CreateRevestimientoDialogProps {
   open: boolean;
@@ -76,11 +73,11 @@ const CreateRevestimientoDialog = ({
   };
 
   return (
-    <Dialog fullWidth maxWidth="md" open={open} onClose={handleClose}>
-      <DialogTitle className={style.dialogTitle}>
+    <Modal show={open} onHide={handleClose} size="xl" centered>
+      <Modal.Header className={style.dialogTitle} closeButton>
         Crear Nuevo Revestimiento
-      </DialogTitle>
-      <DialogContent className="custom-scrollbar">
+      </Modal.Header>
+      <Modal.Body className="max-h-[70vh] overflow-auto custom-scrollbar">
         <div className={style.formContainer}>
           <RevestimientoFields
             clients={clients}
@@ -88,8 +85,8 @@ const CreateRevestimientoDialog = ({
             onChange={(next) => setRevestimientoData(next)}
           />
         </div>
-      </DialogContent>
-      <DialogActions className={style.dialogActions}>
+      </Modal.Body>
+      <Modal.Footer className={style.dialogActions}>
         <button onClick={onClose} disabled={loading || success}>
           Cancelar
         </button>
@@ -99,8 +96,8 @@ const CreateRevestimientoDialog = ({
           disabled={loading || success}
           icon={success ? <CheckIcon /> : <SaveIcon />}
         />
-      </DialogActions>
-    </Dialog>
+      </Modal.Footer>
+    </Modal>
   );
 };
 

@@ -1,10 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useMemo, useState } from "react";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-
 import {
   type IMaintenance,
   type IMaintenanceCreate,
@@ -28,6 +23,8 @@ import SeeMoreButton from "../../common/SeeMore/SeeMoreButton";
 import ClientFields, {
   type IClientForm,
 } from "./clientInfoFields/ClientInfoFields";
+import { Modal } from "react-bootstrap";
+import Button from "../../ui/button/Button";
 
 interface InfoClientDialogProps {
   open: boolean;
@@ -269,14 +266,14 @@ const InfoClientDialog = ({
   );
 
   return (
-    <Dialog
-      fullWidth={true}
-      maxWidth={"xl"}
-      open={open}
-      onClose={handleClose}
+    <Modal
+      show={open}
+      onHide={handleClose}
+      size="xl"
+      centered
       style={{ borderRadius: 32 }}
     >
-      <DialogContent className="custom-scrollbar">
+      <Modal.Body className="custom-scrollbar">
         {clientInfo && (
           <ClientFields clientInfo={clientInfo} coordenadas={coordenadas} />
         )}
@@ -398,7 +395,6 @@ const InfoClientDialog = ({
             ) : null}
           </>
         )}
-
         {isAddingMaintenance && (
           <MaintenanceFields
             clientId={clientInfo?.id.value ?? ""}
@@ -408,12 +404,12 @@ const InfoClientDialog = ({
             onCancel={handleCancelMaintenance}
           />
         )}
-      </DialogContent>
-      <DialogActions>
+      </Modal.Body>
+      <Modal.Footer>
         {dialogFooter}
-        <Button onClick={onClose}>Cerrar</Button>
-      </DialogActions>
-    </Dialog>
+        <Button label="Cerrar" onClick={handleClose} variant="primary" />
+      </Modal.Footer>
+    </Modal>
   );
 };
 

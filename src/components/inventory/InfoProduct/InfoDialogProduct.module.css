@@ -1,114 +1,16 @@
-.clientInfoContainer {
+.historialSection {
   width: 100%;
   display: flex;
   flex-direction: column;
-  padding-bottom: 1rem;
+  gap: 1.5rem;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.detailsInfoContainer {
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
-}
-.labelsContainer {
-  justify-content: center;
-  display: flex;
-  flex-direction: row;
-  align-items: start;
-}
-
-.labelItem {
-  display: flex;
-  text-align: center;
-  background-color: var(--color-fondo-suave);
-  margin: 10px;
-  height: fit-content;
-  padding: 10px;
-  border-radius: 16px;
-  width: fit-content;
-  min-width: 200px;
-}
-
-.iconItem {
-  margin-right: 0.5rem;
-}
-
-.googleLink {
-  display: flex;
-}
-.buttonInfo {
-  border: 2px solid var(--color-secundario);
-  background-color: var(--color-secundario);
-  justify-content: center;
-  font-size: 14px;
-}
-
-.buttonInfo:hover {
-  background-color: var(--color-fondo);
-  border: 2px solid var(--color-secundario);
-  color: var(--color-primario);
-  transition: all 0.2s ease;
-}
-
-.maintenancesContainer {
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
-  border-top: 2px solid var(--color-secundario);
-  padding-top: 1rem;
-  justify-items: center;
-}
-
-.tableContainer {
-  width: 100%;
-}
-
-.totalMes {
-  width: 20%;
-  border: 2px solid var(--color-secundario);
-  border-radius: 16px;
-  padding: 16px;
-  height: fit-content;
-  justify-items: start;
-  justify-content: start;
-  align-items: center;
-  margin: auto auto;
-  text-align: start;
-}
-
-.totalValues {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-}
-
-@media (max-width: 720px) {
-  .maintenancesContainer {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-  .totalMes {
-    width: 90%;
-  }
-}
-
-@media (max-width: 600px) {
-  .detailsInfoContainer {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-  .labelsContainer {
-    display: flex;
-    width: 100%;
-    background-attachment: red !important;
-    flex-direction: column;
-    align-items: center;
-  }
-  .labelItemContainer {
-    display: flex;
-    flex-wrap: wrap;
-    width: 100%;
-  }
+.historialTitle {
+  color: #24588b;
+  font-size: 16px;
+  font-weight: 700;
 }

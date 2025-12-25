@@ -56,7 +56,6 @@ RenderFieldProps) => {
   const hasChanges = editedValue !== field.value;
 
   useEffect(() => {
-    console.log("Field prop changed:", field);
     setEditedValue(field.value);
   }, [field.value]);
 
@@ -96,7 +95,6 @@ RenderFieldProps) => {
   // };
 
   const handleFieldDisplay = () => {
-    console.log("Displaying field:", field);
     if (field.key.includes("valor")) {
       return formatMoneyNumber(field.value);
     }
@@ -248,7 +246,6 @@ RenderFieldProps) => {
                         value={String(editedValue)}
                         onChange={(e) => {
                           setEditedValue(e.target.value);
-                          console.log("Edited value:", e.target.value);
                         }}
                       />
                     </>

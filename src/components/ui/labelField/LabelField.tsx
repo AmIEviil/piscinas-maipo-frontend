@@ -1,5 +1,6 @@
 interface LabelFieldProps {
   label: string;
+  value?: string | number;
   required?: boolean;
   children?: React.ReactNode;
   className?: string;
@@ -9,6 +10,7 @@ interface LabelFieldProps {
 
 const LabelField = ({
   label,
+  value,
   required = false,
   className = "",
   children,
@@ -22,6 +24,7 @@ const LabelField = ({
         htmlFor={`input-field-${label}`}
       >
         {label} {required && <span className="required">*</span>}
+        {value && <span className="font-normal ml-2">{value}</span>}
         {children}
         {showError && errorMessage && (
           <span className="text-red-500 text-sm">{errorMessage}</span>

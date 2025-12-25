@@ -102,7 +102,7 @@ export const MigrationViewProtected = () => {
     : {};
 
   return (
-    <ProtectedRoute allowedRoles={[roles.ADMIN]} redirectPath="/">
+    <ProtectedRoute allowedRoles={[roles.SUPER_ADMIN, roles.ADMIN]} redirectPath="/">
       <div className="w-full bg-white shadow-md rounded-lg">
         <div className="p-4 border-b border-gray-200 text-lg font-semibold flex items-center gap-2">
           <span>Resumen</span>

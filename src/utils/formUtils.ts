@@ -91,3 +91,19 @@ export const handleTypeOfField = (value: any): string => {
     return "unknown";
   }
 };
+
+export const checkValue = (
+  actualValue: string | number | null | undefined,
+  availableValue: string | number | null | undefined
+) => {
+  const normalize = (str: string) =>
+    str
+      .normalize("NFD") // quitar tildes
+      .replace(/[\u0300-\u036f]/g, "") // limpiar acentos
+      .toLowerCase()
+      .replace(/[_-]/g, " ") // tratar _ y - como espacios
+      .replace(/\s+/g, " ") // colapsar espacios múltiples
+      .trim();
+
+  return normalize(String(actualValue)) === normalize(String(availableValue));
+};

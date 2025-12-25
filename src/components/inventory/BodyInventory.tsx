@@ -4,7 +4,7 @@ import style from "../client/BodyClients/BodyClients.module.css";
 import InputText from "../ui/InputText/InputText";
 import TableGeneric from "../ui/table/Table";
 import EditIcon from "@mui/icons-material/Edit";
-// import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import AddIcon from "@mui/icons-material/Add";
 import Tooltip from "@mui/material/Tooltip";
 import { formatMoneyNumber } from "../../utils/formatTextUtils";
@@ -14,12 +14,12 @@ import { type IProducto } from "../../service/products.interface";
 import { useDeleteProduct, useProducts } from "../../hooks/ProductHooks";
 import CreateProductDialog from "./CreateProduct/CreateProductDialog";
 import InfoProductDialog from "./InfoProduct/InfoDialogProduct";
-import PopUp from "../ui/PopUp/PopUp";
 import debounce from "lodash.debounce";
 import { formatNoResultsText } from "../../utils/FiltersUtils";
 import { useTypesProductStore } from "../../store/ProductStore";
 import TrashIcon from "../ui/Icons/TrashIcon";
 import { useRefetchStore } from "../../store/refetchStore";
+import CustomModal from "../ui/modal/CustomModal";
 
 interface IfilterQuery {
   nombre?: string;
@@ -90,6 +90,11 @@ const BodyInventory = () => {
   const handleOpenCreateDialog = (kind: string) => {
     setKindToCreate(kind);
     setOpenCreateDialog(true);
+  };
+
+  const handleSeeProduct = (product: IProducto) => {
+    setSelectedProduct(product);
+    setOpenDialog(true);
   };
 
   const handleEditProduct = (product: IProducto) => {
@@ -188,6 +193,11 @@ const BodyInventory = () => {
               <td>{product.cant_disponible}</td>
               <td>{formatMoneyNumber(product.valor_unitario)}</td>
               <td className="flex flex-col gap-2 sm:gap-4 items-center justify-center">
+                <Tooltip title="Ver Producto" arrow leaveDelay={0}>
+                  <button onClick={() => handleSeeProduct(product)}>
+                    <VisibilityIcon />
+                  </button>
+                </Tooltip>
                 <Tooltip title="Editar Producto" arrow leaveDelay={0}>
                   <button onClick={() => handleEditProduct(product)}>
                     <EditIcon />
@@ -221,21 +231,22 @@ const BodyInventory = () => {
         kind={kindToCreate}
         productTypes={productsTypes}
       />
-      <PopUp
+      <CustomModal
         open={openPopUp}
         onClose={handleClosePopUp}
+        title="Confirmar eliminación"
+        confirmLabel="Eliminar"
+        content={
+          <div className="flex flex-col gap-4 text-center">
+            <p>¿Estás seguro de que deseas eliminar este producto?</p>
+            <p className="font-bold">{selectedProduct?.nombre}</p>
+            <p>Esta acción no se puede deshacer.</p>
+          </div>
+        }
         onConfirm={() => {
           handleDeleteProduct(selectedProduct?.id ?? "");
         }}
-        title="Confirmar eliminación"
-        confirmText="Eliminar"
-      >
-        <div className="flex flex-col gap-4 text-center">
-          <p>¿Estás seguro de que deseas eliminar este producto?</p>
-          <p className="font-bold">{selectedProduct?.nombre}</p>
-          <p>Esta acción no se puede deshacer.</p>
-        </div>
-      </PopUp>
+      />
     </div>
   );
 };

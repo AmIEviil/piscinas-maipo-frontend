@@ -22,3 +22,18 @@
   font-weight: bold;
   text-transform: capitalize;
 }
+
+@media screen and (max-width: 720px) {
+  .topBarContainer {
+    padding: 0.5rem 0.5rem;
+  }
+  .iconHeader {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .headerModuleContainer {
+    font-size: 1rem;
+    gap: 0.5rem;
+  }
+}

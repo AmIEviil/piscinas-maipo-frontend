@@ -32,8 +32,8 @@ export const useCreateClient = () => {
   const { showSnackbar } = useSnackbar();
   const createClientMutation = useMutation({
     mutationFn: clientService.createNewClient,
-    onError: (error: unknown) => {
-      console.log(error);
+    onError: () => {
+      showSnackbar("Error al crear el cliente", "error");
     },
     onSuccess: () => {
       setShouldRefetch(true);

@@ -1,7 +1,3 @@
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
 import { type Client } from "../../../service/client.interface";
 import CustomInputText from "../../ui/InputText/CustomInputText";
 import style from "./CreateClientDialog.module.css";
@@ -30,6 +26,7 @@ import Button from "../../ui/button/Button";
 import LabelField from "../../ui/labelField/LabelField";
 import CustomCheckbox from "../../ui/checkbox/CustomCheckBox";
 import { CustomTextArea } from "../../ui/InputText/CustonTextArea";
+import { Modal } from "react-bootstrap";
 
 interface CreateClientDialogProps {
   open: boolean;
@@ -189,12 +186,12 @@ const CreateClientDialog = ({
     valorMantencionClient > 0;
 
   return (
-    <Dialog fullWidth maxWidth="md" open={open} onClose={onClose}>
-      <DialogTitle className={style.dialogTitle}>
+    <Modal size="xl" show={open} onHide={onClose}>
+      <Modal.Header className={style.dialogTitle} closeButton>
         {isEditMode ? "Editar Cliente" : "Crear Nuevo Cliente"}
-      </DialogTitle>
+      </Modal.Header>
 
-      <DialogContent className="custom-scrollbar">
+      <Modal.Body className="custom-scrollbar">
         <div className={style.container}>
           {/* Sección 1: Información Personal */}
           <div className={style.section}>
@@ -338,9 +335,9 @@ const CreateClientDialog = ({
             </div>
           </div>
         </div>
-      </DialogContent>
+      </Modal.Body>
 
-      <DialogActions className={style.dialogActions}>
+      <Modal.Footer className={style.dialogActions}>
         <Button
           className="bg-gray-400 hover:bg-gray-500 text-white"
           onClick={onClose}
@@ -359,8 +356,8 @@ const CreateClientDialog = ({
           disabled={!isValidForm || loading || success}
           icon={success ? <CheckIcon /> : <SaveIcon />}
         />
-      </DialogActions>
-    </Dialog>
+      </Modal.Footer>
+    </Modal>
   );
 };
 

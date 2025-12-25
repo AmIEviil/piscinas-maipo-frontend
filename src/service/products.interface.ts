@@ -9,6 +9,7 @@ export interface IProducto {
   valor_unitario: number;
   cant_disponible: number;
   tipo: ITypeProduct;
+  historial: IHistoricalProduct[];
 }
 
 export interface IMetricsProduct {
@@ -19,7 +20,7 @@ export interface IMetricsProduct {
 }
 
 export interface ICreateProductPayload {
-  tipo : string;
+  tipo: string;
   nombre: string;
   valor_unitario: number;
   cant_disponible: number;
@@ -27,4 +28,11 @@ export interface ICreateProductPayload {
 
 export interface ICreateTypeProductPayload {
   nombre: string;
+}
+
+export interface IHistoricalProduct {
+  id: string;
+  precio_anterior: number;
+  precio_nuevo: number;
+  fecha_cambio: string;
 }

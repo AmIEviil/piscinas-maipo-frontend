@@ -42,7 +42,6 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
     IClientForm | undefined
   >(clientInfo);
 
-  console.log("Rendering ClientFields with clientInfo:", clientInfo);
   const { handleUpdate } = useChangeFieldValue(clientInfo.id.value);
 
   const fieldsHeaderKeys = ["nombre", "direccion", "comuna"];
@@ -75,7 +74,7 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
     if (value === null || value === undefined) return false;
     if (typeof value === "string" && value.trim() === "") return false;
     if (Array.isArray(value) && value.length === 0) return false;
-    if(typeof value === "boolean") return false;
+    if (typeof value === "boolean") return false;
     if (typeof value === "object" && Object.keys(value).length === 0)
       return false;
     return true;
@@ -127,14 +126,13 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
     setEditTitle(!editTitle);
   };
 
-  console.log("ClientInfoFields rendered with state:", visibleBodyFields);
 
   return (
     <div className={style.clientInfoContainer}>
       <DialogTitle style={{ padding: 0 }}>
         <div className={style.titleContainer}>
           <div
-            className="gap-4 flex bg-red-500!"
+            className="gap-4 flex"
             style={{ display: editTitle ? "flex" : "none" }}
           >
             {headerFields.map((field) => (
@@ -195,8 +193,6 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
                           value: newValue,
                         },
                       }));
-
-                      // si quieres actualizar el backend
                       handleUpdate([{ campo: field.key, valor: newValue }]);
                     }}
                     isAddingField={addingFields}
@@ -240,9 +236,7 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
             <div className="flex flex-col justify-between flex-1">
               {windowWidth > 720 && (
                 <div>
-                  <button className="secondary">
-                    Generar Boleta
-                  </button>
+                  <button className="secondary">Generar Boleta</button>
                 </div>
               )}
             </div>

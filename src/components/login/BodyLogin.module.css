@@ -15,26 +15,18 @@
   background-color: var(--color-fondo);
   border-radius: 0 0 2rem 2rem;
   color: var(--color-primario);
-  padding: 20px;
+  padding: 0px 16px 16px 16px;
   width: 100%;
   max-width: 60%;
 }
 
-.errorMessageContainer {
-  background-color: var(--color-fondo);
-  width: 100%;
-  padding: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 .errorMessage {
   color: red;
   margin-bottom: 10px;
 }
 
 @media (max-width: 1000px) {
-  .bodyLogin .errorMessageContainer {
+  .bodyLogin {
     padding: 0px;
   }
   .errorMessage {

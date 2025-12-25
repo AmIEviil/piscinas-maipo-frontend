@@ -57,7 +57,13 @@
     width: 100%;
   }
 
-  .chartsContainer {
+  .chartsContainer,
+  .resumeMaintenance {
+    display: flex;
+    flex-direction: row;
+    max-width: 100%;
+    overflow-x: auto;
+    padding-bottom: 1rem;
     gap: 2rem;
   }
 

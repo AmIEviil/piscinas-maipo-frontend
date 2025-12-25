@@ -81,4 +81,13 @@
     grid-template-columns: 1fr;
     grid-template-rows: none;
   }
+
+  .detailsInfoContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0rem;
+  }
+  .labelsContainer {
+    gap: 0.2rem;
+  }
 }

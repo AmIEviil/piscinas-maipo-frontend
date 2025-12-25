@@ -161,6 +161,16 @@
   }
 }
 
+@media screen and (max-width: 480px) {
+  .container {
+  }
+
+  .formGrid {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

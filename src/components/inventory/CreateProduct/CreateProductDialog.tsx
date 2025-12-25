@@ -1,7 +1,3 @@
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
 import CustomInputText from "../../ui/InputText/CustomInputText";
 import style from "./CreateProductDialog.module.css";
 
@@ -22,6 +18,7 @@ import {
   useUpdateProductType,
 } from "../../../hooks/ProductHooks";
 import Button from "../../ui/button/Button";
+import { Modal } from "react-bootstrap";
 
 interface CreateClientDialogProps {
   open: boolean;
@@ -242,7 +239,7 @@ const CreateProductDialog = ({
 
   const renderFooterDialog = () => {
     return (
-      <DialogActions className={style.dialogActions}>
+      <Modal.Footer className={style.dialogActions}>
         <button onClick={handleClose}>Cancelar</button>
         <Button
           onClick={handleAcceptButton}
@@ -250,21 +247,21 @@ const CreateProductDialog = ({
           label={isEditMode ? "Guardar Cambios" : "Crear Producto"}
           icon={success ? <CheckIcon /> : <SaveIcon />}
         ></Button>
-      </DialogActions>
+      </Modal.Footer>
     );
   };
 
   return (
-    <Dialog fullWidth maxWidth="md" open={open} onClose={handleClose}>
-      <DialogTitle className={style.dialogTitle}>
+    <Modal fullWidth maxWidth="md" centered show={open} onHide={handleClose}>
+      <Modal.Header className={style.dialogTitle} closeButton>
         {isEditMode ? "Editar" : "Crear"}{" "}
         {kind === "product" ? "Producto" : "Tipo de Producto"}
-      </DialogTitle>
-      <DialogContent>
+      </Modal.Header>
+      <Modal.Body>
         <div className={style.formContainer}>{renderBodyDialog()}</div>
-      </DialogContent>
+      </Modal.Body>
       {renderFooterDialog()}
-    </Dialog>
+    </Modal>
   );
 };
 

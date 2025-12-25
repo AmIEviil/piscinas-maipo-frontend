@@ -46,12 +46,8 @@ const BodyLogin = () => {
 
   return (
     <div className={style.bodyLogin}>
-      {error && (
-        <div className={style.errorMessageContainer}>
-          <span className={style.errorMessage}>{error}</span>
-        </div>
-      )}
       <div className={style.bodyContent}>
+        {error && <span className={style.errorMessage}>{error}</span>}
         <CustomInputText
           title="Usuario"
           require={false}

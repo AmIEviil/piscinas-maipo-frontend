@@ -30,7 +30,6 @@ import {
   titlesTable,
 } from "../../../constant/constantBodyClient";
 import { formatMoneyNumber } from "../../../utils/formatTextUtils";
-import PopUp from "../../ui/PopUp/PopUp";
 import { CustomSnackBar } from "../../ui/snackBar/CustomSnackBar";
 import { useSnackBarModalStore } from "../../../store/snackBarStore";
 import { getWindowWidth } from "../../../utils/WindowUtils";
@@ -39,6 +38,8 @@ import { useBoundStore } from "../../../store/BoundedStore";
 import CollapsableTable from "../../ui/collapsable-table/CollapsableTable";
 import { formatNoResultsText } from "../../../utils/FiltersUtils";
 import { useRefetchStore } from "../../../store/refetchStore";
+import CustomModal from "../../ui/modal/CustomModal";
+import { usePermits } from "../../../utils/roleUtils";
 
 interface IfilterQuery {
   nombre?: string;
@@ -63,6 +64,8 @@ const initial_filters: IfilterQuery = {
 };
 
 const BodyClients = () => {
+  const { isSuperAdmin } = usePermits();
+
   const maintenanceByClient = useMaintenancesByClient();
   const clientFilterMutation = useClientsByFilters();
   const clientByIdMutation = useClientsById();
@@ -132,7 +135,6 @@ const BodyClients = () => {
   };
 
   useEffect(() => {
-    console.log("Filter Query changed:", shouldRefetch, filterQuery);
     fetchData();
   }, [filterQuery, shouldRefetch]);
 
@@ -256,6 +258,8 @@ const BodyClients = () => {
     setDireccionInput("");
     setSelectedComuna("");
     setSelectedDay("");
+    setSelectedRuta("");
+    setSelectedIsActive(true);
     setDayFilterStore("");
   };
 
@@ -310,7 +314,6 @@ const BodyClients = () => {
   };
 
   const handleSelectAllInGroup = (key: string, clientsInGroup: Client[]) => {
-    console.log("Clients in group:", key);
     setSelectedClients((prev) => {
       const allSelected = clientsInGroup.every((client) =>
         prev.some((c) => c.id === client.id)
@@ -367,7 +370,8 @@ const BodyClients = () => {
     filterQuery.nombre ||
     filterQuery.direccion ||
     filterQuery.comuna ||
-    filterQuery.dia;
+    filterQuery.dia ||
+    filterQuery.ruta;
 
   return (
     <div className="pt-4 ">
@@ -420,25 +424,27 @@ const BodyClients = () => {
             value={selectedRuta}
           />
         </div>
-        <div className={`${style.filters}`}>
-          <Select
-            label="Activo"
-            options={[
-              {
-                label: "Sí",
-                value: "true",
-              },
-              {
-                label: "No",
-                value: "false",
-              },
-            ]}
-            onChange={(event) =>
-              handleChangeActive(Boolean(event.target.value))
-            }
-            value={selectedIsActive.toString()}
-          />
-        </div>{" "}
+        {isSuperAdmin && (
+          <div className={`${style.filters}`}>
+            <Select
+              label="Activo"
+              options={[
+                {
+                  label: "Sí",
+                  value: "true",
+                },
+                {
+                  label: "No",
+                  value: "false",
+                },
+              ]}
+              onChange={(event) =>
+                handleChangeActive(Boolean(event.target.value))
+              }
+              value={selectedIsActive.toString()}
+            />
+          </div>
+        )}
         <div className={style.actionsFilters}>
           {hasFilters && (
             <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
@@ -554,21 +560,22 @@ const BodyClients = () => {
         isEditMode={isEditMode}
         clientInfo={selectedClient ?? undefined}
       />
-      <PopUp
+      <CustomModal
         open={openPopUp}
         onClose={handleClosePopUp}
         onConfirm={() => {
           handleDeleteClient(selectedClient?.id ?? "");
         }}
         title="Confirmar eliminación"
-        confirmText="Eliminar"
-      >
-        <div className="flex flex-col gap-4 text-center">
-          <p>¿Estás seguro de que deseas eliminar este cliente?</p>
-          <p className="font-bold">{selectedClient?.nombre}</p>
-          <p>Esta acción no se puede deshacer.</p>
-        </div>
-      </PopUp>
+        confirmLabel="Eliminar"
+        content={
+          <div className="flex flex-col gap-4 text-center">
+            <p>¿Estás seguro de que deseas eliminar este cliente?</p>
+            <p className="font-bold">{selectedClient?.nombre}</p>
+            <p>Esta acción no se puede deshacer.</p>
+          </div>
+        }
+      />
       <CustomSnackBar
         onClick={() => handleSeeMultiSelectClients(currentClientIndex)}
       />
