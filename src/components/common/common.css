@@ -1,0 +1,36 @@
+.notfound-title {
+  color: var(--black-900);
+  text-align: center;
+
+  /* H1 */
+  font-family: "Calibri", sans-serif;
+  font-size: var(--Size-H1, 24px);
+  font-style: normal;
+  font-weight: 700;
+  line-height: var(--Line-spacing-H1, 29px); /* 120.833% */
+  width: 179px;
+}
+.error-title {
+  color: var(--Gray-900_txt, #131313);
+  text-align: center;
+
+  /* H1 */
+  font-family: "Calibri", sans-serif;
+  font-size: var(--Size-H1, 24px);
+  font-style: normal;
+  font-weight: 700;
+  line-height: var(--Line-spacing-H1, 29px); /* 120.833% */
+  width: 484px;
+}
+
+.notfound-subtitle {
+  color: var(--black-600);
+  text-align: center;
+
+  /* P1 */
+  font-family: "Calibri", sans-serif;
+  font-size: var(--Size-P1, 16px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--Line-spacing-P1, 25.9px); /* 161.875% */
+}

@@ -14,3 +14,9 @@ export const toUpperCaseFirstLetter = (text: string) => {
 
 export const toPascalCaseMonth = (str: string) =>
   str.charAt(0).toUpperCase() + str.slice(1);
+
+export const formatName = (name: string) => {
+  if (!name) return "";
+  name = name.replace(/ /g, "_");
+  return name;
+};

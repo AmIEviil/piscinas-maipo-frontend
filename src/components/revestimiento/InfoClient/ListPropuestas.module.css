@@ -1,0 +1,44 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0.5rem;
+  padding-top: 0;
+  max-width: 400px;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+.header {
+  display: flex;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 0.5rem 0rem 0.5rem 0;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+}
+.title {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.filesList {
+  border-radius: 16px;
+}
+.fileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  gap: 10px;
+}
+
+.fileName {
+  font-weight: 500;
+}

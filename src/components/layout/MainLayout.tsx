@@ -4,13 +4,12 @@ import "./MainLayout.css";
 import { useEffect } from "react";
 import SnackBar from "../ui/snackBar/SnackBar";
 import { useBoundStore } from "../../store/BoundedStore";
+import ModalMediaVisualizer from "../ui/modal/mediaVisualizer/ModalMediaVisualizer";
 
 export const BodyLayout = () => {
   const navigate = useNavigate();
   const tokenStore = useBoundStore((state) => state.token);
   const token = localStorage.getItem("token");
-
-  // const currentPath = window.location.pathname;
 
   useEffect(() => {
     if (tokenStore === undefined || token === undefined) {
@@ -43,6 +42,7 @@ export const BodyLayout = () => {
       <div className="main-content">
         <Outlet />
         <SnackBar />
+        <ModalMediaVisualizer />
       </div>
     </div>
   );

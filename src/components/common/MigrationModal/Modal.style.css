@@ -10,7 +10,7 @@
 }
 
 .modal-100h .modal-content {
-  height: 96vh;
+  max-height: 80vh;
   display: flex;
   flex-direction: column;
   padding-top: 0px;

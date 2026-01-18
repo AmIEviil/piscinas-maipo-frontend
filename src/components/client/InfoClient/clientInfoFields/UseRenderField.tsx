@@ -23,14 +23,14 @@ interface Field {
 
 interface RenderFieldProps {
   field: Field;
-  commentable?: boolean;
+  // commentable?: boolean;
   options?: IOptionsSelect[];
   // comments?: IObservacion[];
   multiple?: boolean;
   multiCheckbox?: boolean;
-  rawValue?: string | number | null;
+  // rawValue?: string | number | null;
   onEdit?: (value: string | number | null | undefined) => void;
-  isAddingField?: boolean;
+  // isAddingField?: boolean;
   // onComment?: (value: string) => void;
 }
 
@@ -147,8 +147,8 @@ RenderFieldProps) => {
             <>{handleFieldDisplay()}</>
           ) : (
             <span
-              className={`flex flex-inline justify-between bg-purple-500 w-[${handleWidthByInput(
-                editedValue
+              className={`flex flex-inline justify-between  w-[${handleWidthByInput(
+                editedValue,
               )}%]! ${style.inputEditField}`}
             >
               <div className="flex flex-row justify-between w-full gap-2">
@@ -168,7 +168,7 @@ RenderFieldProps) => {
                             ? String(editedValue).split(",")
                             : [];
                           const isChecked = currentValues.includes(
-                            String(option.value)
+                            String(option.value),
                           );
 
                           return (
@@ -192,7 +192,7 @@ RenderFieldProps) => {
                                     }
                                   } else {
                                     newValues = newValues.filter(
-                                      (val) => val !== String(option.value)
+                                      (val) => val !== String(option.value),
                                     );
                                   }
                                   setEditedValue(newValues.join(","));
@@ -200,7 +200,7 @@ RenderFieldProps) => {
                               />
                               <label
                                 htmlFor={`${toUpperCaseFirstLetter(
-                                  field.key
+                                  field.key,
                                 )}-${option.value}`}
                                 className="ml-2"
                               >
@@ -286,8 +286,8 @@ RenderFieldProps) => {
                                   const parsed = new Date(
                                     `${year}-${month.padStart(
                                       2,
-                                      "0"
-                                    )}-${day.padStart(2, "0")}`
+                                      "0",
+                                    )}-${day.padStart(2, "0")}`,
                                   );
                                   return parsed.toISOString().slice(0, 10);
                                 }
@@ -300,7 +300,7 @@ RenderFieldProps) => {
                         const localDate = new Date(
                           Number(year),
                           Number(month) - 1,
-                          Number(day)
+                          Number(day),
                         );
                         setEditedValue(localDate.getTime());
                       }}

@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   useDeleteRevestimiento,
+  usePropuestaRevestimiento,
   useRevestimiento,
   useRevestimientoById,
+  useUploadPropuestaRevestimiento,
 } from "../../hooks/RevestimientoHooks";
 import type { IRevestimiento } from "../../service/revestimiento.interface";
 import style from "../client/BodyClients/BodyClients.module.css";
@@ -26,6 +28,9 @@ import DatePickers from "../ui/calendar/DatePicker";
 import dayjs from "dayjs";
 import TrashIcon from "../ui/Icons/TrashIcon";
 import SeeMoreButton from "../common/SeeMore/SeeMoreButton";
+import ModalPdfViewer from "../ui/modal/pdf/ModalPdfViewer";
+import { useUploadedFilesByParentId } from "../../hooks/UploadedFilesHooks";
+import type { IUploadedFile } from "../../service/UploadedFiles.interface";
 
 const titlesTable = [
   { label: "Cliente", showOrderBy: false },
@@ -47,9 +52,22 @@ interface FilterQuery {
 const BodyRevestimiento = () => {
   const revestimientoMutation = useRevestimiento();
   const revestimientoByIdMutation = useRevestimientoById();
+  const uploadedFilesByParentId = useUploadedFilesByParentId();
+  const uploadPropuestaRevestimientoMutation =
+    useUploadPropuestaRevestimiento();
   const deleteRevestimientoMutation = useDeleteRevestimiento();
+  const genPropuestaRevestimientoMutation = usePropuestaRevestimiento();
 
+  const [showModalPdf, setShowModalPdf] = useState(false);
+  const [pdfData, setPdfData] = useState<{
+    id?: number;
+    title: string;
+    url: string;
+    revisado?: boolean;
+  }>({ title: "", url: "" });
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [revestimientos, setRevestimientos] = useState<IRevestimiento[]>([]);
+  const [filesPropuesta, setFilesPropuesta] = useState<IUploadedFile[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [filterQuery, setFilterQuery] = useState<FilterQuery>({});
@@ -74,6 +92,7 @@ const BodyRevestimiento = () => {
   };
 
   const handleOpenDialog = async (revestimiento: IRevestimiento) => {
+    setSelectedRevestimiento(revestimiento);
     handleSeeDetailsRevestimiento(revestimiento);
     setOpenDialog(true);
   };
@@ -132,10 +151,25 @@ const BodyRevestimiento = () => {
       const revestimientoDetails = await revestimientoByIdMutation.mutateAsync(
         revestimiento.id
       );
+      setSelectedRevestimiento(revestimiento);
       setRevestimientoDetails(revestimientoDetails);
       setOpenDialog(true);
+      handlePropuestasRevestimiento();
     } catch (error) {
       console.error("Error cargando mantenciones:", error);
+    }
+  };
+
+  const handlePropuestasRevestimiento = async () => {
+    try {
+      if (!selectedRevestimiento?.id) return;
+      const uploadedFiles = await uploadedFilesByParentId.mutateAsync(
+        selectedRevestimiento.id
+      );
+      setFilesPropuesta(uploadedFiles);
+      console.log("Uploaded Files:", uploadedFiles);
+    } catch (error) {
+      console.error("Error generating PDF proposal:", error);
     }
   };
 
@@ -191,6 +225,47 @@ const BodyRevestimiento = () => {
     filterQuery.fechaCreacion ||
     filterQuery.tipoRevestimiento ||
     filterQuery.estado;
+
+  const handleGeneratePropuesta = async () => {
+    try {
+      const pdfBlob = await genPropuestaRevestimientoMutation.mutateAsync(
+        selectedRevestimiento?.id || ""
+      );
+      // Crear una URL para el blob y abrir en una nueva pestaña
+      const url = URL.createObjectURL(pdfBlob);
+      setPdfData({
+        title: `Propuesta_Revestimiento_${selectedRevestimiento?.id || ""}.pdf`,
+        url,
+      });
+      setPdfBlob(pdfBlob);
+      setShowModalPdf(true);
+    } catch (error) {
+      console.error("Error generating PDF proposal:", error);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!pdfBlob) return;
+
+    const file = new File(
+      [pdfBlob],
+      `propuesta-revestimiento-${
+        selectedRevestimiento?.client.nombre || ""
+      }.pdf`,
+      { type: "application/pdf" }
+    );
+
+    try {
+      await uploadPropuestaRevestimientoMutation.mutateAsync({
+        parentId: selectedRevestimiento?.id || "",
+        file,
+      });
+    } catch (error) {
+      console.error("Error uploading PDF proposal:", error);
+    }
+
+    setShowModalPdf(false);
+  };
 
   return (
     <div>
@@ -320,12 +395,20 @@ const BodyRevestimiento = () => {
         open={openDialog}
         onClose={handleCloseDialog}
         revestimientoInfo={revestimientoDetails ?? undefined}
+        filesPropuesta={filesPropuesta}
+        handleGeneratePropuesta={handleGeneratePropuesta}
       />
       <CreateRevestimientoDialog
         open={openCreateDialog}
         onClose={handleCloseDialog}
         isEditMode={isEditMode}
         revestimientoInfo={selectedRevestimiento ?? undefined}
+      />
+      <ModalPdfViewer
+        visible={showModalPdf}
+        pdfData={pdfData}
+        onClose={() => setShowModalPdf(false)}
+        onApprove={handleApprove}
       />
       <PopUp
         open={openPopUp}

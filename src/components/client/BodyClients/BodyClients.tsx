@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react";
 import debounce from "lodash.debounce";
 import {
@@ -40,6 +39,8 @@ import { formatNoResultsText } from "../../../utils/FiltersUtils";
 import { useRefetchStore } from "../../../store/refetchStore";
 import CustomModal from "../../ui/modal/CustomModal";
 import { usePermits } from "../../../utils/roleUtils";
+import { useGetComprobantesByParentId } from "../../../hooks/ComprobantePagosHooks";
+import type { IComprobantePago } from "../../../service/ComprobantePagos.interface";
 
 interface IfilterQuery {
   nombre?: string;
@@ -65,10 +66,10 @@ const initial_filters: IfilterQuery = {
 
 const BodyClients = () => {
   const { isSuperAdmin } = usePermits();
-
-  const maintenanceByClient = useMaintenancesByClient();
-  const clientFilterMutation = useClientsByFilters();
   const clientByIdMutation = useClientsById();
+  const maintenanceByClient = useMaintenancesByClient();
+  const comprobantesByClient = useGetComprobantesByParentId();
+  const clientFilterMutation = useClientsByFilters();
   const deleteClientMutation = useDeleteClient();
 
   const { setSnackBar } = useSnackBarModalStore();
@@ -85,15 +86,12 @@ const BodyClients = () => {
 
   const [mantenciones, setMantenciones] =
     useState<Record<string, IMaintenance[]>>();
+  const [comprobantes, setComprobantes] = useState<IComprobantePago[]>();
   const [openDialog, setOpenDialog] = useState(false);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [loadingClientInfo, setLoadingClientInfo] = useState(false);
 
-  const [nombreInput, setNombreInput] = useState("");
-  const [direccionInput, setDireccionInput] = useState("");
-  const [selectedComuna, setSelectedComuna] = useState("");
-  const [selectedDay, setSelectedDay] = useState("");
-  const [selectedRuta, setSelectedRuta] = useState("");
   const [selectedIsActive, setSelectedIsActive] = useState(true);
 
   const selectedDayHome = useBoundStore((state) => state.dayFilter);
@@ -142,7 +140,7 @@ const BodyClients = () => {
     if (selectedClients.length > 0) {
       setSnackBar(
         true,
-        `Ver detalles de ${selectedClients.length} cliente(s).`
+        `Ver detalles de ${selectedClients.length} cliente(s).`,
       );
     } else {
       setSnackBar(false, "");
@@ -164,7 +162,6 @@ const BodyClients = () => {
 
   useEffect(() => {
     if (selectedDayHome) {
-      setSelectedDay(selectedDayHome);
       setFilterQuery((prev) => ({ ...prev, dia: selectedDayHome }));
     }
   }, [selectedDayHome]);
@@ -183,7 +180,7 @@ const BodyClients = () => {
           return prev ?? {};
         });
       }, 500),
-    []
+    [],
   );
 
   const handleFilterDireccion = useMemo(
@@ -200,21 +197,18 @@ const BodyClients = () => {
           return prev ?? {};
         });
       }, 500),
-    []
+    [],
   );
 
   const handleChangeComuna = (value: string) => {
-    setSelectedComuna(value);
     setFilterQuery((prev) => ({ ...prev, comuna: value }));
   };
 
   const handleChangeDiaMantencion = (value: string) => {
-    setSelectedDay(value);
     setFilterQuery((prev) => ({ ...prev, dia: value }));
   };
 
   const handleChangeRuta = (value: string) => {
-    setSelectedRuta(value);
     setFilterQuery((prev) => ({ ...prev, ruta: value }));
   };
 
@@ -229,7 +223,7 @@ const BodyClients = () => {
     if (selectedClients.length > 0) {
       setSnackBar(
         true,
-        `Ver detalles de ${selectedClients.length} cliente(s).`
+        `Ver detalles de ${selectedClients.length} cliente(s).`,
       );
     }
     setMantenciones(undefined);
@@ -239,26 +233,26 @@ const BodyClients = () => {
   };
 
   const handleSeeDetailsClient = async (client: Client) => {
+    setLoadingClientInfo(true);
     setSelectedClient(client);
     try {
       if (!client.id) return;
       const clientInfo = await clientByIdMutation.mutateAsync(client.id);
       setClientInfo(clientInfo);
+      setOpenDialog(true);
       const mantenciones = await maintenanceByClient.mutateAsync(client.id);
       setMantenciones(mantenciones);
-      setOpenDialog(true);
+      const comprobantes = await comprobantesByClient.mutateAsync(client.id);
+      setComprobantes(comprobantes);
+      setLoadingClientInfo(false);
     } catch (error) {
       console.error("Error cargando mantenciones:", error);
+      setLoadingClientInfo(false);
     }
   };
 
   const handleClearFilter = () => {
     setFilterQuery({});
-    setNombreInput("");
-    setDireccionInput("");
-    setSelectedComuna("");
-    setSelectedDay("");
-    setSelectedRuta("");
     setSelectedIsActive(true);
     setDayFilterStore("");
   };
@@ -292,7 +286,7 @@ const BodyClients = () => {
           filterQuery.direccion ||
           filterQuery.comuna ||
           filterQuery.dia ||
-          ""
+          "",
       );
     }
   };
@@ -317,17 +311,17 @@ const BodyClients = () => {
     console.log("Selecting all in group:", key, clientsInGroup);
     setSelectedClients((prev) => {
       const allSelected = clientsInGroup.every((client) =>
-        prev.some((c) => c.id === client.id)
+        prev.some((c) => c.id === client.id),
       );
       if (allSelected) {
         // Remove all clients in the group from the selection
         return prev.filter(
-          (client) => !clientsInGroup.some((c) => c.id === client.id)
+          (client) => !clientsInGroup.some((c) => c.id === client.id),
         );
       } else {
         // Add all clients in the group to the selection
         const newSelections = clientsInGroup.filter(
-          (client) => !prev.some((c) => c.id === client.id)
+          (client) => !prev.some((c) => c.id === client.id),
         );
         return [...prev, ...newSelections];
       }
@@ -382,10 +376,9 @@ const BodyClients = () => {
             title="Buscar por Nombre"
             placeholder="Nombre"
             onChange={(value: string) => {
-              setNombreInput(value);
               handleFilterName(value);
             }}
-            value={nombreInput}
+            value={filterQuery.nombre}
           />
         </div>
         <div className={style.filters}>
@@ -393,10 +386,9 @@ const BodyClients = () => {
             title="Buscar por dirección"
             placeholder="Dirección"
             onChange={(value: string) => {
-              setDireccionInput(value);
               handleFilterDireccion(value);
             }}
-            value={direccionInput}
+            value={filterQuery.direccion}
           />
         </div>
         <div className={style.filters}>
@@ -404,7 +396,7 @@ const BodyClients = () => {
             label="Comuna"
             options={comunas}
             onChange={(event) => handleChangeComuna(String(event.target.value))}
-            value={selectedComuna}
+            value={filterQuery.comuna}
           />
         </div>
         <div className={`${style.filters}`}>
@@ -414,7 +406,7 @@ const BodyClients = () => {
             onChange={(event) =>
               handleChangeDiaMantencion(String(event.target.value))
             }
-            value={selectedDay}
+            value={filterQuery.dia}
           />
         </div>
         <div className={`${style.filters}`}>
@@ -422,7 +414,7 @@ const BodyClients = () => {
             label="Ruta"
             options={rutas}
             onChange={(event) => handleChangeRuta(String(event.target.value))}
-            value={selectedRuta}
+            value={filterQuery.ruta}
           />
         </div>
         {isSuperAdmin && (
@@ -542,10 +534,12 @@ const BodyClients = () => {
         // @ts-ignore
         clientInfo={clientInfo ?? undefined}
         maintenancesClient={mantenciones ?? undefined}
+        comprobantesClient={comprobantes ?? undefined}
+        loading={loadingClientInfo}
         onMaintenanceCreated={async () => {
           if (selectedClient?.id) {
             const updatedMaintenances = await maintenanceByClient.mutateAsync(
-              selectedClient.id
+              selectedClient.id,
             );
             setMantenciones(updatedMaintenances);
           }

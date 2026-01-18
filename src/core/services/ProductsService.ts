@@ -4,13 +4,16 @@ import type {
   ITypeProduct,
   ICreateProductPayload,
   ICreateTypeProductPayload,
+  ProductFilters,
 } from "../../service/products.interface";
 import { PRODUCTS_API } from "../api/products/api";
 import apiClient from "../client/client";
 
 export const productsService = {
-  getProducts: async (): Promise<IProducto[]> => {
-    const response = await apiClient.get(PRODUCTS_API.products);
+  getProducts: async (filters?: ProductFilters): Promise<IProducto[]> => {
+    const response = await apiClient.get(PRODUCTS_API.products, {
+      params: filters,
+    });
     return response.data;
   },
 
@@ -42,7 +45,6 @@ export const productsService = {
     productId: string,
     productData: Partial<ICreateProductPayload>
   ): Promise<IProducto> => {
-    console.log("Updating product:", productId, productData);
     const response = await apiClient.put(
       `${PRODUCTS_API.products}/${productId}`,
       productData

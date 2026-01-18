@@ -1,3 +1,8 @@
+export interface ProductFilters {
+  tipoId?: string;
+  nombre?: string;
+}
+
 export interface ITypeProduct {
   id: string;
   nombre: string;

@@ -11,7 +11,7 @@ export interface Client {
   tipo_piscina: string;
   fecha_ingreso?: Date;
   valor_mantencion: number;
-  observaciones?: string;
+  observacion?: string;
   isActive: boolean;
   ruta?: string;
 }
@@ -44,5 +44,5 @@ export interface IClientForm {
     type: string;
   };
   isActive: Field<boolean>;
-  observaciones: Field<string>;
+  observacion: Field<string>;
 }

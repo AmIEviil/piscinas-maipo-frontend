@@ -48,7 +48,7 @@ const MaintenanceFields = ({
   const productOptions = productosList
     .filter(
       (p): p is IProducto & { id: string } =>
-        p.id !== undefined && p.id !== null
+        p.id !== undefined && p.id !== null,
     )
     .map((product) => ({
       value: product.id.toString(),
@@ -195,10 +195,13 @@ const MaintenanceFields = ({
                   {maintenance.productosUsados.length > 0 ? (
                     maintenance.productosUsados.map((p, idx) => {
                       const producto = productosList?.find(
-                        (prod) => prod.id === p.productId
+                        (prod) => prod.id === p.productId,
                       );
                       return (
-                        <div key={idx} className={style.productItem}>
+                        <div
+                          key={p.cantidad + idx}
+                          className={style.productItem}
+                        >
                           <span className="font-medium text-sm">
                             {producto?.nombre ?? "Desconocido"}
                           </span>
@@ -256,7 +259,6 @@ const MaintenanceFields = ({
           }
         />
       )}
-
       <div className={style.footerButtons}>
         <button className="secondary" onClick={onCancel}>
           Cancelar

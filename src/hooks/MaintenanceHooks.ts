@@ -1,5 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { maintenanceService } from "../core/services/MaintenanceService";
+import { useRefetchStore } from "../store/refetchStore";
+import { useSnackbar } from "../utils/snackBarHooks";
 
 export const useMaintenances = () => {
   const maintenanceMutation = useMutation({
@@ -17,8 +19,20 @@ export const useMaintenancesByClient = () => {
 };
 
 export const useCreateMaintenance = () => {
+  const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
+  const { showSnackbar } = useSnackbar();
   const createMaintenanceMutation = useMutation({
     mutationFn: maintenanceService.createMaintenance,
+    onSuccess: () => {
+      setShouldRefetch(true);
+      showSnackbar("Mantenimiento creado correctamente", "success");
+    },
+    onError: () => {
+      showSnackbar(
+        "Error al crear el mantenimiento, por favor intente nuevamente",
+        "error"
+      );
+    },
   });
 
   return createMaintenanceMutation;

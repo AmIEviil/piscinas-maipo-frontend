@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import { PAGE_ROUTES } from "../constant/routes";
 import { lazy } from "react";
+import { PageNotFound } from "../components/common/PageNotFound.tsx";
 
 // Layouts
 const AuhtLayout = lazy(() =>
@@ -155,6 +156,7 @@ export const router = createBrowserRouter(
               path: PAGE_ROUTES.Usuarios,
               Component: UsuariosView,
             },
+            { path: "*", Component: PageNotFound },
           ],
         },
       ],

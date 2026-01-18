@@ -1,11 +1,7 @@
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import { DialogTitle } from "@mui/material";
 import style from "./InfoDialogRevestimiento.module.css";
 import { formatMoneyNumber } from "../../../utils/formatTextUtils";
 import { formatDateToDDMMYYYY } from "../../../utils/DateUtils";
+import Button from "../../ui/button/Button";
 
 // Icons
 import PersonIcon from "@mui/icons-material/Person";
@@ -16,17 +12,24 @@ import ImageIcon from "@mui/icons-material/Image";
 import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import type { IRevestimiento } from "../../../service/revestimiento.interface";
+import { Modal } from "react-bootstrap";
+import type { IUploadedFile } from "../../../service/UploadedFiles.interface";
+import ListFilesPropuestas from "./ListPropuestas";
 
 interface InfoRevestimientoDialogProps {
   open: boolean;
   revestimientoInfo?: IRevestimiento;
+  filesPropuesta?: IUploadedFile[];
   onClose: () => void;
+  handleGeneratePropuesta?: () => void;
 }
 
 const InfoRevestimientoDialog = ({
   open = false,
   revestimientoInfo,
+  filesPropuesta,
   onClose,
+  handleGeneratePropuesta,
 }: InfoRevestimientoDialogProps) => {
   const handleClose = () => {
     onClose();
@@ -42,26 +45,43 @@ const InfoRevestimientoDialog = ({
     ) || 0;
 
   return (
-    <Dialog
-      fullWidth={true}
-      maxWidth={"lg"} // Un poco más ancho para ver bien las tablas/grids
-      open={open}
-      onClose={handleClose}
-      PaperProps={{
-        style: { borderRadius: 24, padding: "1rem" },
-      }}
+    <Modal
+      size="xl"
+      show={open}
+      onHide={handleClose}
+      style={{ borderRadius: 24, padding: "1rem" }}
     >
-      <DialogTitle className={style.dialogTitle}>
-        Detalle del Proyecto de Revestimiento
-        <div className="text-sm font-normal text-gray-500 mt-1">
-          ID: {revestimientoInfo.id} | Estado:{" "}
-          <span className="font-bold text-blue-600">
-            {revestimientoInfo.estado}
-          </span>
+      <Modal.Header className={style.dialogTitle}>
+        <h4 className="self-start">Detalle del Proyecto de Revestimiento</h4>
+        <div className="flex flex-row justify-between items-center mt-2 w-full">
+          <div className="flex flex-col text-sm font-normal text-gray-500 mt-1">
+            <span>ID: {revestimientoInfo.id} </span>
+            <span>
+              Estado:
+              <span className="font-bold text-blue-600">
+                {revestimientoInfo.estado}
+              </span>
+            </span>
+          </div>
+          <div className="">
+            {!filesPropuesta && (
+              <Button
+                label="Generar Propuesta PDF"
+                variant="secondary"
+                onClick={handleGeneratePropuesta}
+              />
+            )}
+            {filesPropuesta && filesPropuesta.length > 0 && (
+              <ListFilesPropuestas
+                files={filesPropuesta}
+                handleGeneratePropuesta={handleGeneratePropuesta}
+              />
+            )}
+          </div>
         </div>
-      </DialogTitle>
+      </Modal.Header>
 
-      <DialogContent className="custom-scrollbar">
+      <Modal.Body className="custom-scrollbar">
         <div className={style.contentContainer}>
           {/* Sección 1: Cliente */}
           <div className={style.section}>
@@ -296,13 +316,11 @@ const InfoRevestimientoDialog = ({
             </div>
           </div>
         </div>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} variant="contained" color="primary">
-          Cerrar
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button label="Cerrar" onClick={handleClose} variant="primary" />
+      </Modal.Footer>
+    </Modal>
   );
 };
 

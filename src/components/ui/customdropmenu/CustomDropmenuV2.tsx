@@ -1,17 +1,34 @@
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import style from "./CustomDropmenu.module.css";
 
+type DropmenuVariant = "primary" | "secondary" | "danger" | "ghost";
 interface CustomDropmenuV2Props {
   options: {
     label: string;
     onClick: () => void;
   }[];
-  icon: React.ReactNode;
+  icon: ReactNode;
+  label?: string;
+  typeClass?: DropmenuVariant;
 }
 
-const CustomDropmenuV2 = ({ options, icon }: CustomDropmenuV2Props) => {
+const CustomDropmenuV2 = ({
+  options,
+  icon,
+  label,
+  typeClass = "primary",
+}: CustomDropmenuV2Props) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+
+  const typeClassMap = {
+    primary: style.primary,
+    secondary: style.secondary,
+    danger: style.danger,
+    ghost: style.ghost,
+  } as const;
+
+  const resolvedClass = typeClassMap[typeClass ?? "primary"];
 
   useEffect(() => {
     if (!isOpen) return;
@@ -33,24 +50,39 @@ const CustomDropmenuV2 = ({ options, icon }: CustomDropmenuV2Props) => {
 
   return (
     <div className={style.dropmenuContainer}>
-      <span className={style.dropmenuLabel} onClick={() => setIsOpen(!isOpen)}>
-        {icon}
-      </span>
-      <div
-        ref={modalRef}
-        style={{ display: isOpen ? "block" : "none" }}
-        className={style.dropmenuOptionsContainer}
+      <button
+        type="button"
+        className={`${style.dropmenuLabel} ${resolvedClass}`}
+        onClick={() => setIsOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
       >
-        {options.map((option, index) => (
-          <div
-            key={index}
-            className={style.optionLabel}
-            onClick={option.onClick}
-          >
-            {option.label}
-          </div>
-        ))}
-      </div>
+        {label && <span>{label}</span>}
+        {icon}
+      </button>
+
+      {isOpen && (
+        <div
+          ref={modalRef}
+          className={`${style.dropmenuOptionsContainer} ${resolvedClass}`}
+          role="menu"
+        >
+          {options.map((option, index) => (
+            <button
+              key={option.label + index}
+              type="button"
+              className={`${style.optionLabel} ${resolvedClass}`}
+              role="menuitem"
+              onClick={() => {
+                option.onClick();
+                setIsOpen(false);
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

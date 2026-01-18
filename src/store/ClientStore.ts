@@ -1,6 +1,8 @@
 import { create, type StateCreator } from "zustand";
 import { clientService } from "../core/services/ClientsService";
 import type { Client } from "../service/client.interface";
+import type { ResumenMonth } from "../components/client/InfoClient/InfoDialogClient";
+import type { IClientForm } from "../components/client/InfoClient/clientInfoFields/ClientInfoFields";
 
 interface ClientStore {
   clients: Client[];
@@ -20,8 +22,31 @@ export interface ClientFilterSlice {
 }
 
 export const createClientFilterSlice: StateCreator<ClientFilterSlice> = (
-  set
+  set,
 ) => ({
   dayFilter: "",
   setDayFilter: (day: string) => set({ dayFilter: day }),
 });
+
+interface ClientResumenMonthSlice {
+  resumenMonth: ResumenMonth | null;
+  clientInfo: IClientForm;
+  isModalOpen: boolean;
+  setClientInfo: (client: IClientForm) => void;
+  openModal: () => void;
+  closeModal: () => void;
+  setResumenMonth: (resumen: ResumenMonth | null) => void;
+}
+
+export const useClientResumenMonthStore = create<ClientResumenMonthSlice>(
+  (set) => ({
+    resumenMonth: null,
+    isModalOpen: false,
+    clientInfo: {} as IClientForm,
+    setClientInfo: (client: IClientForm) => set({ clientInfo: client }),
+    openModal: () => set({ isModalOpen: true }),
+    closeModal: () => set({ isModalOpen: false }),
+    setResumenMonth: (resumen: ResumenMonth | null) =>
+      set({ resumenMonth: resumen }),
+  }),
+);

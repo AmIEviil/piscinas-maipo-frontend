@@ -11,7 +11,9 @@ import { getWindowWidth } from "../../../../utils/WindowUtils";
 import { RenderItemField } from "./UseRenderField";
 import { useChangeFieldValue } from "../../../../utils/formUtils";
 import CheckIcon from "../../../ui/Icons/CheckIcon";
-import MateriaCombobox from "../../../ui/combobox/Combobox";
+import CustomDropmenuV2 from "../../../ui/customdropmenu/CustomDropmenuV2";
+import CloseIcon from "../../../ui/Icons/CloseIcon";
+import { useClientResumenMonthStore } from "../../../../store/ClientStore";
 
 export interface IClientForm {
   [key: string]: {
@@ -32,11 +34,18 @@ interface ClientFieldsProps {
 }
 
 const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
+  const setModalVisible = useClientResumenMonthStore(
+    (state) => state.openModal,
+  );
   const [windowWidth, setWindowWidth] = useState(getWindowWidth());
   const [showClientInfo, setShowClientInfo] = useState(windowWidth > 720);
   const [editTitle, setEditTitle] = useState(false);
   const [addingFields, setAddingFields] = useState(false);
-  const [newFieldKey, setNewFieldKey] = useState<string>("");
+  const [addingField, setAddingField] = useState<{
+    key: string;
+    type: string;
+    value: any;
+  } | null>(null);
 
   const [clientInfoState, setClientInfoState] = useState<
     IClientForm | undefined
@@ -88,18 +97,14 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
   const bodyFields = fieldsBodyKeys.map((key) => clientInfo[key]);
 
   const visibleBodyFields = bodyFields.filter((field) =>
-    handleVisibleField(field)
+    handleVisibleField(field),
   );
 
   const mapAvailableFields = clientInfoState
     ? Object.values(clientInfoState).filter(
-        (field) => !handleVisibleField(field)
+        (field) => !handleVisibleField(field),
       )
     : [];
-
-  const handlePushUpdateField = (key: string, value: any, type: string) => {
-    bodyFields.push({ key, value, type });
-  };
 
   const handleToggleEditTitle = () => {
     console.log("Toggling edit title...");
@@ -126,6 +131,30 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
     setEditTitle(!editTitle);
   };
 
+  const handleOnClickField = (fieldKey: string) => {
+    const fieldToAdd = mapAvailableFields.find(
+      (field) => field.key === fieldKey,
+    );
+
+    if (!fieldToAdd) return;
+
+    setAddingField({
+      key: fieldToAdd.key,
+      type: fieldToAdd.type,
+      value: "",
+    });
+  };
+
+  const mapMenuOptions = mapAvailableFields.map((field) => ({
+    label: toUpperCaseFirstLetter(field.key),
+    onClick: () => handleOnClickField(field.key),
+  }));
+
+  const handleShowDropdown = () => {
+    if (addingFields && !addingField) return true;
+    if (addingField) return false;
+    return false;
+  };
 
   return (
     <div className={style.clientInfoContainer}>
@@ -195,48 +224,78 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
                       }));
                       handleUpdate([{ campo: field.key, valor: newValue }]);
                     }}
-                    isAddingField={addingFields}
                   />
                 </div>
               ))}
-              {/* {mapAvailableFields.length > 0 && (
-                <button
-                  className="normal"
-                  onClick={() => setAddingFields(!addingFields)}
-                >
-                  <span>{addingFields ? "Cancelar" : "Agregar campos"}</span>
-                </button>
-              )} */}
-              {addingFields && (
-                <div className="mt-2 w-full">
-                  <MateriaCombobox
-                    value={newFieldKey}
-                    options={mapAvailableFields.map((field) => ({
-                      label: toUpperCaseFirstLetter(field.key),
-                      value: field.key,
-                    }))}
-                    onChange={(v) => {
-                      setNewFieldKey(v || "");
-                      handlePushUpdateField(v || "", "", "string");
-                    }}
-                  />
-
-                  <button
-                    className="normal mt-2"
-                    onClick={() => {
-                      setAddingFields(false);
-                      setNewFieldKey("");
-                    }}
-                  >
-                    Añadir campo
-                  </button>
+              {mapAvailableFields.length > 0 && (
+                <div className="p-2.5 flex flex-row gap-2">
+                  {handleShowDropdown() && (
+                    <div className="mt-2 w-full">
+                      <CustomDropmenuV2
+                        options={mapMenuOptions}
+                        icon={<CaretIcon direction="down" />}
+                        label="Seleccionar campo"
+                        typeClass="secondary"
+                      />
+                    </div>
+                  )}
+                  {!addingField && (
+                    <button
+                      className="normal"
+                      onClick={() => {
+                        setAddingFields(!addingFields);
+                        setAddingField(null);
+                      }}
+                    >
+                      <span>
+                        {addingFields ? "Cancelar" : "Agregar campos"}
+                      </span>
+                    </button>
+                  )}
+                  {addingField && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <CustomInputField
+                        title={toUpperCaseFirstLetter(addingField.key)}
+                        value={addingField.value}
+                        onChange={(val: any) =>
+                          setAddingField((prev) =>
+                            prev ? { ...prev, value: val } : null,
+                          )
+                        }
+                        onSave={() => {
+                          setClientInfoState((prev) => ({
+                            ...prev!,
+                            [addingField.key]: {
+                              key: addingField.key,
+                              type: addingField.type,
+                              value: addingField.value,
+                            },
+                          }));
+                          handleUpdate([
+                            {
+                              campo: addingField.key,
+                              valor: addingField.value,
+                            },
+                          ]);
+                          setAddingField(null);
+                          setAddingFields(false);
+                        }}
+                        onCancel={() => {
+                          setAddingField(null);
+                          setAddingFields(false);
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
             <div className="flex flex-col justify-between flex-1">
-              {windowWidth > 720 && (
+              {windowWidth > 720 &&  (
                 <div>
-                  <button className="secondary">Generar Boleta</button>
+                  <button className="secondary" onClick={setModalVisible}>
+                    Generar Boleta
+                  </button>
                 </div>
               )}
             </div>
@@ -261,3 +320,38 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
 };
 
 export default ClientFields;
+
+const CustomInputField = ({
+  title,
+  value,
+  onChange,
+  onSave,
+  onCancel,
+}: any) => {
+  return (
+    <div className={style.customInputContainer}>
+      <div className="flex flex-col gap-1 w-full">
+        <label className={style.inputLabel}>{title}</label>
+        <input
+          type="text"
+          className={style.inputField}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </div>
+      <div className="flex flex-row items-center gap-2">
+        <button
+          className="normal"
+          onClick={() => {
+            onSave();
+          }}
+        >
+          <CheckIcon />
+        </button>
+        <button className="normal" onClick={() => onCancel()}>
+          <CloseIcon color="black" />
+        </button>
+      </div>
+    </div>
+  );
+};

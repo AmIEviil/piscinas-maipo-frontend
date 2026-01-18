@@ -8,8 +8,12 @@ import { useRefetchStore } from "../store/refetchStore";
 import { useSnackbar } from "../utils/snackBarHooks";
 
 export const useProducts = () => {
+  const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
   const productMutation = useMutation({
     mutationFn: productsService.getProducts,
+    onSuccess: () => {
+      setShouldRefetch(false);
+    },
   });
   return productMutation;
 };

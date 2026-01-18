@@ -51,3 +51,14 @@
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
 }
+
+.primary {
+  background-color: red;
+}
+
+.secondary {
+  background-color: var(--color-gris-medio);
+  color: white;
+  min-width: 165px;
+  margin-right: 1rem;
+}

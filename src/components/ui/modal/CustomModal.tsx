@@ -29,7 +29,7 @@ const CustomModal = ({
 
   const handleAcceptButton = async () => {
     if (onConfirm) {
-      await onConfirm();
+      onConfirm();
     }
     setSuccess(true);
     timer.current = setTimeout(() => {

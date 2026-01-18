@@ -20,10 +20,17 @@ import { useTypesProductStore } from "../../store/ProductStore";
 import TrashIcon from "../ui/Icons/TrashIcon";
 import { useRefetchStore } from "../../store/refetchStore";
 import CustomModal from "../ui/modal/CustomModal";
+import CustomSelect from "../ui/Select/Select";
 
 interface IfilterQuery {
   nombre?: string;
+  tipoId?: string;
 }
+
+const initial_filters: IfilterQuery = {
+  nombre: "",
+  tipoId: "",
+};
 
 const BodyInventory = () => {
   const productsMutation = useProducts();
@@ -34,7 +41,7 @@ const BodyInventory = () => {
 
   const [products, setProducts] = useState<IProducto[]>();
   const [loadingTable, setLoadingTable] = useState(false);
-  const [filterQuery, setFilterQuery] = useState<IfilterQuery>({});
+  const [filterQuery, setFilterQuery] = useState<IfilterQuery>(initial_filters);
   const [selectedProduct, setSelectedProduct] = useState<IProducto | null>(
     null
   );
@@ -50,7 +57,7 @@ const BodyInventory = () => {
   const fetchData = async () => {
     setLoadingTable(true);
     try {
-      const products = await productsMutation.mutateAsync();
+      const products = await productsMutation.mutateAsync(filterQuery);
       setProducts(products);
       setLoadingTable(false);
     } catch (error) {
@@ -85,7 +92,7 @@ const BodyInventory = () => {
 
   useEffect(() => {
     fetchData();
-  }, [shouldRefetch]);
+  }, [shouldRefetch, filterQuery]);
 
   const handleOpenCreateDialog = (kind: string) => {
     setKindToCreate(kind);
@@ -142,7 +149,7 @@ const BodyInventory = () => {
     }
   };
 
-  const hasFilters = filterQuery.nombre;
+  const hasFilters = filterQuery.nombre || filterQuery.tipoId;
 
   return (
     <div>
@@ -152,7 +159,28 @@ const BodyInventory = () => {
             title="Buscar por Nombre"
             placeholder="Nombre"
             onChange={handleFilterName}
-            value={nombreInput}
+            value={filterQuery.nombre || nombreInput}
+          />
+          <CustomSelect
+            label="Filtrar por Tipo"
+            options={productsTypes.map((type) => ({
+              label: type.nombre,
+              value: type.id,
+            }))}
+            value={filterQuery.tipoId || ""}
+            onChange={(value) => {
+              const stringValue = String(value.target.value);
+              console.log("Selected type:", stringValue);
+              setFilterQuery((prev) => {
+                if (stringValue.length > 0) {
+                  return { ...prev, tipoId: stringValue };
+                } else {
+                  const updated = { ...prev };
+                  delete updated.tipoId;
+                  return updated;
+                }
+              });
+            }}
           />
         </div>
         <div className={style.actionsFilters}>

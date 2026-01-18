@@ -75,4 +75,30 @@ export const revestimientoService = {
     );
     return res.data;
   },
+
+  generatePropuestaRevestimiento: async (revestimientoId: string) => {
+    const response = await apiClient.get(
+      REVESTIMIENTO_API.generatePropuesta.replace(":id", revestimientoId),
+      { responseType: "blob" }
+    );
+    return response.data;
+  },
+
+  uploadPropuestaRevestimiento: async (
+    revestimientoId: string,
+    file: File
+  ): Promise<{ message: string }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await apiClient.post<{ message: string }>(
+      REVESTIMIENTO_API.uploadPropuesta.replace(":parentId", revestimientoId),
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  },
 };

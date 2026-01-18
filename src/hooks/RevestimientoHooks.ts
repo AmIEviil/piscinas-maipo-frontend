@@ -45,3 +45,18 @@ export const useDeleteRevestimiento = () => {
   });
   return deleteRevestimientoMutation;
 };
+
+export const usePropuestaRevestimiento = () => {
+  const propuestaRevestimientoMutation = useMutation({
+    mutationFn: revestimientoService.generatePropuestaRevestimiento,
+  });
+  return propuestaRevestimientoMutation;
+};
+
+export const useUploadPropuestaRevestimiento = () => {
+  const uploadPropuestaRevestimientoMutation = useMutation({
+    mutationFn: ({ parentId, file }: { parentId: string; file: File }) =>
+      revestimientoService.uploadPropuestaRevestimiento(parentId, file),
+  });
+  return uploadPropuestaRevestimientoMutation;
+};

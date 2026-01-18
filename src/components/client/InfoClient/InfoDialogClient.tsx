@@ -25,11 +25,19 @@ import ClientFields, {
 } from "./clientInfoFields/ClientInfoFields";
 import { Modal } from "react-bootstrap";
 import Button from "../../ui/button/Button";
+import { useUploadComprobantePago } from "../../../hooks/ComprobantePagosHooks";
+import { formatName } from "../../../utils/formatTextUtils";
+import type { IComprobantePago } from "../../../service/ComprobantePagos.interface";
+import ComprobantesContainer from "./comprobantesContainer/ComprobantesContainer";
+import LoadingSpinner from "../../ui/loading/Loading";
+import { useClientResumenMonthStore } from "../../../store/ClientStore";
 
 interface InfoClientDialogProps {
   open: boolean;
   clientInfo?: IClientForm;
   maintenancesClient?: Record<string, IMaintenance[]>;
+  comprobantesClient?: IComprobantePago[];
+  loading?: boolean;
   onClose: () => void;
   onMaintenanceCreated?: () => void;
   onNextClient: () => void;
@@ -38,11 +46,27 @@ interface InfoClientDialogProps {
   currentIndex: number;
 }
 
+export interface ResumenMaterial {
+  cantidad: number;
+  valorUnitario: number;
+  total: number;
+}
+
+export interface ResumenMonth {
+  resumenMateriales: Record<string, ResumenMaterial>;
+  mes: string;
+  totalMantencion: number;
+  totalProductos: number;
+  granTotal: number;
+}
+
 const InfoClientDialog = ({
   open = false,
   clientInfo,
-  onClose,
   maintenancesClient,
+  comprobantesClient,
+  loading,
+  onClose,
   onMaintenanceCreated,
   onNextClient,
   onPreviousClient,
@@ -50,6 +74,13 @@ const InfoClientDialog = ({
   currentIndex,
 }: InfoClientDialogProps) => {
   const createMaintenance = useCreateMaintenance();
+  const uploadComprobanteMutation = useUploadComprobantePago();
+  const setResumenMonthStore = useClientResumenMonthStore(
+    (state) => state.setResumenMonth,
+  );
+  const setClientInfo = useClientResumenMonthStore(
+    (state) => state.setClientInfo,
+  );
   const [coordenadas, setCoordenadas] = useState<
     { lat: number; lng: number } | undefined
   >(undefined);
@@ -62,13 +93,28 @@ const InfoClientDialog = ({
   const [months, setMonths] = useState<string[]>([]);
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
 
+  const emptyResumenMonth: ResumenMonth = {
+    resumenMateriales: {},
+    mes: "",
+    totalMantencion: 0,
+    totalProductos: 0,
+    granTotal: 0,
+  };
+
+  const [resumenMonth, setResumenMonth] =
+    useState<ResumenMonth>(emptyResumenMonth);
+
   const currentMonth = months[currentMonthIndex] ?? null;
-  const mantencionesMesActual =
-    currentMonth && Array.isArray(maintenancesClient?.[currentMonth])
-      ? [...maintenancesClient[currentMonth]].sort((a, b) =>
-          String(a.fechaMantencion).localeCompare(String(b.fechaMantencion))
-        )
-      : [];
+  const mantencionesMesActual = useMemo(() => {
+    if (!currentMonth) return [];
+
+    const list = maintenancesClient?.[currentMonth];
+    if (!Array.isArray(list)) return [];
+
+    return [...list].sort((a, b) =>
+      String(a.fechaMantencion).localeCompare(String(b.fechaMantencion)),
+    );
+  }, [currentMonth, maintenancesClient]);
 
   const allProducts = products ?? [];
 
@@ -78,7 +124,7 @@ const InfoClientDialog = ({
       .map((p) =>
         p.nombre
           ? { label: p.nombre, showOrderBy: false }
-          : { label: "", showOrderBy: false }
+          : { label: "", showOrderBy: false },
       )
       .filter(Boolean),
     { label: "Otros", showOrderBy: false },
@@ -114,8 +160,8 @@ const InfoClientDialog = ({
       try {
         const response = await fetch(
           `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-            address
-          )}&format=json`
+            address,
+          )}&format=json`,
         );
         const data = await response.json();
         if (!data[0]) {
@@ -124,8 +170,8 @@ const InfoClientDialog = ({
         }
 
         setCoordenadas({
-          lat: parseFloat(data[0].lat),
-          lng: parseFloat(data[0].lon),
+          lat: Number.parseFloat(data[0].lat),
+          lng: Number.parseFloat(data[0].lon),
         });
       } catch (error) {
         console.error("Error al obtener coordenadas:", error);
@@ -145,7 +191,7 @@ const InfoClientDialog = ({
         const [year, month] = m.split("-");
         return `${year}-${month.padStart(2, "0")}`;
       })
-      .sort();
+      .sort((a, b) => a.localeCompare(b));
 
     setMonths(sortedMonths);
     setCurrentMonthIndex(sortedMonths.length - 1);
@@ -153,12 +199,17 @@ const InfoClientDialog = ({
 
   const handleClose = () => {
     setCoordenadas(undefined);
+    setIsAddingMaintenance(false);
+    setResumenMonthStore(null);
+    setClientInfo({} as IClientForm);
+    setMonths([]);
+    setCurrentMonthIndex(0);
     onClose();
   };
 
   const calcularResumenMantenciones = (
     mantenciones: IMaintenance[],
-    valorMantencion: number
+    valorMantencion: number,
   ) => {
     const resumenMateriales: Record<
       string,
@@ -178,15 +229,15 @@ const InfoClientDialog = ({
         const valorUnitario = prod.product.valor_unitario;
         const cantidad = prod.cantidad;
 
-        if (!resumenMateriales[nombre]) {
+        if (resumenMateriales[nombre]) {
+          resumenMateriales[nombre].cantidad += cantidad;
+          resumenMateriales[nombre].total += valorUnitario * cantidad;
+        } else {
           resumenMateriales[nombre] = {
             cantidad: cantidad,
             valorUnitario,
-            total: valorUnitario,
+            total: valorUnitario * cantidad,
           };
-        } else {
-          resumenMateriales[nombre].cantidad += cantidad;
-          resumenMateriales[nombre].total += valorUnitario * cantidad;
         }
 
         totalProductos += valorUnitario * cantidad;
@@ -197,26 +248,27 @@ const InfoClientDialog = ({
 
     return {
       resumenMateriales,
+      mes: currentMonth ?? "",
       totalMantencion,
       totalProductos,
       granTotal,
     };
   };
 
-  const resumen = currentMonth
-    ? calcularResumenMantenciones(
-        mantencionesMesActual,
-        clientInfo?.valor_mantencion.value ?? 0
-      )
-    : {
-        resumenMateriales: {},
-        totalMantencion: 0,
-        granTotal: 0,
-        totalProductos: 0,
-      };
+  useEffect(() => {
+    if (!currentMonth && !clientInfo) return;
+
+    const resumen = calcularResumenMantenciones(
+      mantencionesMesActual,
+      clientInfo?.valor_mantencion.value ?? 0,
+    );
+    setResumenMonth(resumen);
+    setResumenMonthStore(resumen);
+    setClientInfo(clientInfo as IClientForm);
+  }, [currentMonth, mantencionesMesActual, clientInfo?.valor_mantencion.value]);
 
   const handleAcceptMaintenance = async (
-    maintenanceData: IMaintenanceCreate
+    maintenanceData: IMaintenanceCreate,
   ) => {
     try {
       await createMaintenance.mutateAsync(maintenanceData);
@@ -262,8 +314,31 @@ const InfoClientDialog = ({
 
   const dialogFooter = useMemo(
     () => renderFooter(),
-    [totalRecords, currentIndex, onNextClient, onPreviousClient]
+    [totalRecords, currentIndex, onNextClient, onPreviousClient],
   );
+
+  const handleSubmitComprobante = async (comprobante: File) => {
+    if (!comprobante || !clientInfo) return;
+    try {
+      const formData = new FormData();
+      formData.append("file", comprobante);
+      formData.append("tipo", "comprobante_mantencion");
+      formData.append("parentId", clientInfo.id.value);
+      formData.append(
+        "nombre",
+        formatName(
+          `Pago_Mantencion_${formatMonthTitle(currentMonth)}_${
+            clientInfo.nombre.value
+          }`,
+        ),
+      );
+      formData.append("fecha_emision", new Date().toISOString());
+
+      await uploadComprobanteMutation.mutateAsync(formData);
+    } catch (error) {
+      console.error("Error al subir el comprobante:", error);
+    }
+  };
 
   return (
     <Modal
@@ -273,138 +348,156 @@ const InfoClientDialog = ({
       centered
       style={{ borderRadius: 32 }}
     >
-      <Modal.Body className="custom-scrollbar">
-        {clientInfo && (
-          <ClientFields clientInfo={clientInfo} coordenadas={coordenadas} />
-        )}
-        <div className="flex flex-row justify-between items-center ">
-          <span
-            onClick={() => setShowMaintenances(!showMaintenances)}
-            className="cursor-pointer flex items-center gap-1 font-medium mt-4 mb-2 select-none w-fit"
-          >
-            {Object.keys(maintenancesClient ?? {}).length
-              ? "Ver Mantenciones"
-              : "Sin Mantenciones"}
-            {Object.keys(maintenancesClient ?? {}).length ? (
-              <CaretIcon direction={`${showMaintenances ? "down" : "up"}`} />
-            ) : null}
-          </span>
-          <div className={style.buttonContainer}>
-            <button
-              className={`${style.buttonInfo} p-1!`}
-              onClick={() => setIsAddingMaintenance(true)}
-            >
-              <AddIcon />
-            </button>
+      {loading ? (
+        <Modal.Body className="flex justify-center items-center p-10 min-h-160!">
+          <div className="flex justify-center items-center min-h-160!">
+            <LoadingSpinner />
           </div>
-        </div>
+        </Modal.Body>
+      ) : (
+        <Modal.Body className="custom-scrollbar">
+          {clientInfo && (
+            <ClientFields clientInfo={clientInfo} coordenadas={coordenadas} />
+          )}
+          <div className="flex flex-row justify-between items-center ">
+            <button
+              onClick={() => setShowMaintenances(!showMaintenances)}
+              className="cursor-pointer flex items-center gap-1 font-medium mt-4 mb-2 select-none w-fit normal"
+            >
+              {Object.keys(maintenancesClient ?? {}).length
+                ? "Ver Mantenciones"
+                : "Sin Mantenciones"}
+              {Object.keys(maintenancesClient ?? {}).length ? (
+                <CaretIcon direction={`${showMaintenances ? "down" : "up"}`} />
+              ) : null}
+            </button>
+            <div className={style.buttonContainer}>
+              <button
+                className={`${style.buttonInfo} p-1!`}
+                onClick={() => setIsAddingMaintenance(true)}
+              >
+                <AddIcon />
+              </button>
+            </div>
+          </div>
 
-        {showMaintenances && (
-          <>
-            {Object.keys(maintenancesClient ?? {}).length ? (
-              <div className={style.maintenancesContainer}>
-                <div className={style.tableContainer}>
-                  <div className="flex items-center justify-between py-3">
-                    <button
-                      disabled={currentMonthIndex === 0}
-                      onClick={() => setCurrentMonthIndex((i) => i - 1)}
-                    >
-                      <CaretIcon direction="left" color="white" />
-                    </button>
+          {showMaintenances && (
+            <>
+              {Object.keys(maintenancesClient ?? {}).length ? (
+                <div className={style.maintenancesContainer}>
+                  <div className={style.tableContainer}>
+                    <div className="flex items-center justify-between py-3">
+                      <button
+                        disabled={currentMonthIndex === 0}
+                        onClick={() => setCurrentMonthIndex((i) => i - 1)}
+                      >
+                        <CaretIcon direction="left" color="white" />
+                      </button>
 
-                    <h3 className="text-lg font-bold">
-                      {currentMonth ? formatMonthTitle(currentMonth) : ""}
-                    </h3>
+                      <h3 className="text-lg font-bold">
+                        {currentMonth ? formatMonthTitle(currentMonth) : ""}
+                      </h3>
 
-                    <button
-                      disabled={currentMonthIndex >= months.length - 1}
-                      onClick={() => setCurrentMonthIndex((i) => i + 1)}
-                    >
-                      <CaretIcon direction="right" color="white" />
-                    </button>
+                      <button
+                        disabled={currentMonthIndex >= months.length - 1}
+                        onClick={() => setCurrentMonthIndex((i) => i + 1)}
+                      >
+                        <CaretIcon direction="right" color="white" />
+                      </button>
+                    </div>
+                    <TableGeneric
+                      titles={titlesTable}
+                      data={mantencionesMesActual}
+                      renderRow={(mantencion) => (
+                        <tr key={mantencion.id}>
+                          <td>
+                            {formatDateToDDMMYYYY(mantencion.fechaMantencion)}
+                          </td>
+
+                          {allProducts.map((prod) => {
+                            const used = mantencion.productos.find(
+                              (p) => p.product.id === prod.id,
+                            );
+                            return (
+                              <td key={prod.id}>{used ? used.cantidad : 0}</td>
+                            );
+                          })}
+
+                          <td>{mantencion.otros}</td>
+                          <td>{mantencion.realizada ? "Sí" : "No"}</td>
+                          <td className="pr-0!">
+                            <span className="flex items-center gap-2 justify-between pr-0!">
+                              {mantencion.recibioPago ? "Sí" : "No"}
+
+                              {mantencion.observaciones && (
+                                <SeeMoreButton
+                                  content={mantencion.observaciones}
+                                />
+                              )}
+                            </span>
+                          </td>
+                        </tr>
+                      )}
+                    />
                   </div>
-                  <TableGeneric
-                    titles={titlesTable}
-                    data={mantencionesMesActual}
-                    renderRow={(mantencion) => (
-                      <tr key={mantencion.id}>
-                        <td>
-                          {formatDateToDDMMYYYY(mantencion.fechaMantencion)}
-                        </td>
-
-                        {allProducts.map((prod) => {
-                          const used = mantencion.productos.find(
-                            (p) => p.product.id === prod.id
-                          );
-                          return (
-                            <td key={prod.id}>{used ? used.cantidad : 0}</td>
-                          );
-                        })}
-
-                        <td>{mantencion.otros}</td>
-                        <td>{mantencion.realizada ? "Sí" : "No"}</td>
-                        <td className="pr-0!">
-                          <span className="flex items-center gap-2 justify-between pr-0!">
-                            {mantencion.recibioPago ? "Sí" : "No"}
-
-                            {mantencion.observaciones && (
-                              <SeeMoreButton
-                                content={mantencion.observaciones}
-                              />
-                            )}
+                  <div className={style.totalMes}>
+                    <span className={style.titleTotal}>Resumen</span>
+                    {Object.entries(resumenMonth.resumenMateriales).map(
+                      ([nombre, data]) => (
+                        <div key={nombre} className={style.totalValues}>
+                          <span>
+                            {nombre} -{" "}
+                            {data.valorUnitario.toLocaleString("es-CL")}
+                            {" x "}
+                            {data.cantidad}
                           </span>
-                        </td>
-                      </tr>
+                          <span>${data.total.toLocaleString("es-CL")}</span>
+                        </div>
+                      ),
                     )}
-                  />
-                </div>
-                <div className={style.totalMes}>
-                  <span className={style.titleTotal}>Resumen</span>
-                  {Object.entries(resumen.resumenMateriales).map(
-                    ([nombre, data]) => (
-                      <div key={nombre} className={style.totalValues}>
-                        <span>
-                          {nombre} -{" "}
-                          {data.valorUnitario.toLocaleString("es-CL")}
-                          {" x "}
-                          {data.cantidad}
-                        </span>
-                        <span>${data.total.toLocaleString("es-CL")}</span>
-                      </div>
-                    )
-                  )}
 
-                  <div className={style.totalValues}>
-                    <strong>Total productos:</strong>
-                    <span>
-                      ${resumen.totalProductos.toLocaleString("es-CL")}
-                    </span>
-                  </div>
-                  <div className={style.totalValues}>
-                    <strong>Total mantenciones:</strong>
-                    <span>
-                      ${resumen.totalMantencion.toLocaleString("es-CL")}
-                    </span>
-                  </div>
-                  <div className={style.totalValues}>
-                    <strong>Total general:</strong>
-                    <span>${resumen.granTotal.toLocaleString("es-CL")}</span>
+                    <div className={style.totalValues}>
+                      <strong>Total productos:</strong>
+                      <span>
+                        ${resumenMonth.totalProductos.toLocaleString("es-CL")}
+                      </span>
+                    </div>
+                    <div className={style.totalValues}>
+                      <strong>Total mantenciones:</strong>
+                      <span>
+                        ${resumenMonth.totalMantencion.toLocaleString("es-CL")}
+                      </span>
+                    </div>
+                    <div className={style.totalValues}>
+                      <strong>Total general:</strong>
+                      <span>
+                        ${resumenMonth.granTotal.toLocaleString("es-CL")}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : null}
-          </>
-        )}
-        {isAddingMaintenance && (
-          <MaintenanceFields
-            clientId={clientInfo?.id.value ?? ""}
-            valorMantencion={clientInfo?.valor_mantencion.value ?? 0}
-            productosList={products}
-            onAccept={handleAcceptMaintenance}
-            onCancel={handleCancelMaintenance}
-          />
-        )}
-      </Modal.Body>
+              ) : null}
+              {maintenancesClient &&
+                Object.keys(maintenancesClient).length > 0 && (
+                  <ComprobantesContainer
+                    comprobantesData={comprobantesClient}
+                    onApprove={handleSubmitComprobante}
+                  />
+                )}
+            </>
+          )}
+          {isAddingMaintenance && (
+            <MaintenanceFields
+              clientId={clientInfo?.id.value ?? ""}
+              valorMantencion={clientInfo?.valor_mantencion.value ?? 0}
+              productosList={products}
+              onAccept={handleAcceptMaintenance}
+              onCancel={handleCancelMaintenance}
+            />
+          )}
+        </Modal.Body>
+      )}
+
       <Modal.Footer>
         {dialogFooter}
         <Button label="Cerrar" onClick={handleClose} variant="primary" />

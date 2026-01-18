@@ -50,7 +50,7 @@ const CreateClientDialog = ({
   const [telefonoClient, setTelefonoClient] = useState<string>("");
   const [tipoPiscinaClient, settipoPiscinaClient] = useState<string>("");
   const [fechaIngresoClient, setFechaIngresoClient] = useState<Date | null>(
-    null
+    null,
   );
   const [comunaClient, setcomunaClient] = useState<string>("");
   const [emailClient, setEmailClient] = useState<string>("");
@@ -60,7 +60,7 @@ const CreateClientDialog = ({
 
   // Nuevos campos
   const [rutaClient, setRutaClient] = useState<string>("");
-  const [observacionesClient, setObservacionesClient] = useState<string>("");
+  const [observacionClient, setObservacionClient] = useState<string>("");
   const [isActiveClient, setIsActiveClient] = useState<boolean>(true);
 
   // Estados de carga/éxito
@@ -75,7 +75,7 @@ const CreateClientDialog = ({
       setTelefonoClient(clientInfo.telefono);
       settipoPiscinaClient(clientInfo.tipo_piscina);
       setFechaIngresoClient(
-        clientInfo.fecha_ingreso ? new Date(clientInfo.fecha_ingreso) : null
+        clientInfo.fecha_ingreso ? new Date(clientInfo.fecha_ingreso) : null,
       );
       setcomunaClient(clientInfo.comuna);
       setEmailClient(clientInfo.email || "");
@@ -84,16 +84,16 @@ const CreateClientDialog = ({
 
       // Cargar nuevos campos si existen en clientInfo
       setRutaClient(clientInfo.ruta || "");
-      setObservacionesClient(clientInfo.observaciones || ""); // Asumiendo que Client tiene observaciones
+      setObservacionClient(clientInfo.observacion || ""); // Asumiendo que Client tiene observacion
       setIsActiveClient(
-        clientInfo.isActive !== undefined ? clientInfo.isActive : true
+        clientInfo.isActive !== undefined ? clientInfo.isActive : true,
       );
 
       setInputValue(
         Intl.NumberFormat("es-CL", {
           style: "currency",
           currency: "CLP",
-        }).format(clientInfo.valor_mantencion)
+        }).format(clientInfo.valor_mantencion),
       );
     } else {
       clearForm(); // Limpiar si se abre para crear
@@ -112,7 +112,7 @@ const CreateClientDialog = ({
     setDiaMantencionClient("");
     setInputValue("");
     setRutaClient("");
-    setObservacionesClient("");
+    setObservacionClient("");
     setIsActiveClient(true);
     setSuccess(false);
   };
@@ -129,7 +129,7 @@ const CreateClientDialog = ({
         Intl.NumberFormat("es-CL", {
           style: "currency",
           currency: "CLP",
-        }).format(valorMantencionClient)
+        }).format(valorMantencionClient),
       );
     }
   };
@@ -150,7 +150,7 @@ const CreateClientDialog = ({
       email: emailClient,
       valor_mantencion: valorMantencionClient,
       ruta: rutaClient,
-      observaciones: observacionesClient,
+      observacion: observacionClient,
       isActive: isActiveClient,
     };
 
@@ -186,7 +186,7 @@ const CreateClientDialog = ({
     valorMantencionClient > 0;
 
   return (
-    <Modal size="xl" show={open} onHide={onClose}>
+    <Modal size="xl" show={open} onHide={onClose} className="max-h-dvh">
       <Modal.Header className={style.dialogTitle} closeButton>
         {isEditMode ? "Editar Cliente" : "Crear Nuevo Cliente"}
       </Modal.Header>
@@ -292,7 +292,9 @@ const CreateClientDialog = ({
                   }
                   onChange={({ start }) =>
                     setFechaIngresoClient(
-                      start ? new Date(start) : fechaIngresoClient ?? new Date()
+                      start
+                        ? new Date(start)
+                        : (fechaIngresoClient ?? new Date()),
                     )
                   }
                 />
@@ -316,10 +318,10 @@ const CreateClientDialog = ({
             <div className={style.gridContainer}>
               <div className={style.fullWidth}>
                 <CustomTextArea
-                  title="Observaciones"
+                  title="Observacion"
                   placeholder="Detalles adicionales sobre el cliente o la piscina..."
-                  value={observacionesClient}
-                  onChange={setObservacionesClient}
+                  value={observacionClient}
+                  onChange={setObservacionClient}
                 />
               </div>
 
@@ -350,8 +352,8 @@ const CreateClientDialog = ({
             success
               ? "Guardado!"
               : isEditMode
-              ? "Guardar Cambios"
-              : "Crear Cliente"
+                ? "Guardar Cambios"
+                : "Crear Cliente"
           }
           disabled={!isValidForm || loading || success}
           icon={success ? <CheckIcon /> : <SaveIcon />}

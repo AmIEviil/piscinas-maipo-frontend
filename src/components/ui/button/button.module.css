@@ -37,8 +37,8 @@
 
 .btn-secondary {
   background-color: transparent;
-  border: 1px solid var(--gold-500);
-  color: var(--color-primario);
+  border: 1px solid var(--color-secundario);
+  color: var(--color-secundario);
 }
 
 .btn-tertiary {
@@ -82,15 +82,15 @@
 /* secondary btn config */
 .btn-secondary:hover {
   border-radius: var(--Value-Corner-radius-8px, 8px);
-  border: 1px solid var(--gold-400);
-  background: var(--black-100);
-  color: var(--gold-400);
+  border: 1px solid var(--color-secundario);
+  background: var(--background-color-primary);
+  color: var(--color-fondo);
 }
 
 .btn-secondary:active {
   background-color: var(--black-100) !important;
-  border: 1px solid var(--primary-gold-600) !important;
-  color: var(--primary-gold-600) !important;
+  border: 1px solid var(--color-secundario) !important;
+  color: var(--color-secundario) !important;
 }
 
 .btn-secondary:focus {
