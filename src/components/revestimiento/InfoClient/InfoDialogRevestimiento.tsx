@@ -41,7 +41,7 @@ const InfoRevestimientoDialog = ({
   const totalExtras =
     revestimientoInfo.extras?.reduce(
       (acc, curr) => acc + Number(curr.valor),
-      0
+      0,
     ) || 0;
 
   return (
@@ -64,7 +64,7 @@ const InfoRevestimientoDialog = ({
             </span>
           </div>
           <div className="">
-            {!filesPropuesta && (
+            {!filesPropuesta?.length && (
               <Button
                 label="Generar Propuesta PDF"
                 variant="secondary"
@@ -294,7 +294,7 @@ const InfoRevestimientoDialog = ({
               <span className={style.totalLabel}>Valor Base Revestimiento</span>
               <span className="text-xl font-bold text-gray-600">
                 {formatMoneyNumber(
-                  revestimientoInfo.valorTotal - totalExtras // Asumiendo valorTotal ya incluye extras, restamos para mostrar desglose, o ajusta según tu lógica
+                  revestimientoInfo.valorTotal - totalExtras, // Asumiendo valorTotal ya incluye extras, restamos para mostrar desglose, o ajusta según tu lógica
                 )}
               </span>
             </div>

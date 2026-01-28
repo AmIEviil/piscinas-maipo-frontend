@@ -11,7 +11,7 @@ import apiClient from "../client/client";
 
 export const productsService = {
   getProducts: async (filters?: ProductFilters): Promise<IProducto[]> => {
-    const response = await apiClient.get(PRODUCTS_API.products, {
+    const response = await apiClient.get(PRODUCTS_API.productsFilter, {
       params: filters,
     });
     return response.data;
