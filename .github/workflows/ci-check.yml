@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20" # Usa la versión que tengas en tu servidor
+          node-version: "20.19.5" # Usa la versión que tengas en tu servidor
           cache: "yarn"
 
       # 3. Instalar dependencias
