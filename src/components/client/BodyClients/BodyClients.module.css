@@ -42,7 +42,6 @@
 
 .tableContainer {
   margin-top: 1.5rem;
-  color: var(--color-fondo);
 }
 
 @media screen and (max-width: 1280px) {

@@ -104,11 +104,11 @@ export const tiposPiscinasMaterial = [
 ];
 
 export const titlesInventoryTable = [
-  { label: "Nombre", showOrderBy: false },
-  { label: "Tipo", showOrderBy: false },
-  { label: "Cant. Disponible", showOrderBy: false },
-  { label: "Valor Unitario", showOrderBy: false },
-  { label: "Acciones", showOrderBy: false },
+  { label: "Nombre", key: "nombre", showOrder: false },
+  { label: "Tipo", key: "tipo", showOrder: false },
+  { label: "Cant. Disponible", key: "cant_disponible", showOrder: false },
+  { label: "Valor Unitario", key: "valor_unitario", showOrder: false },
+  { label: "Acciones", key: "actions", showOrder: false },
 ];
 
 export const tiposRevestimientos = [

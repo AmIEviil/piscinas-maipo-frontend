@@ -10,6 +10,7 @@ interface InputTextProps {
   type?: string;
   placeholder?: string;
   require?: boolean;
+  maxLength?: number;
   onChange?: (value: string) => void;
   onBlur?: () => void;
   icon?: ReactNode;
@@ -24,9 +25,10 @@ const CustomInputText = ({
   disabled = false,
   type = "text",
   placeholder,
+  require = false,
+  maxLength,
   onChange = () => {},
   onBlur = () => {},
-  require = false,
   icon,
   customClass = "",
   customClassTitle = "",
@@ -42,7 +44,7 @@ const CustomInputText = ({
 
   const handleSeePassword = () => {
     const inputField = document.getElementById(
-      `input-field-${title}`
+      `input-field-${title}`,
     ) as HTMLInputElement;
     if (isPasswordType && inputField.type === "password") {
       inputField.type = "text";
@@ -83,6 +85,7 @@ const CustomInputText = ({
           disabled={disabled}
           placeholder={placeholder}
           onBlur={onBlur}
+          maxLength={maxLength}
         />
         {isPasswordType && (
           <span className="input-icon-password" onClick={handleIconClick}>

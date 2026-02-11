@@ -2,7 +2,11 @@ import style from "./MaintenancesFields.module.css";
 import CustomInputText from "../../../ui/InputText/CustomInputText";
 import { useEffect, useState } from "react";
 import { CustomSwitch } from "../../../ui/Switch/CustomSwitch";
-import type { IMaintenanceCreate } from "../../../../service/maintenance.interface";
+import type {
+  IMaintenance,
+  IMaintenanceCreate,
+  IProductosUtilizados,
+} from "../../../../service/maintenance.interface";
 import type { IProducto } from "../../../../service/products.interface";
 import CustomSelect from "../../../ui/Select/Select";
 import AddIcon from "@mui/icons-material/Add";
@@ -12,11 +16,14 @@ import { Divider } from "@mui/material";
 import Calendar from "../../../ui/datepicker/DatePicker";
 import { getWindowWidth } from "../../../../utils/WindowUtils";
 import MaintenanceFieldsMobile from "./MaintenancesFieldsMobile";
+import { formatDateToLocalString } from "../../../../utils/DateUtils";
 
 interface MaintenanceFieldsProps {
   clientId: string;
   valorMantencion: number;
   productosList: IProducto[];
+  isEditing?: boolean;
+  mantencionData?: IMaintenance | null;
   onAccept: (maintenance: IMaintenanceCreate) => void;
   onCancel?: () => void;
 }
@@ -25,11 +32,13 @@ const MaintenanceFields = ({
   clientId,
   valorMantencion,
   productosList,
+  isEditing = false,
+  mantencionData,
   onAccept,
   onCancel,
 }: MaintenanceFieldsProps) => {
   const initial_maintenance = {
-    fechaMantencion: new Date().toISOString().split("T")[0],
+    fechaMantencion: formatDateToLocalString(new Date()),
     realizada: false,
     recibioPago: false,
     valorMantencion: valorMantencion,
@@ -44,6 +53,33 @@ const MaintenanceFields = ({
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [cantidad, setCantidad] = useState<number>(0);
   const [error, setError] = useState<string>("");
+
+  console.log("mantencionData", mantencionData);
+  useEffect(() => {
+    if (isEditing && mantencionData) {
+      const productosFormateados =
+        mantencionData.productos?.map((p: IProductosUtilizados) => ({
+          productId: p.product?.id?.toString() || p.id,
+          cantidad: p.cantidad,
+        })) || [];
+
+      setMaintenance({
+        fechaMantencion: new Date(mantencionData.fechaMantencion)
+          .toISOString()
+          .split("T")[0],
+        realizada: mantencionData.realizada,
+        recibioPago: mantencionData.recibioPago,
+        valorMantencion: valorMantencion,
+        client: { id: clientId },
+        productosUsados: productosFormateados,
+        observaciones: mantencionData.observaciones || "",
+      });
+
+      if (productosFormateados.length > 0) {
+        setShowProducts(true);
+      }
+    }
+  }, [isEditing, mantencionData, clientId, valorMantencion]);
 
   const productOptions = productosList
     .filter(
@@ -114,14 +150,18 @@ const MaintenanceFields = ({
               <Calendar
                 title="Fecha de Mantención"
                 className="w-fit!"
-                initialValue={new Date(maintenance.fechaMantencion)}
+                initialValue={
+                  maintenance.fechaMantencion
+                    ? new Date(`${maintenance.fechaMantencion}T00:00:00`)
+                    : null
+                }
                 required
                 mode="day"
                 onChange={({ start }) =>
                   setMaintenance({
                     ...maintenance,
                     fechaMantencion: start
-                      ? start.toISOString().split("T")[0]
+                      ? formatDateToLocalString(start)
                       : maintenance.fechaMantencion,
                   })
                 }

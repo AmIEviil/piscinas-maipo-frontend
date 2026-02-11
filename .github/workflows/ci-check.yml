@@ -1,0 +1,41 @@
+name: CI Check (Quality Control)
+
+# Se ejecuta en pushes a 'dev' y en Pull Requests hacia 'main'
+on:
+  push:
+    branches: ["dev"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  validate:
+    name: Validate Codebase
+    runs-on: ubuntu-latest
+
+    steps:
+      # Descargar el código
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Preparar el entorno de Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.19.5" # Usa la versión que tengas en tu servidor
+          cache: "yarn"
+
+      # 3. Instalar dependencias
+      # --frozen-lockfile asegura que se instalen las versiones exactas del yarn.lock
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      # Revisión de Calidad (Linting)
+      # Esto usará tu eslint.config.js para detectar errores de sintaxis o malas prácticas
+      - name: Run Linter
+        run: yarn lint
+
+      # Verificación de Compilación (Build Test)
+      # Al ser TypeScript, esto también verifica que no haya errores de tipos (tsc -b)
+      # Si esto falla, el pipeline se detiene y no deja pasar a producción.
+      - name: Verify Build
+        run: yarn build

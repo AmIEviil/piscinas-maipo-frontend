@@ -241,7 +241,7 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
                   )}
                   {!addingField && (
                     <button
-                      className="normal"
+                      className="normal p-2! hover:text-white!"
                       onClick={() => {
                         setAddingFields(!addingFields);
                         setAddingField(null);
@@ -291,7 +291,7 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
               )}
             </div>
             <div className="flex flex-col justify-between flex-1">
-              {windowWidth > 720 &&  (
+              {windowWidth > 720 && (
                 <div>
                   <button className="secondary" onClick={setModalVisible}>
                     Generar Boleta

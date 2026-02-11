@@ -84,3 +84,9 @@ tbody tr:hover button {
   background-color: var(--color-primario);
   color: var(--color-fondo);
 }
+
+.noData {
+  padding: 1rem;
+  text-align: start;
+  color: var(--color-fondo);
+}

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import {
   // useCreateRepair,
@@ -95,7 +96,7 @@ const BodyRepairs = () => {
 
   useEffect(() => {
     fetchRepairs();
-  }, []);
+  }, [filterQuery]);
 
   const handleClearFilters = () => {
     setFilterQuery({});

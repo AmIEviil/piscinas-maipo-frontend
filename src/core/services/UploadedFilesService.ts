@@ -1,4 +1,4 @@
-import type { IUploadedFile } from "../../service/UploadedFiles.interface";
+import type { IUploadedFile } from "../../service/uploadedFiles.interface";
 import { UPLOADED_FILES_API } from "../api/uploaded-files/api";
 import apiClient from "../client/client";
 

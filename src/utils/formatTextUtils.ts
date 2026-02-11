@@ -20,3 +20,11 @@ export const formatName = (name: string) => {
   name = name.replace(/ /g, "_");
   return name;
 };
+
+export const getAbbreviation = (name: string) => {
+  if (!name) return "";
+  return name
+    .split(" ")
+    .map((word) => word[0].toUpperCase())
+    .join("");
+};

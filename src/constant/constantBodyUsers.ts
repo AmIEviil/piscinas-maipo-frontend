@@ -1,9 +1,9 @@
 export const titlesTable = [
-  { label: "Usuario", showOrderBy: false },
-  { label: "Nombre", showOrderBy: false },
-  { label: "Email", showOrderBy: true },
-  { label: "Rol", showOrderBy: true },
-  { label: "Estado", showOrderBy: true },
-  { label: "Último acceso", showOrderBy: true },
-  { label: "Acciones", showOrderBy: false },
+  { label: "Usuario", key: "usuario", showOrderBy: false },
+  { label: "Nombre", key: "nombre", showOrderBy: false },
+  { label: "Email", key: "email", showOrderBy: true },
+  { label: "Rol", key: "rol", showOrderBy: true },
+  { label: "Estado", key: "estado", showOrderBy: true },
+  { label: "Último acceso", key: "ultimoAcceso", showOrderBy: true },
+  { label: "Acciones", key: "acciones", showOrderBy: false },
 ];

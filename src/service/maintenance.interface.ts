@@ -23,12 +23,26 @@ export interface IResumeMaintenance {
   faltantes: number;
 }
 
+export interface IProductoMantencion {
+  productId: string;
+  cantidad: number;
+}
+
 export interface IMaintenanceCreate {
   fechaMantencion: string;
   realizada: boolean;
   recibioPago: boolean;
   valorMantencion: number;
   client: { id: string };
-  productosUsados: { productId: string; cantidad: number }[];
+  productosUsados: IProductoMantencion[];
   observaciones: string;
+}
+
+export interface IMaintenanceUpdate {
+  fechaMantencion?: string;
+  realizada?: boolean;
+  recibioPago?: boolean;
+  valorMantencion?: number;
+  productosUsados?: IProductoMantencion[];
+  observaciones?: string;
 }

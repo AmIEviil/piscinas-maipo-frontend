@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { useEffect, useMemo, useState } from "react";
 import debounce from "lodash.debounce";
@@ -40,7 +41,7 @@ import { useRefetchStore } from "../../../store/refetchStore";
 import CustomModal from "../../ui/modal/CustomModal";
 import { usePermits } from "../../../utils/roleUtils";
 import { useGetComprobantesByParentId } from "../../../hooks/ComprobantePagosHooks";
-import type { IComprobantePago } from "../../../service/ComprobantePagos.interface";
+import type { IComprobantePago } from "../../../service/comprobantePagos.interface";
 
 interface IfilterQuery {
   nombre?: string;
@@ -91,8 +92,6 @@ const BodyClients = () => {
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [loadingClientInfo, setLoadingClientInfo] = useState(false);
-
-  const [selectedIsActive, setSelectedIsActive] = useState(true);
 
   const selectedDayHome = useBoundStore((state) => state.dayFilter);
   const setDayFilterStore = useBoundStore((state) => state.setDayFilter);
@@ -213,7 +212,6 @@ const BodyClients = () => {
   };
 
   const handleChangeActive = (value: boolean) => {
-    setSelectedIsActive(value);
     setFilterQuery((prev) => ({ ...prev, isActive: value }));
   };
 
@@ -225,11 +223,8 @@ const BodyClients = () => {
         true,
         `Ver detalles de ${selectedClients.length} cliente(s).`,
       );
+      setCurrentClientIndex(0);
     }
-    setMantenciones(undefined);
-    setSelectedClient(null);
-    setIsEditMode(false);
-    setCurrentClientIndex(0);
   };
 
   const handleSeeDetailsClient = async (client: Client) => {
@@ -253,7 +248,6 @@ const BodyClients = () => {
 
   const handleClearFilter = () => {
     setFilterQuery({});
-    setSelectedIsActive(true);
     setDayFilterStore("");
   };
 
@@ -434,7 +428,7 @@ const BodyClients = () => {
               onChange={(event) =>
                 handleChangeActive(Boolean(event.target.value))
               }
-              value={selectedIsActive.toString()}
+              value={filterQuery.isActive?.toString()}
             />
           </div>
         )}

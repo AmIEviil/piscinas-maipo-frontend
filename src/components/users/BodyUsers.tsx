@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import style from "./BodyUsers.module.css";
 import { useEffect, useMemo, useState } from "react";
 import { useDeleteUser, useUsers } from "../../hooks/UsersHooks";

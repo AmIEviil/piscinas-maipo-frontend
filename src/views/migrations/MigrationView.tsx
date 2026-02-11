@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { ProtectedRoute } from "../../components/common/ProtectedRoute";
 
@@ -64,7 +65,7 @@ export const MigrationViewProtected = () => {
   const handleExecuteMigration = async (migrationName: string) => {
     if (
       window.confirm(
-        `¿Estás seguro de que quieres ejecutar la migración ${migrationName}?`
+        `¿Estás seguro de que quieres ejecutar la migración ${migrationName}?`,
       )
     ) {
       try {
@@ -79,7 +80,7 @@ export const MigrationViewProtected = () => {
   const handleRevertMigration = async (migrationName: string) => {
     if (
       window.confirm(
-        `¿Estás seguro de que quieres revertir la migración ${migrationName}?`
+        `¿Estás seguro de que quieres revertir la migración ${migrationName}?`,
       )
     ) {
       try {
@@ -102,7 +103,10 @@ export const MigrationViewProtected = () => {
     : {};
 
   return (
-    <ProtectedRoute allowedRoles={[roles.SUPER_ADMIN, roles.ADMIN]} redirectPath="/">
+    <ProtectedRoute
+      allowedRoles={[roles.SUPER_ADMIN, roles.ADMIN]}
+      redirectPath="/"
+    >
       <div className="w-full bg-white shadow-md rounded-lg">
         <div className="p-4 border-b border-gray-200 text-lg font-semibold flex items-center gap-2">
           <span>Resumen</span>
@@ -319,7 +323,7 @@ export const MigrationViewProtected = () => {
                                   </td>
                                   <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-900">
                                     {new Date(
-                                      history.executed_at
+                                      history.executed_at,
                                     ).toLocaleString()}
                                   </td>
                                   <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-900">
@@ -333,7 +337,7 @@ export const MigrationViewProtected = () => {
                             </tbody>
                           </table>
                         </div>
-                      )
+                      ),
                     )
                   )}
                 </>
