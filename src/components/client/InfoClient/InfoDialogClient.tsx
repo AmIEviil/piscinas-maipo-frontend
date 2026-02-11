@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   type IMaintenance,
   type IMaintenanceCreate,
+  type IMaintenanceUpdate,
 } from "../../../service/maintenance.interface";
 import style from "./InfoDialogClient.module.css";
 import TableGeneric from "../../ui/table/Table";
@@ -12,7 +13,11 @@ import { getWindowWidth } from "../../../utils/WindowUtils";
 import AddIcon from "@mui/icons-material/Add";
 import CaretIcon from "../../ui/Icons/CaretIcon";
 import MaintenanceFields from "./maintenancesFields/MaintenancesFields";
-import { useCreateMaintenance } from "../../../hooks/MaintenanceHooks";
+import {
+  useCreateMaintenance,
+  useDeleteMaintenance,
+  useUpdateMaintenance,
+} from "../../../hooks/MaintenanceHooks";
 import { useProductStore } from "../../../store/ProductStore";
 import {
   formatDateToDDMMYYYY,
@@ -26,11 +31,17 @@ import ClientFields, {
 import { Modal } from "react-bootstrap";
 import Button from "../../ui/button/Button";
 import { useUploadComprobantePago } from "../../../hooks/ComprobantePagosHooks";
-import { formatName } from "../../../utils/formatTextUtils";
-import type { IComprobantePago } from "../../../service/ComprobantePagos.interface";
+import { formatName, getAbbreviation } from "../../../utils/formatTextUtils";
+import type { IComprobantePago } from "../../../service/comprobantePagos.interface";
 import ComprobantesContainer from "./comprobantesContainer/ComprobantesContainer";
 import LoadingSpinner from "../../ui/loading/Loading";
 import { useClientResumenMonthStore } from "../../../store/ClientStore";
+import PencilIcon from "../../ui/Icons/PencilIcon";
+import TrashIcon from "../../ui/Icons/TrashIcon";
+import { Tooltip } from "@mui/material";
+import ResumeMaintenance from "./resumeMaintenances/ResumeMaintenance";
+import { useModalStore } from "../../../store/ModalStore";
+import FieldGroup from "../../ui/labelField/FieldGroup";
 
 interface InfoClientDialogProps {
   open: boolean;
@@ -44,20 +55,6 @@ interface InfoClientDialogProps {
   onPreviousClient: () => void;
   totalRecords: number;
   currentIndex: number;
-}
-
-export interface ResumenMaterial {
-  cantidad: number;
-  valorUnitario: number;
-  total: number;
-}
-
-export interface ResumenMonth {
-  resumenMateriales: Record<string, ResumenMaterial>;
-  mes: string;
-  totalMantencion: number;
-  totalProductos: number;
-  granTotal: number;
 }
 
 const InfoClientDialog = ({
@@ -74,6 +71,9 @@ const InfoClientDialog = ({
   currentIndex,
 }: InfoClientDialogProps) => {
   const createMaintenance = useCreateMaintenance();
+  const updateMaintenance = useUpdateMaintenance();
+  const deleteMaintenance = useDeleteMaintenance();
+
   const uploadComprobanteMutation = useUploadComprobantePago();
   const setResumenMonthStore = useClientResumenMonthStore(
     (state) => state.setResumenMonth,
@@ -81,6 +81,9 @@ const InfoClientDialog = ({
   const setClientInfo = useClientResumenMonthStore(
     (state) => state.setClientInfo,
   );
+  const setOpenModal = useModalStore((state) => state.openModal);
+  const handleCloseModal = useModalStore((state) => state.closeModal);
+
   const [coordenadas, setCoordenadas] = useState<
     { lat: number; lng: number } | undefined
   >(undefined);
@@ -92,17 +95,8 @@ const InfoClientDialog = ({
 
   const [months, setMonths] = useState<string[]>([]);
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
-
-  const emptyResumenMonth: ResumenMonth = {
-    resumenMateriales: {},
-    mes: "",
-    totalMantencion: 0,
-    totalProductos: 0,
-    granTotal: 0,
-  };
-
-  const [resumenMonth, setResumenMonth] =
-    useState<ResumenMonth>(emptyResumenMonth);
+  const [maintenanceToEdit, setMaintenanceToEdit] =
+    useState<IMaintenance | null>(null);
 
   const currentMonth = months[currentMonthIndex] ?? null;
   const mantencionesMesActual = useMemo(() => {
@@ -116,20 +110,24 @@ const InfoClientDialog = ({
     );
   }, [currentMonth, maintenancesClient]);
 
-  const allProducts = products ?? [];
+  const cloroProducts =
+    products?.filter((p) => p.tipo.nombre === "Cloro") || [];
+  const otherProducts =
+    products?.filter((p) => p.tipo.nombre !== "Cloro") || [];
 
   const titlesTable = [
-    { label: "Fecha Mantencion", showOrderBy: false },
-    ...allProducts
+    { label: "Fecha Mantencion", key: "fechaMantencion", showOrderBy: false },
+    ...cloroProducts
       .map((p) =>
         p.nombre
-          ? { label: p.nombre, showOrderBy: false }
-          : { label: "", showOrderBy: false },
+          ? { label: p.nombre, key: "nombre", showOrderBy: false }
+          : { label: "", key: "nombre", showOrderBy: false },
       )
       .filter(Boolean),
-    { label: "Otros", showOrderBy: false },
-    { label: "Realizada", showOrderBy: false },
-    { label: "Recibio Pago", showOrderBy: false },
+    { label: "Otros", key: "otros", showOrderBy: false },
+    { label: "Realizada", key: "realizada", showOrderBy: false },
+    { label: "Recibio Pago", key: "recibioPago", showOrderBy: false },
+    { label: "", key: "acciones", showOrderBy: false },
   ];
 
   useEffect(() => {
@@ -200,6 +198,7 @@ const InfoClientDialog = ({
   const handleClose = () => {
     setCoordenadas(undefined);
     setIsAddingMaintenance(false);
+    setMaintenanceToEdit(null);
     setResumenMonthStore(null);
     setClientInfo({} as IClientForm);
     setMonths([]);
@@ -207,82 +206,43 @@ const InfoClientDialog = ({
     onClose();
   };
 
-  const calcularResumenMantenciones = (
-    mantenciones: IMaintenance[],
-    valorMantencion: number,
-  ) => {
-    const resumenMateriales: Record<
-      string,
-      { cantidad: number; valorUnitario: number; total: number }
-    > = {};
-
-    let totalMantencion = 0;
-    let totalProductos = 0;
-
-    for (const mant of mantenciones) {
-      if (mant.realizada) {
-        totalMantencion += valorMantencion;
-      }
-
-      for (const prod of mant.productos) {
-        const nombre = prod.product.nombre;
-        const valorUnitario = prod.product.valor_unitario;
-        const cantidad = prod.cantidad;
-
-        if (resumenMateriales[nombre]) {
-          resumenMateriales[nombre].cantidad += cantidad;
-          resumenMateriales[nombre].total += valorUnitario * cantidad;
-        } else {
-          resumenMateriales[nombre] = {
-            cantidad: cantidad,
-            valorUnitario,
-            total: valorUnitario * cantidad,
-          };
-        }
-
-        totalProductos += valorUnitario * cantidad;
-      }
-    }
-
-    const granTotal = totalMantencion + totalProductos;
-
-    return {
-      resumenMateriales,
-      mes: currentMonth ?? "",
-      totalMantencion,
-      totalProductos,
-      granTotal,
-    };
-  };
-
   useEffect(() => {
     if (!currentMonth && !clientInfo) return;
-
-    const resumen = calcularResumenMantenciones(
-      mantencionesMesActual,
-      clientInfo?.valor_mantencion.value ?? 0,
-    );
-    setResumenMonth(resumen);
-    setResumenMonthStore(resumen);
     setClientInfo(clientInfo as IClientForm);
-  }, [currentMonth, mantencionesMesActual, clientInfo?.valor_mantencion.value]);
+  }, [currentMonth, clientInfo, setClientInfo]);
 
   const handleAcceptMaintenance = async (
-    maintenanceData: IMaintenanceCreate,
+    maintenanceData: IMaintenanceCreate | IMaintenanceUpdate,
   ) => {
     try {
-      await createMaintenance.mutateAsync(maintenanceData);
+      if (maintenanceToEdit) {
+        // MODO EDICIÓN
+        await updateMaintenance.mutateAsync({
+          id: maintenanceToEdit.id,
+          data: maintenanceData as IMaintenanceUpdate,
+        });
+      } else {
+        // MODO CREACIÓN
+        await createMaintenance.mutateAsync(
+          maintenanceData as IMaintenanceCreate,
+        );
+      }
+
+      // Reset y refresh
       setIsAddingMaintenance(false);
+      setMaintenanceToEdit(null);
+
       if (onMaintenanceCreated) {
         onMaintenanceCreated();
       }
     } catch (err) {
-      console.error("Error al crear mantención:", err);
+      console.error("Error al guardar mantención:", err);
     }
   };
 
   const handleCancelMaintenance = () => {
     setIsAddingMaintenance(false);
+    setMaintenanceToEdit(null);
   };
 
   const renderFooter = () => {
@@ -340,6 +300,53 @@ const InfoClientDialog = ({
     }
   };
 
+  const handleEditMaintenance = (maintenance: IMaintenance) => {
+    setMaintenanceToEdit(maintenance);
+    setIsAddingMaintenance(true);
+  };
+
+  const handleDeleteMaintenance = (maintenance: IMaintenance) => {
+    setOpenModal({
+      header: <strong>Eliminando mantencion</strong>,
+      content: (
+        <div>
+          {" "}
+          ¿Estas seguro de eliminar esta mantención de{" "}
+          <strong>{clientInfo?.nombre.value}</strong>?
+          <div>
+            <FieldGroup
+              label="Fecha Mantención"
+              value={formatDateToDDMMYYYY(maintenance.fechaMantencion)}
+            />
+            <FieldGroup
+              label="Productos Utilizados"
+              value={maintenance.productos
+                .map((p) => `${p.product.nombre} (${p.cantidad})`)
+                .join(" - ")}
+            />
+          </div>
+        </div>
+      ),
+      footer: (
+        <>
+          <Button
+            label="Cancelar"
+            variant="secondary"
+            onClick={() => handleCloseModal()}
+          />
+          <Button
+            label="Eliminar"
+            onClick={() => {
+              handleCloseModal();
+              deleteMaintenance.mutateAsync(maintenance.id);
+            }}
+          />
+        </>
+      ),
+      dialogClassName: "max-w-md! max-h-md!",
+    });
+  };
+
   return (
     <Modal
       show={open}
@@ -362,7 +369,7 @@ const InfoClientDialog = ({
           <div className="flex flex-row justify-between items-center ">
             <button
               onClick={() => setShowMaintenances(!showMaintenances)}
-              className="cursor-pointer flex items-center gap-1 font-medium mt-4 mb-2 select-none w-fit normal"
+              className="cursor-pointer flex items-center gap-1 font-medium mt-4 mb-2 select-none w-fit normal p-2! hover:text-white!"
             >
               {Object.keys(maintenancesClient ?? {}).length
                 ? "Ver Mantenciones"
@@ -413,8 +420,7 @@ const InfoClientDialog = ({
                           <td>
                             {formatDateToDDMMYYYY(mantencion.fechaMantencion)}
                           </td>
-
-                          {allProducts.map((prod) => {
+                          {cloroProducts.map((prod) => {
                             const used = mantencion.productos.find(
                               (p) => p.product.id === prod.id,
                             );
@@ -422,8 +428,23 @@ const InfoClientDialog = ({
                               <td key={prod.id}>{used ? used.cantidad : 0}</td>
                             );
                           })}
-
-                          <td>{mantencion.otros}</td>
+                          <td>
+                            {mantencion.productos
+                              .filter((prodUsed) =>
+                                otherProducts.some(
+                                  (op) => op.id === prodUsed.product.id,
+                                ),
+                              )
+                              .map((prodUsed) => (
+                                <div
+                                  key={prodUsed.product.id}
+                                  style={{ whiteSpace: "nowrap" }}
+                                >
+                                  {getAbbreviation(prodUsed.product.nombre)} -{" "}
+                                  {prodUsed.cantidad}
+                                </div>
+                              ))}
+                          </td>
                           <td>{mantencion.realizada ? "Sí" : "No"}</td>
                           <td className="pr-0!">
                             <span className="flex items-center gap-2 justify-between pr-0!">
@@ -436,45 +457,45 @@ const InfoClientDialog = ({
                               )}
                             </span>
                           </td>
+                          <td className="p-2! text-center">
+                            <Tooltip
+                              title={"Editar Mantención"}
+                              arrow
+                              leaveDelay={0}
+                            >
+                              <button
+                                className="normal p-1!"
+                                onClick={() =>
+                                  handleEditMaintenance(mantencion)
+                                }
+                              >
+                                <PencilIcon />
+                              </button>
+                            </Tooltip>
+                            <Tooltip
+                              title={"Eliminar Mantención"}
+                              arrow
+                              leaveDelay={0}
+                            >
+                              <button
+                                className="normal p-1!"
+                                onClick={() =>
+                                  handleDeleteMaintenance(mantencion)
+                                }
+                              >
+                                <TrashIcon />
+                              </button>
+                            </Tooltip>
+                          </td>
                         </tr>
                       )}
                     />
                   </div>
-                  <div className={style.totalMes}>
-                    <span className={style.titleTotal}>Resumen</span>
-                    {Object.entries(resumenMonth.resumenMateriales).map(
-                      ([nombre, data]) => (
-                        <div key={nombre} className={style.totalValues}>
-                          <span>
-                            {nombre} -{" "}
-                            {data.valorUnitario.toLocaleString("es-CL")}
-                            {" x "}
-                            {data.cantidad}
-                          </span>
-                          <span>${data.total.toLocaleString("es-CL")}</span>
-                        </div>
-                      ),
-                    )}
-
-                    <div className={style.totalValues}>
-                      <strong>Total productos:</strong>
-                      <span>
-                        ${resumenMonth.totalProductos.toLocaleString("es-CL")}
-                      </span>
-                    </div>
-                    <div className={style.totalValues}>
-                      <strong>Total mantenciones:</strong>
-                      <span>
-                        ${resumenMonth.totalMantencion.toLocaleString("es-CL")}
-                      </span>
-                    </div>
-                    <div className={style.totalValues}>
-                      <strong>Total general:</strong>
-                      <span>
-                        ${resumenMonth.granTotal.toLocaleString("es-CL")}
-                      </span>
-                    </div>
-                  </div>
+                  <ResumeMaintenance
+                    currentMonth={currentMonth}
+                    valor_mantencion={clientInfo?.valor_mantencion.value ?? 0}
+                    mantencionesMesActual={mantencionesMesActual}
+                  />
                 </div>
               ) : null}
               {maintenancesClient &&
@@ -493,6 +514,8 @@ const InfoClientDialog = ({
               productosList={products}
               onAccept={handleAcceptMaintenance}
               onCancel={handleCancelMaintenance}
+              isEditing={!!maintenanceToEdit}
+              mantencionData={maintenanceToEdit}
             />
           )}
         </Modal.Body>

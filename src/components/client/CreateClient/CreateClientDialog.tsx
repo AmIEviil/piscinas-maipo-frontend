@@ -186,7 +186,13 @@ const CreateClientDialog = ({
     valorMantencionClient > 0;
 
   return (
-    <Modal size="xl" show={open} onHide={onClose} className="max-h-dvh">
+    <Modal
+      size="xl"
+      show={open}
+      onExit={onClose}
+      onHide={onClose}
+      className="max-h-dvh"
+    >
       <Modal.Header className={style.dialogTitle} closeButton>
         {isEditMode ? "Editar Cliente" : "Crear Nuevo Cliente"}
       </Modal.Header>

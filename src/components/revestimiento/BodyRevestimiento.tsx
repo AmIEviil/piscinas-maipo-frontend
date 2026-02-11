@@ -30,16 +30,16 @@ import TrashIcon from "../ui/Icons/TrashIcon";
 import SeeMoreButton from "../common/SeeMore/SeeMoreButton";
 import ModalPdfViewer from "../ui/modal/pdf/ModalPdfViewer";
 import { useUploadedFilesByParentId } from "../../hooks/UploadedFilesHooks";
-import type { IUploadedFile } from "../../service/UploadedFiles.interface";
+import type { IUploadedFile } from "../../service/uploadedFiles.interface";
 
 const titlesTable = [
-  { label: "Cliente", showOrderBy: false },
-  { label: "Fecha Creación", showOrderBy: true },
-  { label: "Tipo Revestimiento", showOrderBy: true },
-  { label: "Descripción", showOrderBy: true },
-  { label: "Valor Total", showOrderBy: true },
-  { label: "Extras", showOrderBy: false },
-  { label: "Acciones", showOrderBy: false },
+  { label: "Cliente", key: "cliente", showOrderBy: false },
+  { label: "Fecha Creación", key: "fechaCreacion", showOrderBy: true },
+  { label: "Tipo Revestimiento", key: "tipoRevestimiento", showOrderBy: true },
+  { label: "Descripción", key: "descripcion", showOrderBy: true },
+  { label: "Valor Total", key: "valorTotal", showOrderBy: true },
+  { label: "Extras", key: "extras", showOrderBy: false },
+  { label: "Acciones", key: "", showOrderBy: false },
 ];
 
 interface FilterQuery {
@@ -140,16 +140,16 @@ const BodyRevestimiento = () => {
           return prev ?? {};
         });
       }, 500),
-    []
+    [],
   );
 
   const handleSeeDetailsRevestimiento = async (
-    revestimiento: IRevestimiento
+    revestimiento: IRevestimiento,
   ) => {
     try {
       if (!revestimiento.id) return;
       const revestimientoDetails = await revestimientoByIdMutation.mutateAsync(
-        revestimiento.id
+        revestimiento.id,
       );
       setSelectedRevestimiento(revestimiento);
       setRevestimientoDetails(revestimientoDetails);
@@ -164,7 +164,7 @@ const BodyRevestimiento = () => {
     try {
       if (!selectedRevestimiento?.id) return;
       const uploadedFiles = await uploadedFilesByParentId.mutateAsync(
-        selectedRevestimiento.id
+        selectedRevestimiento.id,
       );
       setFilesPropuesta(uploadedFiles);
       console.log("Uploaded Files:", uploadedFiles);
@@ -210,7 +210,7 @@ const BodyRevestimiento = () => {
           filterQuery.fechaCreacion ||
           filterQuery.tipoRevestimiento ||
           filterQuery.estado ||
-          ""
+          "",
       );
     }
   };
@@ -229,7 +229,7 @@ const BodyRevestimiento = () => {
   const handleGeneratePropuesta = async () => {
     try {
       const pdfBlob = await genPropuestaRevestimientoMutation.mutateAsync(
-        selectedRevestimiento?.id || ""
+        selectedRevestimiento?.id || "",
       );
       // Crear una URL para el blob y abrir en una nueva pestaña
       const url = URL.createObjectURL(pdfBlob);
@@ -252,7 +252,7 @@ const BodyRevestimiento = () => {
       `propuesta-revestimiento-${
         selectedRevestimiento?.client.nombre || ""
       }.pdf`,
-      { type: "application/pdf" }
+      { type: "application/pdf" },
     );
 
     try {

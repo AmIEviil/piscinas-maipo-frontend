@@ -4,7 +4,20 @@ interface ModalSlice {
   isModalOpen: boolean;
   headerContent: React.ReactNode | null;
   modalContent: React.ReactNode | null;
-  openModal: (header: React.ReactNode | null, content: React.ReactNode) => void;
+  footerContent: React.ReactNode | null;
+  dialogClassName?: string;
+  openModal: ({
+    header,
+    content,
+    footer,
+    dialogClassName,
+  }: {
+    header: React.ReactNode;
+    content: React.ReactNode;
+    footer?: React.ReactNode;
+    dialogClassName?: string;
+  }) => void;
+  onAccept?: () => void;
   closeModal: () => void;
 }
 
@@ -12,8 +25,33 @@ export const useModalStore = create<ModalSlice>((set) => ({
   isModalOpen: false,
   headerContent: null,
   modalContent: null,
-  openModal: (header, content) =>
-    set({ isModalOpen: true, headerContent: header, modalContent: content }),
+  footerContent: null,
+  dialogClassName: "",
+  openModal: ({
+    header,
+    content,
+    footer,
+    dialogClassName,
+  }: {
+    header: React.ReactNode;
+    content: React.ReactNode;
+    footer?: React.ReactNode;
+    dialogClassName?: string;
+  }) =>
+    set({
+      headerContent: header,
+      modalContent: content,
+      footerContent: footer || null,
+      dialogClassName: dialogClassName || "",
+      isModalOpen: true,
+    }),
+  onAccept: undefined,
   closeModal: () =>
-    set({ isModalOpen: false, headerContent: null, modalContent: null }),
+    set({
+      isModalOpen: false,
+      headerContent: null,
+      modalContent: null,
+      footerContent: null,
+      dialogClassName: "",
+    }),
 }));

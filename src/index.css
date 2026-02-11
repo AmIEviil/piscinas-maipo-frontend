@@ -95,5 +95,5 @@ button.normal {
 }
 
 button.normal:hover {
-  background-color: transparent;
+  background-color: var(--color-sombra);
 }

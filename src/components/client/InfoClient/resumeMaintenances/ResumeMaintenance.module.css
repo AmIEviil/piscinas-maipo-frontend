@@ -1,0 +1,24 @@
+.totalMes {
+  width: 20%;
+  border: 2px solid var(--color-secundario);
+  border-radius: 16px;
+  padding: 16px;
+  height: fit-content;
+  justify-items: start;
+  justify-content: start;
+  align-items: center;
+  margin: auto auto;
+  text-align: start;
+}
+
+.totalValues {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .totalMes {
+    width: 90%;
+  }
+}

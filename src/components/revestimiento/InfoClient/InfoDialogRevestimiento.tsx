@@ -13,7 +13,7 @@ import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import type { IRevestimiento } from "../../../service/revestimiento.interface";
 import { Modal } from "react-bootstrap";
-import type { IUploadedFile } from "../../../service/UploadedFiles.interface";
+import type { IUploadedFile } from "../../../service/uploadedFiles.interface";
 import ListFilesPropuestas from "./ListPropuestas";
 
 interface InfoRevestimientoDialogProps {

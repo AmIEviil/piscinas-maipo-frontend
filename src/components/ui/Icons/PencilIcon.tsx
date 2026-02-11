@@ -7,7 +7,7 @@ interface PencilIconProps {
 }
 
 const PencilIcon: React.FC<PencilIconProps> = ({
-  color = "#131313",
+  color = "currentColor",
   size = 24,
   className,
 }) => {

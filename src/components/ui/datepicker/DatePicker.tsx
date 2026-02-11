@@ -30,7 +30,7 @@ const CustomInput = React.forwardRef<HTMLInputElement, any>(
         <CalendarIcon size={16} />
       </button>
     );
-  }
+  },
 );
 
 // Custom calendar container
@@ -87,7 +87,7 @@ interface CalendarProps {
 export default function Calendar({
   onCancel,
   onChange,
-  onDelete, // Add the new prop
+  onDelete,
   mode = "range",
   label,
   initialValue,
@@ -97,7 +97,7 @@ export default function Calendar({
   maxDate = new Date(),
   title,
   required,
-}: CalendarProps) {
+}: Readonly<CalendarProps>) {
   const { t } = useTranslation();
   const monthNames = [
     t("modules.common.months.january"),

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { IComprobantePago } from "../../../../service/ComprobantePagos.interface";
+import type { IComprobantePago } from "../../../../service/comprobantePagos.interface";
 import Button from "../../../ui/button/Button";
 import TrashIcon from "../../../ui/Icons/TrashIcon";
 import EyeIcon from "../../../ui/Icons/EyeIcon";
@@ -57,7 +57,10 @@ const ComprobantesContainer = ({
   };
 
   const handleViewComprobante = (comp: IComprobantePago) => {
-    openModal(ModalContent(comp).headerContent, ModalContent(comp).bodyContent);
+    openModal({
+      header: ModalContent(comp).headerContent,
+      content: ModalContent(comp).bodyContent,
+    });
   };
 
   return (
