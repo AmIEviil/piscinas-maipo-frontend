@@ -1,6 +1,6 @@
 import apiClient from "../client/client";
 import { COMPROBANTE_PAGOS_API } from "../api/comprobante-pagos/api";
-import type { IComprobantePago } from "../../service/comprobantePagos.interface";
+import type { IComprobantePago } from "../../service/ComprobantePagos.interface";
 
 export const comprobantePagosService = {
   uploadComprobante: async (payload: FormData) => {

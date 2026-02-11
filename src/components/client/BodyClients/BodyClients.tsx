@@ -41,7 +41,7 @@ import { useRefetchStore } from "../../../store/refetchStore";
 import CustomModal from "../../ui/modal/CustomModal";
 import { usePermits } from "../../../utils/roleUtils";
 import { useGetComprobantesByParentId } from "../../../hooks/ComprobantePagosHooks";
-import type { IComprobantePago } from "../../../service/comprobantePagos.interface";
+import type { IComprobantePago } from "../../../service/ComprobantePagos.interface";
 
 interface IfilterQuery {
   nombre?: string;

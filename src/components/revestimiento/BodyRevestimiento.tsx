@@ -31,7 +31,7 @@ import TrashIcon from "../ui/Icons/TrashIcon";
 import SeeMoreButton from "../common/SeeMore/SeeMoreButton";
 import ModalPdfViewer from "../ui/modal/pdf/ModalPdfViewer";
 import { useUploadedFilesByParentId } from "../../hooks/UploadedFilesHooks";
-import type { IUploadedFile } from "../../service/uploadedFiles.interface";
+import type { IUploadedFile } from "../../service/UploadedFiles.interface";
 
 const titlesTable = [
   { label: "Cliente", key: "cliente", showOrderBy: false },

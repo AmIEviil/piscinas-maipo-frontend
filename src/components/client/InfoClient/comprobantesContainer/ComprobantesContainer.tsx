@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { IComprobantePago } from "../../../../service/comprobantePagos.interface";
+import type { IComprobantePago } from "../../../../service/ComprobantePagos.interface";
 import Button from "../../../ui/button/Button";
 import TrashIcon from "../../../ui/Icons/TrashIcon";
 import EyeIcon from "../../../ui/Icons/EyeIcon";

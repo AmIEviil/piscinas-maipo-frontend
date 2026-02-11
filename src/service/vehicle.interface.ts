@@ -1,4 +1,4 @@
-import type { IUploadedFile } from "./uploadedFiles.interface";
+import type { IUploadedFile } from "./UploadedFiles.interface";
 
 export interface IFilterVehiclesDto {
   placa?: string;

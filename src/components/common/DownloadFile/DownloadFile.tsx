@@ -1,4 +1,4 @@
-import type { IUploadedFile } from "../../../service/uploadedFiles.interface";
+import type { IUploadedFile } from "../../../service/UploadedFiles.interface";
 import DownloadIcon from "../../ui/Icons/DownloadIcon";
 
 interface DownloadFileProps {
