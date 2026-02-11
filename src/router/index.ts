@@ -7,20 +7,20 @@ import { PageNotFound } from "../components/common/PageNotFound.tsx";
 const AuhtLayout = lazy(() =>
   import("../components/layout/AuthLayout.tsx").then((module) => ({
     default: module.AuthLayout,
-  }))
+  })),
 );
 
 const BodyLayout = lazy(() =>
   import("../components/layout/MainLayout.tsx").then((module) => ({
     default: module.BodyLayout,
-  }))
+  })),
 );
 
 // Views Publicas
 const LoginView = lazy(() =>
   import("../views/login/LoginView.tsx").then((module) => ({
     default: module.Login,
-  }))
+  })),
 );
 
 // const BlockedView = lazy(() =>
@@ -58,43 +58,55 @@ const LoginView = lazy(() =>
 const InventoryView = lazy(() =>
   import("../views/inventory/InventoryView.tsx").then((module) => ({
     default: module.InventoryView,
-  }))
+  })),
 );
 
 const HomeView = lazy(() =>
   import("../views/home/HomeView.tsx").then((module) => ({
     default: module.HomeView,
-  }))
+  })),
 );
 
 const ClientsView = lazy(() =>
   import("../views/clients/ClientsView.tsx").then((module) => ({
     default: module.ClientsView,
-  }))
+  })),
 );
 
 const UsuariosView = lazy(() =>
   import("../views/users/UsuariosView.tsx").then((module) => ({
     default: module.UsuariosView,
-  }))
+  })),
 );
 
 const RevestimientoView = lazy(() =>
   import("../views/revestimiento/RevestimientoView.tsx").then((module) => ({
     default: module.RevestimientoView,
-  }))
+  })),
 );
 
 const ReparacionesView = lazy(() =>
   import("../views/reparaciones/ReparacionesView.tsx").then((module) => ({
     default: module.ReparacionesView,
-  }))
+  })),
 );
 
 const MigrationViewProtected = lazy(() =>
   import("../views/migrations/MigrationView.tsx").then((module) => ({
     default: module.MigrationViewProtected,
-  }))
+  })),
+);
+
+const EmplyoyeesView = lazy(() =>
+  import("../views/employees/EmployeesView.tsx").then((module) => ({
+    default: module.EmployeesView,
+  })),
+);
+
+const VehiclesView = lazy(() =>
+  import("../views/vehicles/VehiclesView.tsx").then((module) => ({
+    default: module.VehiclesView,
+  })),
 );
 
 export const router = createBrowserRouter(
@@ -156,11 +168,19 @@ export const router = createBrowserRouter(
               path: PAGE_ROUTES.Usuarios,
               Component: UsuariosView,
             },
+            {
+              path: PAGE_ROUTES.Empleados,
+              Component: EmplyoyeesView,
+            },
+            {
+              path: PAGE_ROUTES.Vehiculos,
+              Component: VehiclesView,
+            },
             { path: "*", Component: PageNotFound },
           ],
         },
       ],
     },
   ],
-  { basename: "/" }
+  { basename: "/" },
 );

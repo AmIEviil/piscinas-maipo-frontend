@@ -12,10 +12,11 @@ import LogoutIcon from "../Icons/LogoutIcon";
 import { toUpperCaseFirstLetter } from "../../../utils/formatTextUtils";
 import { useBoundStore } from "../../../store/BoundedStore";
 import MigrationsIcon from "../Icons/MigrationsIcon";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 
 const CustomDropmenu = () => {
   const userRole = useBoundStore(
-    (state) => state.userData?.roleUser.role.nombre
+    (state) => state.userData?.roleUser.role.nombre,
   );
 
   const logOutUser = useBoundStore((state) => state.logOutUser);
@@ -52,6 +53,10 @@ const CustomDropmenu = () => {
         return <PeopleOutlineIcon />;
       case "inventory":
         return <InventoryIcon />;
+      case "employees":
+        return <PeopleOutlineIcon />;
+      case "vehicles":
+        return <DirectionsCarIcon />;
       case "users":
         return <PeopleOutlineIcon />;
       case "works":

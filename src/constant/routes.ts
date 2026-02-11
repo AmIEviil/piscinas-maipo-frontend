@@ -6,6 +6,8 @@ export const PAGE_ROUTES = {
   Clientes: "/clientes",
   Usuarios: "/usuarios",
   Inventario: "/inventario",
+  Empleados: "/empleados",
+  Vehiculos: "/vehiculos",
   Revestimiento: "/revestimiento",
   Trabajos: "/trabajos",
   Migraciones: "/migraciones",
@@ -35,6 +37,18 @@ export const topbarOptions = [
     path: PAGE_ROUTES.Trabajos,
     icon: "works",
     canAccess: [roles.SUPER_ADMIN, roles.ADMIN],
+  },
+  {
+    name: "Empleados",
+    path: PAGE_ROUTES.Empleados,
+    canAccess: [roles.SUPER_ADMIN],
+    icon: "employees",
+  },
+  {
+    name: "Vehículos",
+    path: PAGE_ROUTES.Vehiculos,
+    canAccess: [roles.SUPER_ADMIN],
+    icon: "vehicles",
   },
   {
     name: "Usuarios",
