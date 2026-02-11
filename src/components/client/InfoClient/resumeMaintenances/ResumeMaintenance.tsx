@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import style from "./ResumeMaintenance.module.css";
 import { useEffect, useState } from "react";
 import { useClientResumenMonthStore } from "../../../../store/ClientStore";

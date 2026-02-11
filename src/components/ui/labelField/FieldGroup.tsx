@@ -110,7 +110,7 @@ const FieldGroup: React.FC<FieldGroupProps> = ({
     if (value !== editedValue) {
       setEditedValue(value);
     }
-  }, [value, rawValue, options, multiCheckbox]);
+  }, [value, rawValue, options, multiCheckbox, editedValue]);
 
   return (
     <div style={{ marginBottom: "0.75rem", width: "100%" }}>

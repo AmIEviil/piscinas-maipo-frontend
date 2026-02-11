@@ -20,7 +20,7 @@ export const BodyLayout = () => {
     if (tokenStore !== undefined) {
       localStorage.setItem("token", tokenStore as string);
     }
-  }, [tokenStore, token]);
+  }, [tokenStore, token, navigate]);
 
   // useEffect(() => {
   //   if (validateToken.isSuccess) {

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { useEffect, useMemo, useState } from "react";
 import debounce from "lodash.debounce";

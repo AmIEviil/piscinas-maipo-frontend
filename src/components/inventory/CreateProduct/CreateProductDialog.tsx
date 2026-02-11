@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import CustomInputText from "../../ui/InputText/CustomInputText";
 import style from "./CreateProductDialog.module.css";
 
@@ -84,7 +85,7 @@ const CreateProductDialog = ({
         Intl.NumberFormat("es-CL", {
           style: "currency",
           currency: "CLP",
-        }).format(valorUnitarioProduct)
+        }).format(valorUnitarioProduct),
       );
     }
   };
@@ -162,7 +163,7 @@ const CreateProductDialog = ({
         Intl.NumberFormat("es-CL", {
           style: "currency",
           currency: "CLP",
-        }).format(productInfo.valor_unitario)
+        }).format(productInfo.valor_unitario),
       );
     }
   }, [productInfo, isEditMode]);

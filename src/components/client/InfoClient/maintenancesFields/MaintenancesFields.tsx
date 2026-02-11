@@ -79,7 +79,7 @@ const MaintenanceFields = ({
         setShowProducts(true);
       }
     }
-  }, [isEditing, mantencionData, clientId]);
+  }, [isEditing, mantencionData, clientId, valorMantencion]);
 
   const productOptions = productosList
     .filter(

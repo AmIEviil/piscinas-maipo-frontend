@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react";
 import {
   useDeleteRevestimiento,
@@ -124,7 +125,7 @@ const BodyRevestimiento = () => {
 
   useEffect(() => {
     fetchRevestimientos();
-  }, []);
+  }, [filterQuery]);
 
   const handleFilterName = useMemo(
     () =>

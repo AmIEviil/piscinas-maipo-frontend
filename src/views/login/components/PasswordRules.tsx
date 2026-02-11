@@ -12,10 +12,12 @@ export const PasswordRules = ({ password }: Props) => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    !initialized && password.length > 0 && setInitialized(true);
-  }, [password]);
+    if (!initialized && password.length > 0) {
+      setInitialized(true);
+    }
+  }, [password, initialized]);
   return (
-    <div className="requisitos-container w-full border-1 border-[#D1D1D1] p-2 rounded-lg bg-[#F7F7F7]">
+    <div className="requisitos-container w-full border border-[#D1D1D1] p-2 rounded-lg bg-[#F7F7F7]">
       <span className="requisitos-title font-bold">
         {t("modules.login.password_rules.title")}
       </span>

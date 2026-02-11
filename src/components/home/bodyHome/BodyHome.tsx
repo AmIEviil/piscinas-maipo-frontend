@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import BidonesChart from "./Charts/BidonesChart";
 import ChartDiario from "./Charts/ChartsDiarios";
 import style from "./BodyHome.module.css";
