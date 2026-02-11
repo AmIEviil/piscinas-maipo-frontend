@@ -43,6 +43,7 @@ import { Tooltip } from "@mui/material";
 import ResumeMaintenance from "./resumeMaintenances/ResumeMaintenance";
 import { useModalStore } from "../../../store/ModalStore";
 import FieldGroup from "../../ui/labelField/FieldGroup";
+import { usePermits } from "../../../utils/roleUtils";
 
 interface InfoClientDialogProps {
   open: boolean;
@@ -71,6 +72,8 @@ const InfoClientDialog = ({
   totalRecords,
   currentIndex,
 }: InfoClientDialogProps) => {
+  const { isSuperAdmin } = usePermits();
+
   const createMaintenance = useCreateMaintenance();
   const updateMaintenance = useUpdateMaintenance();
   const deleteMaintenance = useDeleteMaintenance();
@@ -500,6 +503,7 @@ const InfoClientDialog = ({
                 </div>
               ) : null}
               {maintenancesClient &&
+                isSuperAdmin &&
                 Object.keys(maintenancesClient).length > 0 && (
                   <ComprobantesContainer
                     comprobantesData={comprobantesClient}
