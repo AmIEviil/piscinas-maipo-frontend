@@ -33,7 +33,7 @@ import { Modal } from "react-bootstrap";
 import Button from "../../ui/button/Button";
 import { useUploadComprobantePago } from "../../../hooks/ComprobantePagosHooks";
 import { formatName, getAbbreviation } from "../../../utils/formatTextUtils";
-import type { IComprobantePago } from "../../../service/comprobantePagos.interface";
+import type { IComprobantePago } from "../../../service/ComprobantePagos.interface";
 import ComprobantesContainer from "./comprobantesContainer/ComprobantesContainer";
 import LoadingSpinner from "../../ui/loading/Loading";
 import { useClientResumenMonthStore } from "../../../store/ClientStore";
