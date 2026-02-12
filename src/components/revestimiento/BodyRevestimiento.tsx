@@ -168,7 +168,6 @@ const BodyRevestimiento = () => {
         selectedRevestimiento.id,
       );
       setFilesPropuesta(uploadedFiles);
-      console.log("Uploaded Files:", uploadedFiles);
     } catch (error) {
       console.error("Error generating PDF proposal:", error);
     }

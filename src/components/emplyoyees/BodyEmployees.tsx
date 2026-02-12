@@ -113,7 +113,6 @@ export const BodyEmployees = () => {
     id: string,
     viewMode: "create" | "edit" | "view" | "delete" = "view",
   ) => {
-    console.log("Fetching employee with ID:", id);
     try {
       setViewMode(viewMode);
       setLoadingTable(true);

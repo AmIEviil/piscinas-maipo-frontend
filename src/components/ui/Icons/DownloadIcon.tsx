@@ -1,4 +1,14 @@
-const DownloadIcon = ({ color = "#131313", size = 16, className = "" }) => (
+interface DownloadIconProps {
+  color?: string;
+  size?: number;
+  className?: string;
+}
+
+const DownloadIcon = ({
+  color = "currentColor",
+  size = 16,
+  className = "",
+}: DownloadIconProps) => (
   <svg
     width={size}
     height={size}

@@ -17,7 +17,10 @@ import CreateProductDialog from "./CreateProduct/CreateProductDialog";
 import InfoProductDialog from "./InfoProduct/InfoDialogProduct";
 import debounce from "lodash.debounce";
 import { formatNoResultsText } from "../../utils/FiltersUtils";
-import { useTypesProductStore } from "../../store/ProductStore";
+import {
+  useProductStore,
+  useTypesProductStore,
+} from "../../store/ProductStore";
 import TrashIcon from "../ui/Icons/TrashIcon";
 import { useRefetchStore } from "../../store/refetchStore";
 import CustomModal from "../ui/modal/CustomModal";
@@ -36,6 +39,7 @@ const initial_filters: IfilterQuery = {
 const BodyInventory = () => {
   const productsMutation = useProducts();
   const deleteProductMutation = useDeleteProduct();
+  const { fetchProducts: fetchProductsStore } = useProductStore();
 
   const { shouldRefetch } = useRefetchStore();
   const { productsTypes, fetchProductsTypes } = useTypesProductStore();
@@ -44,7 +48,7 @@ const BodyInventory = () => {
   const [loadingTable, setLoadingTable] = useState(false);
   const [filterQuery, setFilterQuery] = useState<IfilterQuery>(initial_filters);
   const [selectedProduct, setSelectedProduct] = useState<IProducto | null>(
-    null
+    null,
   );
   const [openDialog, setOpenDialog] = useState(false);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
@@ -60,6 +64,7 @@ const BodyInventory = () => {
     try {
       const products = await productsMutation.mutateAsync(filterQuery);
       setProducts(products);
+      fetchProductsStore();
       setLoadingTable(false);
     } catch (error) {
       console.log("Error al cargar los productos:", error);
@@ -88,7 +93,7 @@ const BodyInventory = () => {
           return prev ?? {};
         });
       }, 500),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -171,7 +176,6 @@ const BodyInventory = () => {
             value={filterQuery.tipoId || ""}
             onChange={(value) => {
               const stringValue = String(value.target.value);
-              console.log("Selected type:", stringValue);
               setFilterQuery((prev) => {
                 if (stringValue.length > 0) {
                   return { ...prev, tipoId: stringValue };

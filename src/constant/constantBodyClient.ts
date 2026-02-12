@@ -115,3 +115,11 @@ export const tiposRevestimientos = [
   { value: "Marble Dust", label: "Marble Dust" },
   { value: "Fibra de Vidrio", label: "Fibra de Vidrio" },
 ];
+
+export const titlesComprobantesTable = [
+  { label: "Nombre", key: "nombre", showOrder: false },
+  { label: "Tipo", key: "tipo", showOrder: false },
+  { label: "Fecha de Emisión", key: "fecha_emision", showOrder: false },
+  { label: "Monto", key: "monto", showOrder: false },
+  { label: "", key: "actions", showOrder: false },
+];

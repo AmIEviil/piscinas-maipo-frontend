@@ -1,5 +1,4 @@
 import { useRef } from "react";
-// import { useTranslation } from "react-i18next";
 import style from "../CustomModal.module.css";
 
 interface MediaVisualizerProps {
@@ -15,10 +14,7 @@ const MediaVisualizer: React.FC<MediaVisualizerProps> = ({
   currentMedia,
   fullScreenImage,
 }) => {
-  //   const { t } = useTranslation();
   const mediaRef = useRef<HTMLImageElement>(null);
-
-  console.log("Visualizando:", currentMedia);
 
   if (currentMedia._kind === "img") {
     return (
@@ -27,6 +23,7 @@ const MediaVisualizer: React.FC<MediaVisualizerProps> = ({
         src={currentMedia.url}
         alt={currentMedia.name}
         className={fullScreenImage ? style.imageFull : style.image}
+        style={{ maxHeight: "80dvh", objectFit: "contain" }}
         loading="lazy"
         onError={(e) => {
           // Fallback por si falla la carga
@@ -44,7 +41,7 @@ const MediaVisualizer: React.FC<MediaVisualizerProps> = ({
       height="100%"
       allow="autoplay; fullscreen"
       className="rounded-md border-none"
-      style={{ minHeight: "500px" }}
+      style={{ minHeight: "50dvh" }}
     />
   );
 };

@@ -148,13 +148,11 @@ export const BodyVehicles = () => {
     placa: string,
     viewMode: "create" | "edit" | "view" | "delete" = "view",
   ) => {
-    console.log("Fetching vehicle with placa:", placa);
     try {
       setViewMode(viewMode);
       setLoadingTable(true);
       setShowVehiclesDialog(true);
       const vehicle = await vehicleByPatenteMutation.mutateAsync(placa);
-      console.log("Fetched vehicle:", vehicle);
       setVehicleSelected(vehicle);
     } catch (error) {
       console.error("Error fetching vehicle by ID:", error);
