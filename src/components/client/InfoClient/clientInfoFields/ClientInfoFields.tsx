@@ -31,9 +31,14 @@ interface Field {
 interface ClientFieldsProps {
   clientInfo: IClientForm;
   coordenadas: { lat: number; lng: number } | undefined;
+  hasMaintenances?: boolean;
 }
 
-const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
+const ClientFields = ({
+  clientInfo,
+  coordenadas,
+  hasMaintenances,
+}: ClientFieldsProps) => {
   const setModalVisible = useClientResumenMonthStore(
     (state) => state.openModal,
   );
@@ -107,12 +112,10 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
     : [];
 
   const handleToggleEditTitle = () => {
-    console.log("Toggling edit title...");
     const hasChanges = fieldsHeaderKeys.some((key) => {
       return clientInfoState?.[key]?.value !== clientInfo[key]?.value;
     });
     if (editTitle === true && hasChanges) {
-      console.log("Updating header fields...");
       handleUpdate([
         {
           campo: "nombre",
@@ -291,7 +294,7 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
               )}
             </div>
             <div className="flex flex-col justify-between flex-1">
-              {windowWidth > 720 && (
+              {windowWidth > 720 && hasMaintenances && (
                 <div>
                   <button className="secondary" onClick={setModalVisible}>
                     Generar Boleta
@@ -301,7 +304,7 @@ const ClientFields = ({ clientInfo, coordenadas }: ClientFieldsProps) => {
             </div>
           </>
         )}
-        {windowWidth > 720 && (
+        {windowWidth > 990 && (
           <div>
             <GoogleMapFromAddress
               lat={coordenadas?.lat ?? 0}

@@ -14,7 +14,6 @@ export const employeeService = {
     return response.data;
   },
   getEmployeeById: async (employeeId: string): Promise<IEmployee> => {
-    console.log("employeeId in service:", employeeId);
     const endpoint = EMPLOYEE_API.employeesId.replace(":id", employeeId);
     const response = await apiClient.get(endpoint);
     return response.data;

@@ -11,19 +11,28 @@ export const comprobantePagosService = {
         headers: {
           "Content-Type": undefined,
         },
-      }
+      },
     );
     return response.data;
   },
 
   getComprobantesByParentId: async (
-    parentId: string
-  ): Promise<IComprobantePago[]> => {
+    parentId: string,
+  ): Promise<Record<string, IComprobantePago[]>> => {
     const url = COMPROBANTE_PAGOS_API.getByParentId.replace(
       ":parentId",
-      parentId.toString()
+      parentId.toString(),
     );
     const response = await apiClient.get(url);
+    return response.data;
+  },
+
+  deleteComprobante: async (comprobanteId: string) => {
+    const url = COMPROBANTE_PAGOS_API.delete.replace(
+      ":comprobanteId",
+      comprobanteId.toString(),
+    );
+    const response = await apiClient.delete(url);
     return response.data;
   },
 };

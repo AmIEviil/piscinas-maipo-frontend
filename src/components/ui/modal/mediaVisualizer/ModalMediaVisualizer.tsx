@@ -34,7 +34,11 @@ const ModalMediaVisualizer = () => {
               variant="secondary"
               onClick={handleClose}
             />
-            <Button label="Aceptar" variant="primary" onClick={onAccept} />
+            <Button
+              label="Aceptar"
+              variant="primary"
+              onClick={onAccept || handleClose}
+            />
           </>
         )}
       </Modal.Footer>

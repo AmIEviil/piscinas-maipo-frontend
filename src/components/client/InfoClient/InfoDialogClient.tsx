@@ -49,10 +49,11 @@ interface InfoClientDialogProps {
   open: boolean;
   clientInfo?: IClientForm;
   maintenancesClient?: Record<string, IMaintenance[]>;
-  comprobantesClient?: IComprobantePago[];
+  comprobantesClient?: Record<string, IComprobantePago[]>;
   loading?: boolean;
   onClose: () => void;
   onMaintenanceCreated?: () => void;
+  onComprobanteChanged?: () => void;
   onNextClient: () => void;
   onPreviousClient: () => void;
   totalRecords: number;
@@ -67,6 +68,7 @@ const InfoClientDialog = ({
   loading,
   onClose,
   onMaintenanceCreated,
+  onComprobanteChanged,
   onNextClient,
   onPreviousClient,
   totalRecords,
@@ -113,6 +115,16 @@ const InfoClientDialog = ({
       String(a.fechaMantencion).localeCompare(String(b.fechaMantencion)),
     );
   }, [currentMonth, maintenancesClient]);
+
+  const comprobantesMesActual = useMemo(() => {
+    if (!currentMonth) return [];
+    const list = comprobantesClient?.[currentMonth];
+    if (!Array.isArray(list)) return [];
+
+    return [...list].sort((a, b) =>
+      String(a.fecha_emision).localeCompare(String(b.fecha_emision)),
+    );
+  }, [currentMonth, comprobantesClient]);
 
   const cloroProducts =
     products?.filter((p) => p.tipo.nombre === "Cloro") || [];
@@ -281,11 +293,17 @@ const InfoClientDialog = ({
     [totalRecords, currentIndex, onNextClient, onPreviousClient],
   );
 
-  const handleSubmitComprobante = async (comprobante: File) => {
-    if (!comprobante || !clientInfo) return;
+  const handleSubmitComprobante = async (data: {
+    monto: number;
+    fecha_pago: string;
+    comprobante?: File;
+  }) => {
+    if (!data || !clientInfo) return;
     try {
       const formData = new FormData();
-      formData.append("file", comprobante);
+      if (data.comprobante) {
+        formData.append("file", data.comprobante);
+      }
       formData.append("tipo", "comprobante_mantencion");
       formData.append("parentId", clientInfo.id.value);
       formData.append(
@@ -296,9 +314,13 @@ const InfoClientDialog = ({
           }`,
         ),
       );
-      formData.append("fecha_emision", new Date().toISOString());
+      formData.append("fecha_emision", data.fecha_pago);
+      formData.append("monto", data.monto.toString());
 
       await uploadComprobanteMutation.mutateAsync(formData);
+      if (onComprobanteChanged) {
+        onComprobanteChanged();
+      }
     } catch (error) {
       console.error("Error al subir el comprobante:", error);
     }
@@ -307,6 +329,9 @@ const InfoClientDialog = ({
   const handleEditMaintenance = (maintenance: IMaintenance) => {
     setMaintenanceToEdit(maintenance);
     setIsAddingMaintenance(true);
+    if (onMaintenanceCreated) {
+      onMaintenanceCreated();
+    }
   };
 
   const handleDeleteMaintenance = (maintenance: IMaintenance) => {
@@ -343,6 +368,9 @@ const InfoClientDialog = ({
             onClick={() => {
               handleCloseModal();
               deleteMaintenance.mutateAsync(maintenance.id);
+              if (onMaintenanceCreated) {
+                onMaintenanceCreated();
+              }
             }}
           />
         </>
@@ -366,9 +394,13 @@ const InfoClientDialog = ({
           </div>
         </Modal.Body>
       ) : (
-        <Modal.Body className="custom-scrollbar">
+        <Modal.Body className="max-h-[90dvh] overflow-auto custom-scrollbar ">
           {clientInfo && (
-            <ClientFields clientInfo={clientInfo} coordenadas={coordenadas} />
+            <ClientFields
+              clientInfo={clientInfo}
+              coordenadas={coordenadas}
+              hasMaintenances={mantencionesMesActual.length > 0}
+            />
           )}
           <div className="flex flex-row justify-between items-center ">
             <button
@@ -395,133 +427,137 @@ const InfoClientDialog = ({
           {showMaintenances && (
             <>
               {Object.keys(maintenancesClient ?? {}).length ? (
-                <div className={style.maintenancesContainer}>
-                  <div className={style.tableContainer}>
-                    <div className="flex items-center justify-between py-3">
-                      <button
-                        disabled={currentMonthIndex === 0}
-                        onClick={() => setCurrentMonthIndex((i) => i - 1)}
-                      >
-                        <CaretIcon direction="left" color="white" />
-                      </button>
+                <div>
+                  <div className={style.maintenancesContainer}>
+                    <div className={style.tableContainer}>
+                      <div className="flex items-center justify-between py-3">
+                        <button
+                          disabled={currentMonthIndex === 0}
+                          onClick={() => setCurrentMonthIndex((i) => i - 1)}
+                        >
+                          <CaretIcon direction="left" color="white" />
+                        </button>
 
-                      <h3 className="text-lg font-bold">
-                        {currentMonth ? formatMonthTitle(currentMonth) : ""}
-                      </h3>
+                        <h3 className="text-lg font-bold">
+                          {currentMonth ? formatMonthTitle(currentMonth) : ""}
+                        </h3>
 
-                      <button
-                        disabled={currentMonthIndex >= months.length - 1}
-                        onClick={() => setCurrentMonthIndex((i) => i + 1)}
-                      >
-                        <CaretIcon direction="right" color="white" />
-                      </button>
-                    </div>
-                    <TableGeneric
-                      titles={titlesTable}
-                      data={mantencionesMesActual}
-                      renderRow={(mantencion) => (
-                        <tr key={mantencion.id}>
-                          <td>
-                            {formatDateToDDMMYYYY(mantencion.fechaMantencion)}
-                          </td>
-                          {cloroProducts.map((prod) => {
-                            const used = mantencion.productos.find(
-                              (p) => p.product.id === prod.id,
-                            );
-                            return (
-                              <td key={prod.id}>{used ? used.cantidad : 0}</td>
-                            );
-                          })}
-                          <td>
-                            {mantencion.productos
-                              .filter((prodUsed) =>
-                                otherProducts.some(
-                                  (op) => op.id === prodUsed.product.id,
-                                ),
-                              )
-                              .map((prodUsed) => (
-                                <div
-                                  key={prodUsed.product.id}
-                                  style={{ whiteSpace: "nowrap" }}
+                        <button
+                          disabled={currentMonthIndex >= months.length - 1}
+                          onClick={() => setCurrentMonthIndex((i) => i + 1)}
+                        >
+                          <CaretIcon direction="right" color="white" />
+                        </button>
+                      </div>
+                      <TableGeneric
+                        titles={titlesTable}
+                        data={mantencionesMesActual}
+                        renderRow={(mantencion) => (
+                          <tr key={mantencion.id}>
+                            <td>
+                              {formatDateToDDMMYYYY(mantencion.fechaMantencion)}
+                            </td>
+                            {cloroProducts.map((prod) => {
+                              const used = mantencion.productos.find(
+                                (p) => p.product.id === prod.id,
+                              );
+                              return (
+                                <td key={prod.id}>
+                                  {used ? used.cantidad : 0}
+                                </td>
+                              );
+                            })}
+                            <td>
+                              {mantencion.productos
+                                .filter((prodUsed) =>
+                                  otherProducts.some(
+                                    (op) => op.id === prodUsed.product.id,
+                                  ),
+                                )
+                                .map((prodUsed) => (
+                                  <div
+                                    key={prodUsed.product.id}
+                                    style={{ whiteSpace: "nowrap" }}
+                                  >
+                                    {getAbbreviation(prodUsed.product.nombre)} -{" "}
+                                    {prodUsed.cantidad}
+                                  </div>
+                                ))}
+                            </td>
+                            <td>{mantencion.realizada ? "Sí" : "No"}</td>
+                            <td className="pr-0!">
+                              <span className="flex items-center gap-2 justify-between pr-0!">
+                                {mantencion.recibioPago ? "Sí" : "No"}
+
+                                {mantencion.observaciones && (
+                                  <SeeMoreButton
+                                    content={mantencion.observaciones}
+                                  />
+                                )}
+                              </span>
+                            </td>
+                            <td className="p-2! text-center">
+                              <Tooltip
+                                title={"Editar Mantención"}
+                                arrow
+                                leaveDelay={0}
+                              >
+                                <button
+                                  className="normal p-1!"
+                                  onClick={() =>
+                                    handleEditMaintenance(mantencion)
+                                  }
                                 >
-                                  {getAbbreviation(prodUsed.product.nombre)} -{" "}
-                                  {prodUsed.cantidad}
-                                </div>
-                              ))}
-                          </td>
-                          <td>{mantencion.realizada ? "Sí" : "No"}</td>
-                          <td className="pr-0!">
-                            <span className="flex items-center gap-2 justify-between pr-0!">
-                              {mantencion.recibioPago ? "Sí" : "No"}
-
-                              {mantencion.observaciones && (
-                                <SeeMoreButton
-                                  content={mantencion.observaciones}
-                                />
-                              )}
-                            </span>
-                          </td>
-                          <td className="p-2! text-center">
-                            <Tooltip
-                              title={"Editar Mantención"}
-                              arrow
-                              leaveDelay={0}
-                            >
-                              <button
-                                className="normal p-1!"
-                                onClick={() =>
-                                  handleEditMaintenance(mantencion)
-                                }
+                                  <PencilIcon />
+                                </button>
+                              </Tooltip>
+                              <Tooltip
+                                title={"Eliminar Mantención"}
+                                arrow
+                                leaveDelay={0}
                               >
-                                <PencilIcon />
-                              </button>
-                            </Tooltip>
-                            <Tooltip
-                              title={"Eliminar Mantención"}
-                              arrow
-                              leaveDelay={0}
-                            >
-                              <button
-                                className="normal p-1!"
-                                onClick={() =>
-                                  handleDeleteMaintenance(mantencion)
-                                }
-                              >
-                                <TrashIcon />
-                              </button>
-                            </Tooltip>
-                          </td>
-                        </tr>
-                      )}
+                                <button
+                                  className="normal p-1!"
+                                  onClick={() =>
+                                    handleDeleteMaintenance(mantencion)
+                                  }
+                                >
+                                  <TrashIcon />
+                                </button>
+                              </Tooltip>
+                            </td>
+                          </tr>
+                        )}
+                      />
+                    </div>
+                    <ResumeMaintenance
+                      currentMonth={currentMonth}
+                      valor_mantencion={clientInfo?.valor_mantencion.value ?? 0}
+                      mantencionesMesActual={mantencionesMesActual}
                     />
                   </div>
-                  <ResumeMaintenance
-                    currentMonth={currentMonth}
-                    valor_mantencion={clientInfo?.valor_mantencion.value ?? 0}
-                    mantencionesMesActual={mantencionesMesActual}
-                  />
                 </div>
               ) : null}
+              {isAddingMaintenance && (
+                <MaintenanceFields
+                  clientId={clientInfo?.id.value ?? ""}
+                  valorMantencion={clientInfo?.valor_mantencion.value ?? 0}
+                  productosList={products}
+                  onAccept={handleAcceptMaintenance}
+                  onCancel={handleCancelMaintenance}
+                  isEditing={!!maintenanceToEdit}
+                  mantencionData={maintenanceToEdit}
+                />
+              )}
               {maintenancesClient &&
                 isSuperAdmin &&
                 Object.keys(maintenancesClient).length > 0 && (
                   <ComprobantesContainer
-                    comprobantesData={comprobantesClient}
+                    comprobantesData={comprobantesMesActual}
                     onApprove={handleSubmitComprobante}
                   />
                 )}
             </>
-          )}
-          {isAddingMaintenance && (
-            <MaintenanceFields
-              clientId={clientInfo?.id.value ?? ""}
-              valorMantencion={clientInfo?.valor_mantencion.value ?? 0}
-              productosList={products}
-              onAccept={handleAcceptMaintenance}
-              onCancel={handleCancelMaintenance}
-              isEditing={!!maintenanceToEdit}
-              mantencionData={maintenanceToEdit}
-            />
           )}
         </Modal.Body>
       )}

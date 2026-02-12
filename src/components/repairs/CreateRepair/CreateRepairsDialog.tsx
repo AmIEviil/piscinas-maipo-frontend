@@ -61,7 +61,6 @@ const CreateRepairsDialog = ({
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      console.log("Repair Data to submit:", repairData);
       if (isEditMode) {
         if (!repairInfo?.id) return;
         await useUpdateRepairMutation.mutateAsync({

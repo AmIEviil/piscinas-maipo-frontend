@@ -17,6 +17,7 @@ import Calendar from "../../../ui/datepicker/DatePicker";
 import { getWindowWidth } from "../../../../utils/WindowUtils";
 import MaintenanceFieldsMobile from "./MaintenancesFieldsMobile";
 import { formatDateToLocalString } from "../../../../utils/DateUtils";
+import Button from "../../../ui/button/Button";
 
 interface MaintenanceFieldsProps {
   clientId: string;
@@ -54,7 +55,6 @@ const MaintenanceFields = ({
   const [cantidad, setCantidad] = useState<number>(0);
   const [error, setError] = useState<string>("");
 
-  console.log("mantencionData", mantencionData);
   useEffect(() => {
     if (isEditing && mantencionData) {
       const productosFormateados =
@@ -303,12 +303,14 @@ const MaintenanceFields = ({
         <button className="secondary" onClick={onCancel}>
           Cancelar
         </button>
-        <button
-          className={style.primaryButton}
+        <Button
+          label=" Guardar Mantención"
+          variant="primary"
           onClick={() => onAccept(maintenance)}
-        >
-          Guardar Mantención
-        </button>
+          disabled={
+            !maintenance.realizada && maintenance.productosUsados.length === 0
+          }
+        />
       </div>
     </div>
   );

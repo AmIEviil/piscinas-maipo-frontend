@@ -115,8 +115,6 @@ const VehicleDialog = ({
     onClose();
   };
 
-  console.log("Uploaded Files:", uploadedFiles);
-
   const renderBody = () => {
     if (viewMode === "delete") {
       return (

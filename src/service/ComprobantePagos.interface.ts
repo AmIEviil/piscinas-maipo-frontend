@@ -10,6 +10,7 @@ export interface IComprobantePago {
   tipo: string;
   nombre: string;
   fecha_emision: string;
+  monto?: number;
   parentId: string;
   fileId: string;
   viewUrl: string;

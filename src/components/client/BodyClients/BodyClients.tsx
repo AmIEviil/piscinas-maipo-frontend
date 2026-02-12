@@ -87,7 +87,8 @@ const BodyClients = () => {
 
   const [mantenciones, setMantenciones] =
     useState<Record<string, IMaintenance[]>>();
-  const [comprobantes, setComprobantes] = useState<IComprobantePago[]>();
+  const [comprobantes, setComprobantes] =
+    useState<Record<string, IComprobantePago[]>>();
   const [openDialog, setOpenDialog] = useState(false);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -302,7 +303,7 @@ const BodyClients = () => {
   };
 
   const handleSelectAllInGroup = (key: string, clientsInGroup: Client[]) => {
-    console.log("Selecting all in group:", key, clientsInGroup);
+    console.log("Seleccionando todos en grupo:", key, clientsInGroup);
     setSelectedClients((prev) => {
       const allSelected = clientsInGroup.every((client) =>
         prev.some((c) => c.id === client.id),
@@ -331,6 +332,8 @@ const BodyClients = () => {
       setClientInfo(clientInfo);
       const mantenciones = await maintenanceByClient.mutateAsync(client.id);
       setMantenciones(mantenciones);
+      const comprobantes = await comprobantesByClient.mutateAsync(client.id);
+      setComprobantes(comprobantes);
       setSelectedClient(client);
       setCurrentClientIndex(index);
       setOpenDialog(true);
@@ -536,6 +539,14 @@ const BodyClients = () => {
               selectedClient.id,
             );
             setMantenciones(updatedMaintenances);
+          }
+        }}
+        onComprobanteChanged={async () => {
+          if (selectedClient?.id) {
+            const updatedComprobantes = await comprobantesByClient.mutateAsync(
+              selectedClient.id,
+            );
+            setComprobantes(updatedComprobantes);
           }
         }}
         onNextClient={handleNextClient}
