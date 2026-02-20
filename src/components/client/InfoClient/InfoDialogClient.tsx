@@ -334,6 +334,14 @@ const InfoClientDialog = ({
     }
   };
 
+  const onDeleteMaintenance = async (maintenanceId: string) => {
+    handleCloseModal();
+    await deleteMaintenance.mutateAsync(maintenanceId);
+    if (onMaintenanceCreated) {
+      onMaintenanceCreated();
+    }
+  };
+
   const handleDeleteMaintenance = (maintenance: IMaintenance) => {
     setOpenModal({
       header: <strong>Eliminando mantencion</strong>,
@@ -347,12 +355,14 @@ const InfoClientDialog = ({
               label="Fecha Mantención"
               value={formatDateToDDMMYYYY(maintenance.fechaMantencion)}
             />
-            <FieldGroup
-              label="Productos Utilizados"
-              value={maintenance.productos
-                .map((p) => `${p.product.nombre} (${p.cantidad})`)
-                .join(" - ")}
-            />
+            {maintenance.productos.length > 0 && (
+              <FieldGroup
+                label="Productos Utilizados"
+                value={maintenance.productos
+                  .map((p) => `${p.product.nombre} (${p.cantidad})`)
+                  .join(" - ")}
+              />
+            )}
           </div>
         </div>
       ),
@@ -365,18 +375,22 @@ const InfoClientDialog = ({
           />
           <Button
             label="Eliminar"
-            onClick={() => {
-              handleCloseModal();
-              deleteMaintenance.mutateAsync(maintenance.id);
-              if (onMaintenanceCreated) {
-                onMaintenanceCreated();
-              }
-            }}
+            onClick={() => onDeleteMaintenance(maintenance.id)}
           />
         </>
       ),
       dialogClassName: "max-w-md! max-h-md!",
     });
+  };
+
+  const onAddingMaintenance = () => {
+    if (!showMaintenances) setShowMaintenances(true);
+    setIsAddingMaintenance(true);
+  };
+
+  const onCancelAddingMaintenance = () => {
+    setIsAddingMaintenance(false);
+    setMaintenanceToEdit(null);
   };
 
   return (
@@ -386,26 +400,31 @@ const InfoClientDialog = ({
       size="xl"
       centered
       style={{ borderRadius: 32 }}
+      dialogClassName="max-h-[90dvh]"
+      enforceFocus={false}
     >
       {loading ? (
-        <Modal.Body className="flex justify-center items-center p-10 min-h-160!">
-          <div className="flex justify-center items-center min-h-160!">
-            <LoadingSpinner />
-          </div>
+        <Modal.Body className="flex justify-center items-center p-10 min-h-160! max-h-[40dvh]">
+          <LoadingSpinner />
         </Modal.Body>
       ) : (
-        <Modal.Body className="max-h-[90dvh] overflow-auto custom-scrollbar ">
+        <Modal.Body className="max-h-[80dvh] overflow-auto custom-scrollbar ">
           {clientInfo && (
             <ClientFields
               clientInfo={clientInfo}
               coordenadas={coordenadas}
               hasMaintenances={mantencionesMesActual.length > 0}
+              onClose={handleClose}
             />
           )}
-          <div className="flex flex-row justify-between items-center ">
+          <div className="flex flex-row justify-between items-center pb-1">
             <button
               onClick={() => setShowMaintenances(!showMaintenances)}
-              className="cursor-pointer flex items-center gap-1 font-medium mt-4 mb-2 select-none w-fit normal p-2! hover:text-white!"
+              disabled={
+                !maintenancesClient ||
+                Object.keys(maintenancesClient).length === 0
+              }
+              className="cursor-pointer flex items-center gap-1 font-medium w-fit normal p-2! hover:text-white!"
             >
               {Object.keys(maintenancesClient ?? {}).length
                 ? "Ver Mantenciones"
@@ -417,8 +436,17 @@ const InfoClientDialog = ({
             <div className={style.buttonContainer}>
               <button
                 className={`${style.buttonInfo} p-1!`}
-                onClick={() => setIsAddingMaintenance(true)}
+                onClick={() => {
+                  if (isAddingMaintenance) {
+                    onCancelAddingMaintenance();
+                  } else {
+                    onAddingMaintenance();
+                  }
+                }}
               >
+                {isAddingMaintenance
+                  ? "Cancelar mantención"
+                  : "Agregar nueva mantención"}
                 <AddIcon />
               </button>
             </div>
@@ -426,8 +454,8 @@ const InfoClientDialog = ({
 
           {showMaintenances && (
             <>
-              {Object.keys(maintenancesClient ?? {}).length ? (
-                <div>
+              <div className={`${isAddingMaintenance ? "hidden" : "block"}`}>
+                {Object.keys(maintenancesClient ?? {}).length ? (
                   <div className={style.maintenancesContainer}>
                     <div className={style.tableContainer}>
                       <div className="flex items-center justify-between py-3">
@@ -536,8 +564,14 @@ const InfoClientDialog = ({
                       mantencionesMesActual={mantencionesMesActual}
                     />
                   </div>
-                </div>
-              ) : null}
+                ) : (
+                  <div className="flex flex-col items-center gap-3 ">
+                    <p className="text-gray-500">
+                      No hay mantenciones para mostrar
+                    </p>
+                  </div>
+                )}
+              </div>
               {isAddingMaintenance && (
                 <MaintenanceFields
                   clientId={clientInfo?.id.value ?? ""}

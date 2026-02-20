@@ -6,16 +6,19 @@ interface ModalSlice {
   modalContent: React.ReactNode | null;
   footerContent: React.ReactNode | null;
   dialogClassName?: string;
+  bodyClassName?: string;
   openModal: ({
     header,
     content,
     footer,
     dialogClassName,
+    bodyClassName,
   }: {
-    header: React.ReactNode;
+    header?: React.ReactNode;
     content: React.ReactNode;
     footer?: React.ReactNode;
     dialogClassName?: string;
+    bodyClassName?: string;
   }) => void;
   onAccept?: () => void;
   closeModal: () => void;
@@ -27,23 +30,27 @@ export const useModalStore = create<ModalSlice>((set) => ({
   modalContent: null,
   footerContent: null,
   dialogClassName: "",
+  bodyClassName: "",
   openModal: ({
     header,
     content,
     footer,
     dialogClassName,
+    bodyClassName,
   }: {
-    header: React.ReactNode;
+    header?: React.ReactNode;
     content: React.ReactNode;
     footer?: React.ReactNode;
     dialogClassName?: string;
+    bodyClassName?: string;
   }) =>
     set({
+      isModalOpen: true,
       headerContent: header,
       modalContent: content,
       footerContent: footer || null,
       dialogClassName: dialogClassName || "",
-      isModalOpen: true,
+      bodyClassName: bodyClassName || "",
     }),
   onAccept: undefined,
   closeModal: () =>
@@ -53,5 +60,6 @@ export const useModalStore = create<ModalSlice>((set) => ({
       modalContent: null,
       footerContent: null,
       dialogClassName: "",
+      bodyClassName: "",
     }),
 }));

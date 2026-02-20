@@ -23,14 +23,15 @@ import type {
 } from "../../../service/revestimiento.interface";
 import { CustomTextArea } from "../../ui/InputText/CustonTextArea";
 import Calendar from "../../ui/datepicker/DatePicker";
+import CustomCombobox from "../../ui/combobox/Combobox";
 
 interface RevestimientoFieldsProps {
   clients: Client[];
   value: Partial<IRevestimientoCreate>;
   onChange: (
     updater: (
-      prev: Partial<IRevestimientoCreate>
-    ) => Partial<IRevestimientoCreate>
+      prev: Partial<IRevestimientoCreate>,
+    ) => Partial<IRevestimientoCreate>,
   ) => void;
 }
 
@@ -46,7 +47,7 @@ const RevestimientoFields = ({
 
   const optionsClients = clients
     .filter(
-      (c): c is Client & { id: string } => c.id !== undefined && c.id !== null
+      (c): c is Client & { id: string } => c.id !== undefined && c.id !== null,
     )
     .map((client) => ({
       value: client.id.toString(),
@@ -118,7 +119,7 @@ const RevestimientoFields = ({
       if (value.extras && value.extras.length > 0) {
         const totalExtras = value.extras.reduce(
           (sum, extra) => sum + (Number(extra.valor) || 0),
-          0
+          0,
         );
         total += totalExtras;
       }
@@ -167,18 +168,17 @@ const RevestimientoFields = ({
           Información General
         </h4>
         <div className={style.gridContainer}>
-          <CustomSelect
-            title="Cliente"
+          <CustomCombobox
+            title="Seleccionar Cliente"
             required
-            label=""
-            options={optionsClients}
             value={
               value.clienteId?.toString() || value.client?.id?.toString() || ""
             }
-            onChange={(event) =>
+            options={optionsClients}
+            onChange={(val) =>
               onChange((prev) => ({
                 ...prev,
-                clienteId: String(event.target.value),
+                clienteId: val ? String(val) : undefined,
               }))
             }
           />
@@ -404,7 +404,7 @@ const RevestimientoFields = ({
                 const arr = Array.from(files);
                 // Aquí podrías agregar un estado de carga si lo deseas
                 const results = await Promise.all(
-                  arr.map((f) => revestimientoService.uploadImagen(f))
+                  arr.map((f) => revestimientoService.uploadImagen(f)),
                 );
                 onChange((prev) => ({
                   ...prev,

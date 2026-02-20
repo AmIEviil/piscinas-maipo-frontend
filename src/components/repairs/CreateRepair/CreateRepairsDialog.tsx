@@ -1,8 +1,4 @@
 import { useEffect, useState } from "react";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
 import style from "./CreateRepairsDialog.module.css";
 
 // Interfaces y Stores
@@ -15,9 +11,13 @@ import Button from "../../ui/button/Button";
 import CheckIcon from "@mui/icons-material/Check";
 import SaveIcon from "@mui/icons-material/Save";
 
-import type { IRepair, IRepairCreate } from "../../../service/repairs.interface";
+import type {
+  IRepair,
+  IRepairCreate,
+} from "../../../service/repairs.interface";
 import { useCreateRepair, useUpdateRepair } from "../../../hooks/RepairsHooks";
 import RepairFields from "./RepairFields";
+import { Modal } from "react-bootstrap";
 
 interface CreateRepairsDialogProps {
   open: boolean;
@@ -88,12 +88,12 @@ const CreateRepairsDialog = ({
   };
 
   return (
-    <Dialog fullWidth maxWidth="md" open={open} onClose={handleClose}>
-      <DialogTitle className={style.dialogTitle}>
+    <Modal size="lg" show={open} onHide={handleClose}>
+      <Modal.Header className={style.dialogTitle} closeButton>
         {repairInfo ? "Editar Reparación" : "Crear Nueva Reparación"}
-      </DialogTitle>
+      </Modal.Header>
 
-      <DialogContent className="custom-scrollbar">
+      <Modal.Body className="custom-scrollbar">
         <div className={style.formContainer}>
           <RepairFields
             value={repairData}
@@ -101,9 +101,9 @@ const CreateRepairsDialog = ({
             clients={clients}
           />
         </div>
-      </DialogContent>
+      </Modal.Body>
 
-      <DialogActions className={style.dialogActions}>
+      <Modal.Footer className={style.dialogActions}>
         <Button
           className="bg-gray-400 hover:bg-gray-500 text-white"
           onClick={onClose}
@@ -116,8 +116,8 @@ const CreateRepairsDialog = ({
           disabled={loading || success}
           icon={success ? <CheckIcon /> : <SaveIcon />}
         />
-      </DialogActions>
-    </Dialog>
+      </Modal.Footer>
+    </Modal>
   );
 };
 

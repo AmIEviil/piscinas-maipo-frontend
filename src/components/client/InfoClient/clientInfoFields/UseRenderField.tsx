@@ -23,15 +23,10 @@ interface Field {
 
 interface RenderFieldProps {
   field: Field;
-  // commentable?: boolean;
   options?: IOptionsSelect[];
-  // comments?: IObservacion[];
   multiple?: boolean;
   multiCheckbox?: boolean;
-  // rawValue?: string | number | null;
   onEdit?: (value: string | number | null | undefined) => void;
-  // isAddingField?: boolean;
-  // onComment?: (value: string) => void;
 }
 
 export const RenderItemField = ({
@@ -45,7 +40,6 @@ export const RenderItemField = ({
 RenderFieldProps) => {
   const [hover, setHover] = useState(false);
   const [enableEdit, setEnableEdit] = useState(false);
-  // const [enableComment, setEnableComment] = useState(false);
 
   const [editedValue, setEditedValue] = useState<
     string | number | null | undefined
@@ -59,41 +53,6 @@ RenderFieldProps) => {
     setEditedValue(field.value);
   }, [field.value]);
 
-  // useEffect(() => {
-  //   // Si es multiCheckbox preferimos rawValue (string db como "0,1") si está disponible
-  //   if (multiCheckbox) {
-  //     if (
-  //       rawValue !== undefined &&
-  //       rawValue !== null &&
-  //       String(rawValue) !== ""
-  //     ) {
-  //       setEditedValue(String(rawValue));
-  //       return;
-  //     }
-  //     // fallback: value viene como labels => convertir a values
-  //     if (typeof field.value === "string") {
-  //       const parsed = parseLabelsToValues(field.value, options);
-  //       setEditedValue(parsed);
-  //       return;
-  //     }
-  //     setEditedValue("");
-  //     return;
-  //   }
-  //   if (field.value !== editedValue) {
-  //     setEditedValue(field.value);
-  //   }
-  // }, [field.value, rawValue, options, multiCheckbox]);
-
-  // const handleVisibleField = (field: Field) => {
-  //   const value = field.value;
-  //   if (value === null || value === undefined) return false;
-  //   if (typeof value === "string" && value.trim() === "") return false;
-  //   if (Array.isArray(value) && value.length === 0) return false;
-  //   if (typeof value === "object" && Object.keys(value).length === 0)
-  //     return false;
-  //   return true;
-  // };
-
   const handleFieldDisplay = () => {
     if (field.key.includes("valor")) {
       return formatMoneyNumber(field.value);
@@ -103,12 +62,6 @@ RenderFieldProps) => {
     }
     return field.value;
   };
-
-  // if (!handleVisibleField(field)) return null;
-
-  // const handleClickComment = () => {
-  //   setEnableComment(!enableComment);
-  // };
 
   const handleClickEdit = () => {
     setEnableEdit(true);
@@ -239,16 +192,14 @@ RenderFieldProps) => {
                     </>
                   )}
                   {options?.length === 0 && type === "string" && (
-                    <>
-                      <input
-                        className="border border-gray-300 rounded-md p-2 w-full"
-                        type="text"
-                        value={String(editedValue)}
-                        onChange={(e) => {
-                          setEditedValue(e.target.value);
-                        }}
-                      />
-                    </>
+                    <input
+                      className="border border-gray-300 rounded-md p-2 w-full"
+                      type="text"
+                      value={String(editedValue)}
+                      onChange={(e) => {
+                        setEditedValue(e.target.value);
+                      }}
+                    />
                   )}
                   {options?.length === 0 && type === "number" && (
                     <input

@@ -1,7 +1,6 @@
 import type { Client } from "../../../service/client.interface";
 import type { IRepairCreate } from "../../../service/repairs.interface";
 
-import CustomSelect from "../../ui/Select/Select";
 import CustomInputText from "../../ui/InputText/CustomInputText";
 import { CustomTextArea } from "../../ui/InputText/CustonTextArea";
 
@@ -13,19 +12,21 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import Calendar from "../../ui/datepicker/DatePicker";
 
 import style from "./CreateRepairsDialog.module.css";
+import CustomCombobox from "../../ui/combobox/Combobox";
+import { formatDateToLocalString } from "../../../utils/DateUtils";
 
 interface RepairFieldsProps {
   clients: Client[];
   value: Partial<IRepairCreate>;
   onChange: (
-    updater: (prev: Partial<IRepairCreate>) => Partial<IRepairCreate>
+    updater: (prev: Partial<IRepairCreate>) => Partial<IRepairCreate>,
   ) => void;
 }
 
 const RepairFields = ({ clients, value, onChange }: RepairFieldsProps) => {
   const optionsClients = clients
     .filter(
-      (c): c is Client & { id: string } => c.id !== undefined && c.id !== null
+      (c): c is Client & { id: string } => c.id !== undefined && c.id !== null,
     )
     .map((client) => ({
       value: client.id.toString(),
@@ -39,18 +40,17 @@ const RepairFields = ({ clients, value, onChange }: RepairFieldsProps) => {
           <PersonIcon fontSize="small" /> Cliente
         </h4>
         <div className={style.gridContainer}>
-          <CustomSelect
+          <CustomCombobox
             title="Seleccionar Cliente"
             required
-            label=""
-            options={optionsClients}
             value={
               value.client_id?.toString() || value.client?.id?.toString() || ""
             }
-            onChange={(event) =>
+            options={optionsClients}
+            onChange={(val) =>
               onChange((prev) => ({
                 ...prev,
-                client_id: String(event.target.value),
+                client_id: val ? String(val) : undefined,
               }))
             }
           />
@@ -68,12 +68,12 @@ const RepairFields = ({ clients, value, onChange }: RepairFieldsProps) => {
             mode="day"
             required
             initialValue={
-              value.fecha_ingreso ? new Date(value.fecha_ingreso) : null
+              value.fecha_ingreso ? new Date(`${value.fecha_ingreso}T00:00:00`) : null
             }
             onChange={({ start }) => {
               onChange((prev) => ({
                 ...prev,
-                fecha_ingreso: start ? start.toISOString().split("T")[0] : "",
+                fecha_ingreso: start ? formatDateToLocalString(start) : "",
               }));
             }}
           />
@@ -82,12 +82,12 @@ const RepairFields = ({ clients, value, onChange }: RepairFieldsProps) => {
             mode="day"
             required
             initialValue={
-              value.fecha_trabajo ? new Date(value.fecha_trabajo) : null
+              value.fecha_trabajo ? new Date(`${value.fecha_trabajo}T00:00:00`) : null
             }
             onChange={({ start }) => {
               onChange((prev) => ({
                 ...prev,
-                fecha_trabajo: start ? start.toISOString().split("T")[0] : "",
+                fecha_trabajo: start ? formatDateToLocalString(start) : "",
               }));
             }}
           />

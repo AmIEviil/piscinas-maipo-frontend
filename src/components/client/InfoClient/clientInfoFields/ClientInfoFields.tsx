@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import GoogleMapFromAddress from "../../../ui/googleMapEmbed.tsx/GoogleMapEmbed";
-import { DialogTitle } from "@mui/material";
 import { useEffect, useState } from "react";
 import CustomInputText from "../../../ui/InputText/CustomInputText";
 import PencilIcon from "../../../ui/Icons/PencilIcon";
@@ -14,6 +13,9 @@ import CheckIcon from "../../../ui/Icons/CheckIcon";
 import CustomDropmenuV2 from "../../../ui/customdropmenu/CustomDropmenuV2";
 import CloseIcon from "../../../ui/Icons/CloseIcon";
 import { useClientResumenMonthStore } from "../../../../store/ClientStore";
+import { useModalStore } from "../../../../store/ModalStore";
+import BodyRepairs from "../../../repairs/BodyRepairs";
+import Button from "../../../ui/button/Button";
 
 export interface IClientForm {
   [key: string]: {
@@ -32,13 +34,17 @@ interface ClientFieldsProps {
   clientInfo: IClientForm;
   coordenadas: { lat: number; lng: number } | undefined;
   hasMaintenances?: boolean;
+  onClose?: () => void;
 }
 
 const ClientFields = ({
   clientInfo,
   coordenadas,
   hasMaintenances,
+  onClose,
 }: ClientFieldsProps) => {
+  const openRepairsModal = useModalStore((state) => state.openModal);
+
   const setModalVisible = useClientResumenMonthStore(
     (state) => state.openModal,
   );
@@ -159,9 +165,23 @@ const ClientFields = ({
     return false;
   };
 
+  const handleSeeRepairs = () => {
+    openRepairsModal({
+      dialogClassName: "h-[40dvh]!",
+      bodyClassName: "max-h-[55dvh] overflow-auto custom-scrollbar",
+      header: "Reparaciones",
+      content: (
+        <BodyRepairs
+          nombreCliente={clientInfo.nombre.value}
+          showFilters={false}
+        />
+      ),
+    });
+  };
+
   return (
     <div className={style.clientInfoContainer}>
-      <DialogTitle style={{ padding: 0 }}>
+      <div style={{ padding: 0 }} className="flex flex-row gap-2 text-xl">
         <div className={style.titleContainer}>
           <div
             className="gap-4 flex"
@@ -195,7 +215,16 @@ const ClientFields = ({
             {editTitle ? <CheckIcon /> : <PencilIcon />}
           </button>
         </div>
-      </DialogTitle>
+        <div>
+          <Button
+            label="Cerrar"
+            variant="tertiary"
+            icon={<CloseIcon color="black" />}
+            iconPosition="right"
+            onClick={onClose}
+          />
+        </div>
+      </div>
       <div
         className="flex flex-row items-center text-center align-middle w-full gap-2 cursor-pointer"
         onClick={() =>
@@ -294,10 +323,15 @@ const ClientFields = ({
               )}
             </div>
             <div className="flex flex-col justify-between flex-1">
-              {windowWidth > 720 && hasMaintenances && (
+              {windowWidth > 720 && (
                 <div>
-                  <button className="secondary" onClick={setModalVisible}>
-                    Generar Boleta
+                  {hasMaintenances && (
+                    <button className="secondary" onClick={setModalVisible}>
+                      Generar Boleta
+                    </button>
+                  )}
+                  <button className="secondary" onClick={handleSeeRepairs}>
+                    Ver Reparaciones
                   </button>
                 </div>
               )}

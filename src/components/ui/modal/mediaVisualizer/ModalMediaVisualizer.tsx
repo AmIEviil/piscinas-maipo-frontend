@@ -5,6 +5,7 @@ import { useModalStore } from "../../../../store/ModalStore";
 const ModalMediaVisualizer = () => {
   const visible = useModalStore((state) => state.isModalOpen);
   const dialogClassName = useModalStore((state) => state.dialogClassName);
+  const bodyClassName = useModalStore((state) => state.bodyClassName);
   const headerData = useModalStore((state) => state.headerContent);
   const mediaData = useModalStore((state) => state.modalContent);
   const footerData = useModalStore((state) => state.footerContent);
@@ -25,7 +26,7 @@ const ModalMediaVisualizer = () => {
       size="xl"
     >
       <Modal.Header closeButton>{headerData}</Modal.Header>
-      <Modal.Body>{mediaData}</Modal.Body>
+      <Modal.Body className={`${bodyClassName}`}>{mediaData}</Modal.Body>
       <Modal.Footer>
         {footerData || (
           <>

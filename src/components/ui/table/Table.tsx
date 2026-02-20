@@ -57,7 +57,7 @@ const TableGeneric = <T,>({
                 renderHeader ? (
                   renderHeader(title, index)
                 ) : (
-                  <th key={index}>
+                  <th key={title.label + index}>
                     <span className="flex flex-row items-center gap-2">
                       {title.label}
                       {title.showOrder && (

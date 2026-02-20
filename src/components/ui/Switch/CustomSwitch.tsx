@@ -6,6 +6,7 @@ interface CustomSwitchProps {
   onChange: (checked: boolean) => void;
   required?: boolean;
   customClass?: string;
+  disabled?: boolean;
 }
 
 export const CustomSwitch: React.FC<CustomSwitchProps> = ({
@@ -14,6 +15,7 @@ export const CustomSwitch: React.FC<CustomSwitchProps> = ({
   onChange,
   required,
   customClass,
+  disabled,
 }) => {
   const options = [
     { label: "Sí", value: true },
@@ -34,6 +36,7 @@ export const CustomSwitch: React.FC<CustomSwitchProps> = ({
             className={`${style.btnSwitchShort} ${
               checked === option.value ? style.active : ""
             }`}
+            disabled={disabled}
           >
             {option.label}
           </button>
