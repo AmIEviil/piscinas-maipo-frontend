@@ -89,4 +89,6 @@ tbody tr:hover button {
   padding: 1rem;
   text-align: start;
   color: var(--color-fondo);
+  margin: 0;
+  background-color: var(--color-primario);
 }

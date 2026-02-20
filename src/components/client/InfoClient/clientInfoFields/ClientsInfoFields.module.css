@@ -63,10 +63,10 @@
 }
 .labelsContainer {
   display: grid;
-  grid-auto-flow: column; /* Llenar filas primero, luego columnas */
-  grid-auto-rows: min-content; /* Altura automática por fila */
-  grid-template-rows: repeat(4, auto); /* Máximo 4 filas */
-  gap: 1rem;
+  grid-auto-flow: column;
+  grid-auto-rows: min-content;
+  grid-template-rows: repeat(4, auto);
+  gap: 0rem;
   align-items: start;
 }
 .labelItemContainer {
@@ -82,7 +82,7 @@
   background-color: var(--color-fondo-suave);
   margin: 10px;
   height: fit-content;
-  padding: 10px;
+  padding: 8px;
   border-radius: 16px;
   width: fit-content;
   gap: 0.5rem;

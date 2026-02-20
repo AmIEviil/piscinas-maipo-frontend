@@ -281,8 +281,6 @@ const MaintenanceFields = ({
         </div>
       ) : (
         <MaintenanceFieldsMobile
-          clientId={clientId}
-          valorMantencion={valorMantencion}
           productosList={productosList}
           value={maintenance}
           onChange={(updater) =>
@@ -301,7 +299,7 @@ const MaintenanceFields = ({
       )}
       <div className={style.footerButtons}>
         <button className="secondary" onClick={onCancel}>
-          Cancelar
+          Volver
         </button>
         <Button
           label=" Guardar Mantención"

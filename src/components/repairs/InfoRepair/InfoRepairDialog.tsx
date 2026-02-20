@@ -1,4 +1,3 @@
-import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -11,6 +10,8 @@ import PersonIcon from "@mui/icons-material/Person";
 import ConstructionIcon from "@mui/icons-material/Construction";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import { formatMoneyNumber } from "../../../utils/formatTextUtils";
+import Button from "../../ui/button/Button";
+import CloseIcon from "../../ui/Icons/CloseIcon";
 
 interface InfoRepairDialogProps {
   open: boolean;
@@ -38,13 +39,22 @@ const InfoRepairDialog = ({
       }}
     >
       <DialogTitle className={style.dialogTitle}>
-        Detalle del la Reparación
-        <div className="text-sm font-normal text-gray-500 mt-1">
-          ID: {repairInfo.id} | Estado:{" "}
-          <span className="font-bold text-blue-600">{repairInfo.estado}</span>
+        <div>
+          Detalle del la Reparación
+          <div className="text-sm font-normal text-gray-500 mt-1">
+            ID: {repairInfo.id} | Estado:{" "}
+            <span className="font-bold text-blue-600">{repairInfo.estado}</span>
+          </div>
         </div>
+        <Button
+          label="Cerrar"
+          variant="tertiary"
+          icon={<CloseIcon color="black" />}
+          iconPosition="right"
+          onClick={handleClose}
+        />
       </DialogTitle>
-      <DialogContent>
+      <DialogContent className="custom-scrollbar">
         <div className={style.contentContainer}>
           <div className={style.section}>
             <h4 className={style.sectionTitle}>
@@ -124,9 +134,7 @@ const InfoRepairDialog = ({
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} variant="contained" color="primary">
-          Cerrar
-        </Button>
+        <Button onClick={handleClose} label="Cerrar" />
       </DialogActions>
     </Dialog>
   );

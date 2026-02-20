@@ -4,8 +4,10 @@ import BoletaModalContainer from "../../components/client/InfoClient/comprobante
 export const ClientsView = () => {
   return (
     <div>
+      <span className="text-white">Clientes</span>
       <BodyClients />
       <BoletaModalContainer />
+      
     </div>
   );
 };

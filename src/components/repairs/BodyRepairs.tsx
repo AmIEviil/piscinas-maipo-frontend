@@ -1,60 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
-import {
-  // useCreateRepair,
-  useDeleteRepair,
-  // useRepairById,
-  useRepairs,
-  // useUpdateRepair,
-} from "../../hooks/RepairsHooks";
+import { useDeleteRepair, useRepairs } from "../../hooks/RepairsHooks";
 import type { IRepair } from "../../service/repairs.interface";
 import style from "../client/BodyClients/BodyClients.module.css";
 import InputText from "../ui/InputText/InputText";
 import TableGeneric from "../ui/table/Table";
 import { formatDateToDDMMYYYY } from "../../utils/DateUtils";
 import Tooltip from "@mui/material/Tooltip";
-import EyeIcon from "../ui/Icons/EyeIcon";
-import PencilIcon from "../ui/Icons/PencilIcon";
-import TrashIcon from "../ui/Icons/TrashIcon";
-import PopUp from "../ui/PopUp/PopUp";
 import PlusIcon from "../ui/Icons/PlusIcon";
 import InfoRepairDialog from "./InfoRepair/InfoRepairDialog";
 import CreateRepairsDialog from "./CreateRepair/CreateRepairsDialog";
+import { ActionsTdTable } from "../common/ActionsTable/ActionsTable";
+import CustomModal from "../ui/modal/CustomModal";
+import { titleTable } from "../../constant/constantBodyReparis";
 
-const titleTable = [
-  {
-    label: "Cliente",
-    key: "clientName",
-    showOrder: true,
-  },
-  {
-    label: "Fecha creación",
-    key: "creationDate",
-    showOrder: true,
-  },
-  {
-    label: "Estado",
-    key: "status",
-    showOrder: true,
-  },
-  {
-    label: "Costo",
-    key: "cost",
-    showOrder: true,
-  },
-  {
-    label: "Descripción",
-    key: "description",
-    showOrder: false,
-  },
-  {
-    label: "Acciones",
-    key: "actions",
-    showOrder: false,
-  },
-];
-
-interface FilterQuery {
+export interface FilterQueryRepairs {
   nombreCliente?: string;
   fechaCreacion?: string;
   estado?: string;
@@ -64,17 +24,24 @@ interface FilterQuery {
   orderDirection?: "asc" | "desc";
 }
 
-const BodyRepairs = () => {
+interface BodyRepairsProps {
+  nombreCliente?: string;
+  showFilters?: boolean;
+}
+
+const BodyRepairs = ({
+  nombreCliente,
+  showFilters = true,
+}: BodyRepairsProps) => {
   const reparisMutation = useRepairs();
-  // const repairsMutationId = useRepairById();
-  // const createRepairMutation = useCreateRepair();
-  // const updateRepairMutation = useUpdateRepair();
   const deleteRepairMutation = useDeleteRepair();
 
   const [repairs, setRepairs] = useState<IRepair[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [filterQuery, setFilterQuery] = useState<FilterQuery>({});
+  const [filterQuery, setFilterQuery] = useState<FilterQueryRepairs>(() =>
+    nombreCliente ? { nombreCliente } : {},
+  );
 
   const [openDialog, setOpenDialog] = useState(false);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
@@ -85,7 +52,7 @@ const BodyRepairs = () => {
   const fetchRepairs = async () => {
     setLoading(true);
     try {
-      const response = await reparisMutation.mutateAsync();
+      const response = await reparisMutation.mutateAsync(filterQuery);
       setRepairs(response);
     } catch (error) {
       console.error("Error fetching repairs:", error);
@@ -148,7 +115,7 @@ const BodyRepairs = () => {
 
   return (
     <div>
-      <div>
+      {showFilters ? (
         <div className={style.filtersContainer}>
           <InputText
             title="Buscar por cliente"
@@ -157,58 +124,65 @@ const BodyRepairs = () => {
               setFilterQuery({ ...filterQuery, nombreCliente: value })
             }
           />
-          {hasFilters && (
-            <button onClick={handleClearFilters}>Limpiar filtros</button>
-          )}
-          <Tooltip title="Crear nueva Reparación" arrow leaveDelay={0}>
-            <button onClick={handleOpenCreateDialog}>
-              <PlusIcon />
-            </button>
-          </Tooltip>
+          <div className="flex gap-2 items-center">
+            {hasFilters && (
+              <button onClick={handleClearFilters}>Limpiar filtros</button>
+            )}
+            <Tooltip title="Crear nueva Reparación" arrow leaveDelay={0}>
+              <button
+                onClick={handleOpenCreateDialog}
+                className="flex items-center gap-2"
+              >
+                Crear reparación
+                <PlusIcon />
+              </button>
+            </Tooltip>
+          </div>
         </div>
-      </div>
-      <div className={style.tableContainer}>
-        <TableGeneric
-          titles={titleTable}
-          data={repairs}
-          loading={loading}
-          renderRow={(repair) => {
-            return (
-              <tr key={repair.id}>
-                <td>{repair.client.nombre}</td>
-                <td>{formatDateToDDMMYYYY(repair.fecha_ingreso)}</td>
-                <td>{repair.estado}</td>
-                <td>{repair.costo_reparacion}</td>
-                <td>{repair.detalles}</td>
-                <td className="flex flex-col gap-2 sm:gap-4 items-center justify-center">
-                  <Tooltip title="Ver detalles Reparación" arrow leaveDelay={0}>
-                    <button
-                      className="actions"
-                      onClick={() => handleOpenDialog(repair)}
-                    >
-                      <EyeIcon size={24} skipClick />
-                    </button>
-                  </Tooltip>
-                  <Tooltip title="Editar Reparación" arrow leaveDelay={0}>
-                    <button onClick={() => handleEditRepair(repair)}>
-                      <PencilIcon color="white" />
-                    </button>
-                  </Tooltip>
-                  <Tooltip title="Eliminar Reparación" arrow leaveDelay={0}>
-                    <button
-                      onClick={() =>
+      ) : (
+        <Tooltip title="Crear nueva Reparación" arrow leaveDelay={0}>
+          <button
+            onClick={handleOpenCreateDialog}
+            className="flex items-center gap-2"
+          >
+            Crear reparación
+            <PlusIcon />
+          </button>
+        </Tooltip>
+      )}
+      {repairs.length === 0 && !loading && nombreCliente ? (
+        <div className={style.noData}>
+          El Cliente no tiene reparaciones registradas.
+        </div>
+      ) : (
+        <div className={style.tableContainer}>
+          <TableGeneric
+            titles={titleTable}
+            data={repairs}
+            loading={loading}
+            renderRow={(repair) => {
+              return (
+                <tr key={repair.id}>
+                  <td>{repair.client.nombre}</td>
+                  <td>{formatDateToDDMMYYYY(repair.fecha_ingreso)}</td>
+                  <td>{repair.estado}</td>
+                  <td>{repair.costo_reparacion}</td>
+                  <td>{repair.detalles}</td>
+                  <td>
+                    <ActionsTdTable
+                      onView={() => handleOpenDialog(repair)}
+                      onEdit={() => handleEditRepair(repair)}
+                      onDelete={() =>
                         repair.id !== undefined && handleOpenDeletePopUp(repair)
                       }
-                    >
-                      <TrashIcon className={style.iconAction} />
-                    </button>
-                  </Tooltip>
-                </td>
-              </tr>
-            );
-          }}
-        />
-      </div>
+                    />
+                  </td>
+                </tr>
+              );
+            }}
+          />
+        </div>
+      )}
       <InfoRepairDialog
         open={openDialog}
         repairInfo={selectedRepair ?? undefined}
@@ -220,24 +194,24 @@ const BodyRepairs = () => {
         repairInfo={selectedRepair ?? undefined}
         isEditMode={isEditMode}
       />
-      <PopUp
+      <CustomModal
         open={openPopUp}
         onClose={handleClosePopUp}
         onConfirm={() => {
           handleDeleteRepair(selectedRepair?.id ?? "");
         }}
         title="Confirmar eliminación"
-        confirmText="Eliminar"
-      >
-        <div className="flex flex-col gap-4 text-center">
-          <p>¿Estás seguro de que deseas eliminar esta reparación?</p>
-          <p className="font-bold">
-            {" "}
-            Reparación de {selectedRepair?.client.nombre}
-          </p>
-          <p>Esta acción no se puede deshacer.</p>
-        </div>
-      </PopUp>
+        confirmLabel="Eliminar"
+        content={
+          <div className="flex flex-col gap-4 text-center">
+            <p>¿Estás seguro de que deseas eliminar esta reparación?</p>
+            <p className="font-bold">
+              Reparación de {selectedRepair?.client.nombre}
+            </p>
+            <p>Esta acción no se puede deshacer.</p>
+          </div>
+        }
+      />
     </div>
   );
 };

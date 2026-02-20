@@ -1,6 +1,8 @@
 .filtersContainer {
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
+  justify-content: space-between !important;
+  width: 100%;
   gap: 1.5rem;
   padding: 1rem;
   background-color: var(--color-fondo-suave);

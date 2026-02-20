@@ -64,7 +64,13 @@ const CustomModal = ({
   };
 
   return (
-    <Modal centered show={open} onHide={onClose}>
+    <Modal
+      centered
+      show={open}
+      onHide={onClose}
+      enforceFocus={false}
+      dialogClassName="max-h-[90dvh]"
+    >
       <Modal.Header className={style.dialogTitle} closeButton>
         {title}
       </Modal.Header>
