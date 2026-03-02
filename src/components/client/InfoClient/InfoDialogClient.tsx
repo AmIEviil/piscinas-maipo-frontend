@@ -411,6 +411,7 @@ const InfoClientDialog = ({
         <Modal.Body className="max-h-[80dvh] overflow-auto custom-scrollbar ">
           {clientInfo && (
             <ClientFields
+              key={currentIndex}
               clientInfo={clientInfo}
               coordenadas={coordenadas}
               hasMaintenances={mantencionesMesActual.length > 0}

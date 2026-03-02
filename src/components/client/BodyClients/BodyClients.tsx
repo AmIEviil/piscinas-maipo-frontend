@@ -12,8 +12,6 @@ import { useMaintenancesByClient } from "../../../hooks/MaintenanceHooks";
 import { type IMaintenance } from "../../../service/maintenance.interface";
 import style from "./BodyClients.module.css";
 
-import Select from "../../ui/Select/Select";
-import InputText from "../../ui/InputText/InputText";
 import InfoClientDialog from "../InfoClient/InfoDialogClient";
 import CreateClientDialog from "../CreateClient/CreateClientDialog";
 
@@ -42,6 +40,11 @@ import CustomModal from "../../ui/modal/CustomModal";
 import { usePermits } from "../../../utils/roleUtils";
 import { useGetComprobantesByParentId } from "../../../hooks/ComprobantePagosHooks";
 import type { IComprobantePago } from "../../../service/ComprobantePagos.interface";
+import {
+  FiltersContainer,
+  type FilterItem,
+} from "../../common/FiltersContainer/FiltersContainer";
+import type { FilterValue } from "../../../service/employee.interface";
 
 interface IfilterQuery {
   nombre?: string;
@@ -248,7 +251,7 @@ const BodyClients = () => {
   };
 
   const handleClearFilter = () => {
-    setFilterQuery({});
+    setFilterQuery(initial_filters);
     setDayFilterStore("");
   };
 
@@ -324,6 +327,7 @@ const BodyClients = () => {
   };
 
   const handleSeeMultiSelectClients = async (index: number) => {
+    setLoadingClientInfo(true);
     if (selectedClients.length === 0) return;
     try {
       const client = selectedClients[index];
@@ -338,6 +342,7 @@ const BodyClients = () => {
       setCurrentClientIndex(index);
       setOpenDialog(true);
       setSnackBar(false, "");
+      setLoadingClientInfo(false);
     } catch (error) {
       setSnackBar(true, "Error cargando mantenciones");
       console.error("Error cargando mantenciones:", error);
@@ -358,6 +363,74 @@ const BodyClients = () => {
     }
   };
 
+  const filters: FilterItem[] = [
+    {
+      title: "Buscar por Nombre",
+      placeholder: "Nombre",
+      type: "text",
+      value: filterQuery.nombre || "",
+      onChange: (value: FilterValue) => {
+        handleFilterName(String(value));
+      },
+    },
+    {
+      title: "Buscar por Dirección",
+      placeholder: "Dirección",
+      type: "text",
+      value: filterQuery.direccion || "",
+      onChange: (value: FilterValue) => {
+        handleFilterDireccion(String(value));
+      },
+    },
+    {
+      title: "Buscar por Comuna",
+      placeholder: "Comuna",
+      type: "select",
+      options: comunas,
+      value: filterQuery.comuna || "",
+      onChange: (value: FilterValue) => {
+        handleChangeComuna(String(value));
+      },
+    },
+    {
+      title: "Buscar por Día Mantención",
+      placeholder: "Día Mantención",
+      type: "select",
+      options: dias,
+      value: filterQuery.dia || "",
+      onChange: (value: FilterValue) => {
+        handleChangeDiaMantencion(String(value));
+      },
+    },
+    {
+      title: "Buscar por Ruta",
+      placeholder: "Ruta",
+      type: "select",
+      options: rutas,
+      value: filterQuery.ruta || "",
+      onChange: (value: FilterValue) => {
+        handleChangeRuta(String(value));
+      },
+    },
+    ...(isSuperAdmin
+      ? [
+          {
+            title: "Buscar por Activo",
+            placeholder: "Activo",
+            type: "select" as const,
+            options: [
+              { label: "Sí", value: "true" },
+              { label: "No", value: "false" },
+            ],
+            value: filterQuery.isActive?.toString() || "",
+            onChange: (value: FilterValue) => {
+              handleChangeActive(value === "true");
+            },
+          },
+        ]
+      : []),
+  ];
+
   const hasFilters =
     filterQuery.nombre ||
     filterQuery.direccion ||
@@ -365,93 +438,26 @@ const BodyClients = () => {
     filterQuery.dia ||
     filterQuery.ruta;
 
+  const actionsButtons = [
+    {
+      titleTooltip: "Limpiar Filtros",
+      icon: <TrashIcon />,
+      disabled: !hasFilters,
+      onClick: () => handleClearFilter(),
+    },
+    {
+      titleTooltip: "Agregar nuevo Cliente",
+      icon: <AddIcon />,
+      onClick: () => {
+        handleOpenCreateDialog();
+      },
+    },
+  ];
+
   return (
     <div className="pt-4 ">
       <div className={style.filtersContainer}>
-        <div className={style.filters}>
-          <InputText
-            title="Buscar por Nombre"
-            placeholder="Nombre"
-            onChange={(value: string) => {
-              handleFilterName(value);
-            }}
-            value={filterQuery.nombre}
-          />
-        </div>
-        <div className={style.filters}>
-          <InputText
-            title="Buscar por dirección"
-            placeholder="Dirección"
-            onChange={(value: string) => {
-              handleFilterDireccion(value);
-            }}
-            value={filterQuery.direccion}
-          />
-        </div>
-        <div className={style.filters}>
-          <Select
-            label="Comuna"
-            options={comunas}
-            onChange={(event) => handleChangeComuna(String(event.target.value))}
-            value={filterQuery.comuna}
-          />
-        </div>
-        <div className={`${style.filters}`}>
-          <Select
-            label="Dia Mantención"
-            options={dias}
-            onChange={(event) =>
-              handleChangeDiaMantencion(String(event.target.value))
-            }
-            value={filterQuery.dia}
-          />
-        </div>
-        <div className={`${style.filters}`}>
-          <Select
-            label="Ruta"
-            options={rutas}
-            onChange={(event) => handleChangeRuta(String(event.target.value))}
-            value={filterQuery.ruta}
-          />
-        </div>
-        {isSuperAdmin && (
-          <div className={`${style.filters}`}>
-            <Select
-              label="Activo"
-              options={[
-                {
-                  label: "Sí",
-                  value: "true",
-                },
-                {
-                  label: "No",
-                  value: "false",
-                },
-              ]}
-              onChange={(event) =>
-                handleChangeActive(Boolean(event.target.value))
-              }
-              value={filterQuery.isActive?.toString()}
-            />
-          </div>
-        )}
-        <div className={style.actionsFilters}>
-          {hasFilters && (
-            <Tooltip title="Limpiar Filtros" arrow leaveDelay={0}>
-              <button
-                onClick={handleClearFilter}
-                className={style.actionButton}
-              >
-                <TrashIcon />
-              </button>
-            </Tooltip>
-          )}
-          <Tooltip title="Agregar nuevo Cliente" arrow leaveDelay={0}>
-            <button onClick={handleOpenCreateDialog}>
-              <AddIcon />
-            </button>
-          </Tooltip>
-        </div>
+        <FiltersContainer filters={filters} actionButtons={actionsButtons} />
       </div>
       {windowWidth < 600 && selectedClients.length > 0 && (
         <div className="flex flex-row w-full items-center justify-center pt-4">
