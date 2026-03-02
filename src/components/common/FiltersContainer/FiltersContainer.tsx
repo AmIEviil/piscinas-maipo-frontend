@@ -19,6 +19,7 @@ export interface FilterItem {
 interface ActionButton {
   titleTooltip: string;
   icon: React.ReactNode;
+  disabled?: boolean;
   onClick: () => void;
 }
 
@@ -112,7 +113,7 @@ export const FiltersContainer: React.FC<FiltersContainerProps> = ({
             leaveDelay={0}
             key={button.titleTooltip + index}
           >
-            <button onClick={button.onClick} className={style.actionButton}>
+            <button onClick={button.onClick} className={style.actionButton} disabled={button.disabled}  >
               {button.icon}
             </button>
           </Tooltip>
