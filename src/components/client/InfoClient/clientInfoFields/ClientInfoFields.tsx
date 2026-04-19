@@ -35,6 +35,7 @@ interface ClientFieldsProps {
   coordenadas: { lat: number; lng: number } | undefined;
   hasMaintenances?: boolean;
   onClose?: () => void;
+  onUpdate?: (field: string, value: any) => void;
 }
 
 const ClientFields = ({
@@ -42,6 +43,7 @@ const ClientFields = ({
   coordenadas,
   hasMaintenances,
   onClose,
+  onUpdate,
 }: ClientFieldsProps) => {
   const openRepairsModal = useModalStore((state) => state.openModal);
 
@@ -61,6 +63,10 @@ const ClientFields = ({
   const [clientInfoState, setClientInfoState] = useState<
     IClientForm | undefined
   >(clientInfo);
+
+  useEffect(() => {
+    setClientInfoState(clientInfo);
+  }, [clientInfo]);
 
   const { handleUpdate } = useChangeFieldValue(clientInfo.id.value);
 
@@ -117,12 +123,12 @@ const ClientFields = ({
       )
     : [];
 
-  const handleToggleEditTitle = () => {
+  const handleToggleEditTitle = async () => {
     const hasChanges = fieldsHeaderKeys.some((key) => {
       return clientInfoState?.[key]?.value !== clientInfo[key]?.value;
     });
     if (editTitle === true && hasChanges) {
-      handleUpdate([
+      await handleUpdate([
         {
           campo: "nombre",
           valor: clientInfoState?.["nombre"]?.value,
@@ -136,6 +142,7 @@ const ClientFields = ({
           valor: clientInfoState?.["comuna"]?.value,
         },
       ]);
+      if (onUpdate) onUpdate("header", null);
     }
     setEditTitle(!editTitle);
   };
@@ -246,7 +253,7 @@ const ClientFields = ({
                 <div key={field.key} className="w-fit">
                   <RenderItemField
                     field={clientInfoState?.[field.key] as any}
-                    onEdit={(newValue) => {
+                    onEdit={async (newValue) => {
                       setClientInfoState((prev) => ({
                         ...prev!,
                         [field.key]: {
@@ -254,7 +261,8 @@ const ClientFields = ({
                           value: newValue,
                         },
                       }));
-                      handleUpdate([{ campo: field.key, valor: newValue }]);
+                      await handleUpdate([{ campo: field.key, valor: newValue }]);
+                      if (onUpdate) onUpdate(field.key, newValue);
                     }}
                   />
                 </div>
@@ -294,7 +302,7 @@ const ClientFields = ({
                             prev ? { ...prev, value: val } : null,
                           )
                         }
-                        onSave={() => {
+                        onSave={async () => {
                           setClientInfoState((prev) => ({
                             ...prev!,
                             [addingField.key]: {
@@ -303,12 +311,13 @@ const ClientFields = ({
                               value: addingField.value,
                             },
                           }));
-                          handleUpdate([
+                          await handleUpdate([
                             {
                               campo: addingField.key,
                               valor: addingField.value,
                             },
                           ]);
+                          if (onUpdate) onUpdate(addingField.key, addingField.value);
                           setAddingField(null);
                           setAddingFields(false);
                         }}
