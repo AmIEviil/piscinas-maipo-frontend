@@ -78,6 +78,7 @@ const BodyClients = () => {
 
   const { setSnackBar } = useSnackBarModalStore();
   const shouldRefetch = useRefetchStore((state) => state.shouldRefetch);
+  const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
   const [windowWidth, setWindowWidth] = useState(getWindowWidth());
 
   const [clients, setClients] = useState<Record<string, Client[]>>();
@@ -137,6 +138,12 @@ const BodyClients = () => {
 
   useEffect(() => {
     fetchData();
+    if (shouldRefetch) {
+      if (openDialog && selectedClient) {
+        handleSeeDetailsClient(selectedClient);
+      }
+      setShouldRefetch(false);
+    }
   }, [filterQuery, shouldRefetch]);
 
   useEffect(() => {
@@ -539,6 +546,11 @@ const BodyClients = () => {
         maintenancesClient={mantenciones ?? undefined}
         comprobantesClient={comprobantes ?? undefined}
         loading={loadingClientInfo}
+        onClientUpdated={async () => {
+          if (selectedClient) {
+            await handleSeeDetailsClient(selectedClient);
+          }
+        }}
         onMaintenanceCreated={async () => {
           if (selectedClient?.id) {
             const updatedMaintenances = await maintenanceByClient.mutateAsync(

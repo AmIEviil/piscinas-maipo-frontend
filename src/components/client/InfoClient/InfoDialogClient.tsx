@@ -54,6 +54,7 @@ interface InfoClientDialogProps {
   onClose: () => void;
   onMaintenanceCreated?: () => void;
   onComprobanteChanged?: () => void;
+  onClientUpdated?: () => void;
   onNextClient: () => void;
   onPreviousClient: () => void;
   totalRecords: number;
@@ -69,6 +70,7 @@ const InfoClientDialog = ({
   onClose,
   onMaintenanceCreated,
   onComprobanteChanged,
+  onClientUpdated,
   onNextClient,
   onPreviousClient,
   totalRecords,
@@ -416,6 +418,9 @@ const InfoClientDialog = ({
               coordenadas={coordenadas}
               hasMaintenances={mantencionesMesActual.length > 0}
               onClose={handleClose}
+              onUpdate={() => {
+                if (onClientUpdated) onClientUpdated();
+              }}
             />
           )}
           <div className="flex flex-row justify-between items-center pb-1">
@@ -560,6 +565,7 @@ const InfoClientDialog = ({
                       />
                     </div>
                     <ResumeMaintenance
+                      key={clientInfo?.valor_mantencion.value}
                       currentMonth={currentMonth}
                       valor_mantencion={clientInfo?.valor_mantencion.value ?? 0}
                       mantencionesMesActual={mantencionesMesActual}

@@ -25,7 +25,7 @@ export const useChangeFieldValue = (client_id: string) => {
     const formBody = {
       campos: field,
     };
-    updateCampoMutation.mutateAsync({
+    return updateCampoMutation.mutateAsync({
       clientId: client_id,
       dto: formBody.campos,
     });
