@@ -17,11 +17,10 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             set -e
-            cd /home/ubuntu/piscinas-elmaipo/frontend
-
+            cd /opt/piscinas/frontend
             git fetch origin
             git reset --hard origin/main
-
-            yarn install
-            yarn build
-            sudo systemctl reload nginx
+            cd /opt/piscinas
+            docker-compose build --no-cache frontend
+            docker-compose up -d frontend
+            docker image prune -f
