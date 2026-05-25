@@ -88,7 +88,7 @@ const MaintenanceFields = ({
     )
     .map((product) => ({
       value: product.id.toString(),
-      label: product.nombre,
+      label: `${product.nombre} (${product.cant_disponible} disp.)`,
     }));
 
   const handleAddProduct = () => {
@@ -101,9 +101,16 @@ const MaintenanceFields = ({
       return;
     }
 
+    const producto = productosList.find((p) => p.id === selectedProduct);
+    if (producto && producto.cant_disponible < cantidad) {
+      setError(
+        `Sin stock suficiente. Disponible: ${producto.cant_disponible}`,
+      );
+      return;
+    }
+
     setError("");
 
-    // Verificar si ya existe para sumar cantidad (opcional, aquí solo agrega)
     const newProduct = {
       productId: String(selectedProduct),
       cantidad: Number(cantidad),
