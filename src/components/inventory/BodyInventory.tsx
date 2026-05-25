@@ -12,7 +12,9 @@ import { formatMoneyNumber } from "../../utils/formatTextUtils";
 import { titlesInventoryTable } from "../../constant/constantBodyClient";
 
 import { type IProducto } from "../../service/products.interface";
-import { useDeleteProduct, useProducts } from "../../hooks/ProductHooks";
+import { useDeleteProduct, useLowStockProducts, useProducts } from "../../hooks/ProductHooks";
+import Alert from "@mui/material/Alert";
+import Chip from "@mui/material/Chip";
 import CreateProductDialog from "./CreateProduct/CreateProductDialog";
 import InfoProductDialog from "./InfoProduct/InfoDialogProduct";
 import debounce from "lodash.debounce";
@@ -59,6 +61,10 @@ const BodyInventory = () => {
 
   const [kindToCreate, setKindToCreate] = useState<string>("");
 
+  const lowStockMutation = useLowStockProducts();
+  const [lowStockProducts, setLowStockProducts] = useState<IProducto[]>([]);
+  const [showLowStockBanner, setShowLowStockBanner] = useState(true);
+
   const fetchData = async () => {
     setLoadingTable(true);
     try {
@@ -95,6 +101,15 @@ const BodyInventory = () => {
       }, 500),
     [],
   );
+
+  useEffect(() => {
+    lowStockMutation
+      .mutateAsync()
+      .then((result) => {
+        setLowStockProducts(result);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -159,6 +174,15 @@ const BodyInventory = () => {
 
   return (
     <div>
+      {showLowStockBanner && lowStockProducts.length > 0 && (
+        <Alert
+          severity="warning"
+          onClose={() => setShowLowStockBanner(false)}
+          className="mb-4"
+        >
+          {`${lowStockProducts.length} producto${lowStockProducts.length > 1 ? "s" : ""} con stock bajo: ${lowStockProducts.map((p) => p.nombre).join(", ")}`}
+        </Alert>
+      )}
       <div className={style.filtersContainer}>
         <div className={style.filters}>
           <InputText
@@ -223,7 +247,18 @@ const BodyInventory = () => {
             <tr key={product.id}>
               <td>{product.nombre}</td>
               <td>{product.tipo?.nombre}</td>
-              <td>{product.cant_disponible}</td>
+              <td>
+                <span>{product.cant_disponible}</span>
+                {product.stock_minimo != null &&
+                  product.cant_disponible <= product.stock_minimo && (
+                    <Chip
+                      label="Stock bajo"
+                      size="small"
+                      color="error"
+                      className="ml-2"
+                    />
+                  )}
+              </td>
               <td>{formatMoneyNumber(product.valor_unitario)}</td>
               <td className="flex flex-col gap-2 sm:gap-4 items-center justify-center">
                 <Tooltip title="Ver Producto" arrow leaveDelay={0}>
