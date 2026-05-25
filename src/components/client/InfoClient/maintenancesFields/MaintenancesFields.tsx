@@ -109,6 +109,14 @@ const MaintenanceFields = ({
       return;
     }
 
+    const yaAgregado = maintenance.productosUsados.some(
+      (p) => p.productId === String(selectedProduct),
+    );
+    if (yaAgregado) {
+      setError("Este producto ya fue agregado a la mantención");
+      return;
+    }
+
     setError("");
 
     const newProduct = {
