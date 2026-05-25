@@ -13,6 +13,7 @@ export interface IProducto {
   nombre: string;
   valor_unitario: number;
   cant_disponible: number;
+  stock_minimo?: number | null;
   tipo: ITypeProduct;
   historial: IHistoricalProduct[];
 }
@@ -29,6 +30,7 @@ export interface ICreateProductPayload {
   nombre: string;
   valor_unitario: number;
   cant_disponible: number;
+  stock_minimo?: number | null;
 }
 
 export interface ICreateTypeProductPayload {

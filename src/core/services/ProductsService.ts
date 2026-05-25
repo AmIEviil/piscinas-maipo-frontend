@@ -27,6 +27,11 @@ export const productsService = {
     return response.data;
   },
 
+  getLowStockProducts: async (): Promise<IProducto[]> => {
+    const response = await apiClient.get(PRODUCTS_API.lowStock);
+    return response.data;
+  },
+
   createProduct: async (
     productData: ICreateProductPayload
   ): Promise<IProducto> => {

@@ -121,3 +121,13 @@ export const useDeleteProductType = () => {
   });
   return deleteProductTypeMutation;
 };
+
+export const useLowStockProducts = () => {
+  const { showSnackbar } = useSnackbar();
+  return useMutation({
+    mutationFn: productsService.getLowStockProducts,
+    onError: () => {
+      showSnackbar("Error al verificar stock bajo", "error");
+    },
+  });
+};
