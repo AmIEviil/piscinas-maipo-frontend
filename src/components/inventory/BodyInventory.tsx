@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import style from "../client/BodyClients/BodyClients.module.css";
 import InputText from "../ui/InputText/InputText";
@@ -12,7 +13,8 @@ import { formatMoneyNumber } from "../../utils/formatTextUtils";
 import { titlesInventoryTable } from "../../constant/constantBodyClient";
 
 import { type IProducto } from "../../service/products.interface";
-import { useDeleteProduct, useLowStockProducts, useProducts } from "../../hooks/ProductHooks";
+import { useDeleteProduct, useProducts } from "../../hooks/ProductHooks";
+import { productsService } from "../../core/services/ProductsService";
 import Alert from "@mui/material/Alert";
 import Chip from "@mui/material/Chip";
 import CreateProductDialog from "./CreateProduct/CreateProductDialog";
@@ -61,9 +63,11 @@ const BodyInventory = () => {
 
   const [kindToCreate, setKindToCreate] = useState<string>("");
 
-  const lowStockMutation = useLowStockProducts();
-  const [lowStockProducts, setLowStockProducts] = useState<IProducto[]>([]);
   const [showLowStockBanner, setShowLowStockBanner] = useState(true);
+  const { data: lowStockProducts = [] } = useQuery({
+    queryKey: ["low-stock"],
+    queryFn: productsService.getLowStockProducts,
+  });
 
   const fetchData = async () => {
     setLoadingTable(true);
@@ -101,15 +105,6 @@ const BodyInventory = () => {
       }, 500),
     [],
   );
-
-  useEffect(() => {
-    lowStockMutation
-      .mutateAsync()
-      .then((result) => {
-        setLowStockProducts(result);
-      })
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     fetchData();
