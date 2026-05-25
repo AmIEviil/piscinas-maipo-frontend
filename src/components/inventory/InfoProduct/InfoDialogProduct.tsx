@@ -68,6 +68,12 @@ const InfoProductDialog = ({
               label="Cantidad Disponible"
               value={productInfo?.cant_disponible || ""}
             />
+            {productInfo?.stock_minimo != null && (
+              <FieldGroup
+                label="Alerta mínima de stock"
+                value={productInfo.stock_minimo}
+              />
+            )}
             <FieldGroup
               label="Valor Unitario"
               value={formatMoneyNumber(productInfo?.valor_unitario) || ""}
