@@ -50,7 +50,7 @@ const MaintenanceFieldsMobile = ({
     )
     .map((product) => ({
       value: product.id.toString(),
-      label: product.nombre,
+      label: `${product.nombre} (${product.cant_disponible} disp.)`,
     }));
 
   const handleAddProduct = () => {
@@ -63,9 +63,24 @@ const MaintenanceFieldsMobile = ({
       return;
     }
 
+    const producto = productosList.find((p) => p.id === selectedProduct);
+    if (producto && producto.cant_disponible < cantidad) {
+      setError(
+        `Sin stock suficiente. Disponible: ${producto.cant_disponible}`,
+      );
+      return;
+    }
+
+    const yaAgregado = (maintenance.productosUsados ?? []).some(
+      (p) => p.productId === String(selectedProduct),
+    );
+    if (yaAgregado) {
+      setError("Este producto ya fue agregado a la mantención");
+      return;
+    }
+
     setError("");
 
-    // Verificar si ya existe para sumar cantidad (opcional, aquí solo agrega)
     const newProduct = {
       productId: String(selectedProduct),
       cantidad: Number(cantidad),

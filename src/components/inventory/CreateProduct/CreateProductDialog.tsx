@@ -56,6 +56,9 @@ const CreateProductDialog = ({
   const [valorUnitarioProduct, setValorUnitarioProduct] = useState<
     number | undefined
   >(undefined);
+  const [stockMinimoProduct, setStockMinimoProduct] = useState<
+    number | undefined
+  >(undefined);
 
   const [inputValue, setInputValue] = useState<string>("");
 
@@ -100,6 +103,7 @@ const CreateProductDialog = ({
       cant_disponible: cantidadDisponibleProduct ?? 0,
       valor_unitario: valorUnitarioProduct ?? 0,
       tipo: (tipoProducto as string) ?? "",
+      stock_minimo: stockMinimoProduct != null ? stockMinimoProduct : null,
     };
 
     const productTypeToSubmit: ICreateTypeProductPayload = {
@@ -145,6 +149,7 @@ const CreateProductDialog = ({
     onClose();
     setTipoProducto("");
     setSuccess(false);
+    setStockMinimoProduct(undefined);
   };
 
   useEffect(() => {
@@ -159,6 +164,9 @@ const CreateProductDialog = ({
       setTipoProducto(productInfo.tipo.id);
       setCantidadDisponibleProduct(productInfo.cant_disponible);
       setValorUnitarioProduct(productInfo.valor_unitario);
+      setStockMinimoProduct(
+        productInfo.stock_minimo != null ? productInfo.stock_minimo : undefined,
+      );
       setInputValue(
         Intl.NumberFormat("es-CL", {
           style: "currency",
@@ -219,6 +227,14 @@ const CreateProductDialog = ({
               onChange={handleChange}
               onBlur={handleBlur}
               value={inputValue}
+            />
+            <CustomInputText
+              title="Alerta mínima de stock"
+              type="number"
+              onChange={(value) =>
+                setStockMinimoProduct(value !== "" ? Number(value) : undefined)
+              }
+              value={stockMinimoProduct}
             />
           </>
         );

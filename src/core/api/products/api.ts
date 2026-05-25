@@ -3,4 +3,5 @@ export const PRODUCTS_API = {
   productsFilter: "api/products/filter",
   types: "api/products/types",
   productsMetrics: "api/products/metrics",
+  lowStock: "api/products/low-stock",
 };
