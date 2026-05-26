@@ -11,6 +11,7 @@ export const PAGE_ROUTES = {
   Revestimiento: "/revestimiento",
   Trabajos: "/trabajos",
   Migraciones: "/migraciones",
+  RestablecerContrasena: "/restablecer-contrasena",
 };
 
 export const topbarOptions = [

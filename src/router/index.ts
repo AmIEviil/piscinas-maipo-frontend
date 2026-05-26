@@ -54,6 +54,12 @@ const LoginView = lazy(() =>
 //   }))
 // );
 
+const ResetPasswordView = lazy(() =>
+  import("../views/reset-password/ResetPasswordView.tsx").then((m) => ({
+    default: m.ResetPasswordView,
+  }))
+);
+
 // Views Privadas
 const InventoryView = lazy(() =>
   import("../views/inventory/InventoryView.tsx").then((module) => ({
@@ -133,6 +139,10 @@ export const router = createBrowserRouter(
         //   { path: PAGE_ROUTES.RegistrarCorreo, Component: SetEmail },
         //   { path: PAGE_ROUTES.Register, Component: RegisterUser },
       ],
+    },
+    {
+      path: PAGE_ROUTES.RestablecerContrasena,
+      Component: ResetPasswordView,
     },
     {
       children: [
