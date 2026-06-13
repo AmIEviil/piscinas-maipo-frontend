@@ -269,7 +269,7 @@ const CreateProductDialog = ({
   };
 
   return (
-    <Modal fullWidth maxWidth="md" centered show={open} onHide={handleClose}>
+    <Modal fullwidth="true" maxwidth="md" centered show={open} onHide={handleClose}>
       <Modal.Header className={style.dialogTitle} closeButton>
         {isEditMode ? "Editar" : "Crear"}{" "}
         {kind === "product" ? "Producto" : "Tipo de Producto"}

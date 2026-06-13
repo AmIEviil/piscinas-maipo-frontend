@@ -6,6 +6,28 @@
         "login": "Login",
         "password": "Password",
         "sign_in": "Sign In"
+      },
+      "forgot_password": {
+        "title": "Reset password",
+        "username_label": "Username",
+        "email_label": "Email address",
+        "submit": "Send",
+        "back_to_login": "Back to login",
+        "success_title": "Email sent",
+        "success_message": "If the username and email are valid, you will receive a reset link shortly.",
+        "error_not_found": "Username or email not found.",
+        "error_blocked": "Account is temporarily blocked.",
+        "error_generic": "An error occurred. Please try again."
+      },
+      "reset_password": {
+        "title": "New password",
+        "new_password_label": "New password",
+        "confirm_password_label": "Confirm password",
+        "submit": "Save",
+        "passwords_mismatch": "Passwords do not match.",
+        "password_requirements": "Min. 8 chars, one uppercase, one lowercase, one number.",
+        "token_invalid": "The link is invalid or has expired.",
+        "success": "Password updated. Logging in..."
       }
     }
   }

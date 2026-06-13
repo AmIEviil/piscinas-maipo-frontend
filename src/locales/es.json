@@ -6,6 +6,28 @@
         "login": "Iniciar sesión",
         "password": "Contraseña",
         "sign_in": "Registrarse"
+      },
+      "forgot_password": {
+        "title": "Restablecer contraseña",
+        "username_label": "Usuario",
+        "email_label": "Correo electrónico",
+        "submit": "Enviar",
+        "back_to_login": "Volver al inicio de sesión",
+        "success_title": "Correo enviado",
+        "success_message": "Si el usuario y correo son válidos, recibirás un enlace para restablecer tu contraseña en los próximos minutos.",
+        "error_not_found": "Usuario o correo incorrecto.",
+        "error_blocked": "Cuenta bloqueada temporalmente.",
+        "error_generic": "Ocurrió un error. Intenta nuevamente."
+      },
+      "reset_password": {
+        "title": "Nueva contraseña",
+        "new_password_label": "Nueva contraseña",
+        "confirm_password_label": "Confirmar contraseña",
+        "submit": "Guardar",
+        "passwords_mismatch": "Las contraseñas no coinciden.",
+        "password_requirements": "Mín. 8 caracteres, una mayúscula, una minúscula y un número.",
+        "token_invalid": "El enlace es inválido o ha expirado.",
+        "success": "Contraseña actualizada. Iniciando sesión..."
       }
     },
     "common": {
