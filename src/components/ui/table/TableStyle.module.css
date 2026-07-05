@@ -71,7 +71,7 @@ td:not(:last-child) {
 
 button {
   background-color: var(--color-secundario);
-  color: var(--color-fondo);
+  color: #ffffff;
   border: none;
   padding: 0.5rem 0.8rem;
   margin-right: 0.5rem;
@@ -82,7 +82,7 @@ button {
 
 tbody tr:hover button {
   background-color: var(--color-primario);
-  color: var(--color-fondo);
+  color: #ffffff;
 }
 
 .noData {

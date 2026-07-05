@@ -19,7 +19,7 @@
   justify-content: space-between;
   position: sticky;
   top: 0;
-  background-color: #fff;
+  background-color: var(--color-fondo);
 }
 .title {
   font-size: 1rem;

@@ -23,6 +23,12 @@
   text-transform: capitalize;
 }
 
+.topBarActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 @media screen and (max-width: 720px) {
   .topBarContainer {
     padding: 0.5rem 0.5rem;

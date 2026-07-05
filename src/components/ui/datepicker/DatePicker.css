@@ -11,7 +11,7 @@
   width: 100%;
   min-width: 200px;
   justify-content: space-between;
-  background-color: white;
+  background-color: var(--color-fondo);
   color: var(--color-primario);
 }
 
@@ -27,14 +27,14 @@
 }
 
 .custom-calendar-wrapper {
-  background-color: white;
+  background-color: var(--color-fondo);
   width: 100%;
   box-shadow: 0px 4px 8px 0px rgba(0, 67, 135, 0.24);
   border-radius: 8px;
 }
 
 .custom-datepicker-header {
-  background-color: white;
+  background-color: var(--color-fondo);
   display: flex;
   flex-direction: row;
   align-items: center;

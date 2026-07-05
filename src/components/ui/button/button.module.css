@@ -84,7 +84,7 @@
   border-radius: var(--Value-Corner-radius-8px, 8px);
   border: 1px solid var(--color-secundario);
   background: var(--background-color-primary);
-  color: var(--color-fondo);
+  color: var(--color-texto);
 }
 
 .btn-secondary:active {

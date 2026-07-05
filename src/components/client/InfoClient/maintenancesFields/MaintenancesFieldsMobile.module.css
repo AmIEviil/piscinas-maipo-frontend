@@ -4,7 +4,7 @@
   align-items: center;
   width: 100%;
   padding: 1rem;
-  background-color: white;
+  background-color: var(--color-fondo);
   border-radius: 12px;
 }
 
@@ -45,7 +45,7 @@
 }
 
 .titleBlue {
-  color: #24588b;
+  color: var(--color-titulo);
   font-size: 14px;
   font-weight: 700;
   padding-top: 0.5rem;

@@ -26,9 +26,9 @@
   flex-direction: column;
   gap: 1rem;
   padding: 1.5rem;
-  background-color: #f9fafb; /* Fondo suave */
+  background-color: var(--color-fondo-suave); /* Fondo suave */
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-detalle-claro);
 }
 
 .sectionTitle {
@@ -103,8 +103,8 @@
 }
 
 .extraItem {
-  background-color: white;
-  border: 1px solid #e5e7eb;
+  background-color: var(--color-fondo);
+  border: 1px solid var(--color-detalle-claro);
   border-radius: 8px;
   padding: 0.75rem 1rem;
   display: flex;

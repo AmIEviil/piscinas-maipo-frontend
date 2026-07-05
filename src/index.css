@@ -5,7 +5,7 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+    color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
 
   font-synthesis: none;
@@ -14,7 +14,17 @@
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
 
-  --background-color-primary: #242424;
+  /* accent + status colors are theme-independent */
+  --blue-600: #73a9dc;
+  --red-500: #df5475;
+  --green-700: #54a036;
+  --yellow-500: #ce9612;
+}
+
+/* Light theme (default) — paleta original */
+:root,
+[data-theme="light"] {
+  --background-color-primary: #242424; /* Lienzo original */
   --color-primario: #1a1a1a; /* Negro profundo */
   --color-secundario: #0289c7; /* Celeste brillante */
   --color-fondo: #ffffff; /* Blanco */
@@ -24,29 +34,61 @@
   --color-gris-oscuro: #2b2b2b; /* Gris muy oscuro */
   --color-fondo-suave: #e9e9e9; /* Blanco grisáceo */
   --color-celeste-oscuro: #1e293b; /* Celeste oscuro */
+  --color-texto: rgba(255, 255, 255, 0.87); /* Texto original */
+  --color-titulo: #24588b; /* Títulos de sección (navy) */
 
-  --blue-600: #73a9dc;
-  --red-500: #df5475;
-  --green-700: #54a036;
-  --yellow-500: #ce9612;
+  color: var(--color-texto);
+  background-color: var(--background-color-primary);
+}
 
-  [data-theme="dark"] {
-    --color-primario: #0289c7; /* Celeste brillante, se mantiene como acento */
-    --color-secundario: #ffffff; /* Blanco para textos principales */
-    --color-fondo: #1a1a1a; /* Negro profundo */
-    --color-sombra: #000000; /* Sombra más fuerte */
-    --color-detalle-claro: #707070; /* Gris medio para bordes y detalles */
-    --color-gris-medio: #b7b7b7; /* Gris claro en modo oscuro */
-    --color-gris-oscuro: #e9e9e9; /* Gris muy claro para contrastar */
-    --color-fondo-suave: #2b2b2b; /* Gris oscuro, secciones secundarias */
-    --color-celeste-oscuro: #1e293b; /* Celeste oscuro */
-  }
+/* Dark theme — paleta refinada */
+[data-theme="dark"] {
+  --background-color-primary: #16181d; /* Lienzo de la página (más oscuro que las cards) */
+  --color-primario: #0289c7; /* Celeste, acento principal (navbar, thead, botón primario) */
+  --color-secundario: #38bdf8; /* Celeste claro, acento de hover/borde/links */
+  --color-fondo: #24272e; /* Superficie de cards (más clara que el fondo) */
+  --color-sombra: #0c0d10; /* Sombra / fondos profundos (menús) */
+  --color-detalle-claro: #393e47; /* Bordes y detalles */
+  --color-gris-medio: #9aa3af; /* Texto secundario */
+  --color-gris-oscuro: #e6e8eb; /* Texto fuerte (celdas) */
+  --color-fondo-suave: #2e323a; /* Superficie elevada / filas alternas / hover */
+  --color-celeste-oscuro: #1e293b; /* Celeste oscuro */
+  --color-texto: rgba(255, 255, 255, 0.9); /* Texto principal */
+  --color-titulo: #5fb4ec; /* Títulos de sección (celeste claro, legible) */
+
+  color: var(--color-texto);
+  background-color: var(--background-color-primary);
+}
+
+/* Estados interactivos refinados solo para modo oscuro
+   (los selectores de elemento de los CSS modules son globales) */
+[data-theme="dark"] tbody tr:hover,
+[data-theme="dark"] tbody tr:nth-child(even):hover,
+[data-theme="dark"] tbody tr:nth-child(odd):hover {
+  background-color: #1f3a4a; /* fila resaltada sólida (celeste apagado) */
+}
+
+[data-theme="dark"] tbody tr:hover td {
+  color: #ffffff;
+}
+
+[data-theme="dark"] tbody tr:hover button {
+  background-color: var(--color-primario);
+  color: #ffffff;
+}
+
+/* Títulos de columnas legibles sobre el header celeste en dark */
+[data-theme="dark"] thead,
+[data-theme="dark"] th {
+  color: #ffffff;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   background: var(--background-color-primary) !important;
+  color: var(--color-texto);
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .custom-scrollbar {
@@ -56,19 +98,19 @@ body {
 
   /* Track */
   &::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--color-fondo-suave);
     border-radius: 8px;
   }
 
   /* Handle */
   &::-webkit-scrollbar-thumb {
     border-radius: 8px;
-    background: #888;
+    background: var(--color-gris-medio);
   }
 
   /* Handle on hover */
   &::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: var(--color-secundario);
   }
 }
 
@@ -92,8 +134,9 @@ button.normal {
   background-color: transparent;
   color: var(--color-secundario);
   padding: 0;
+  border-radius: 8px;
 }
 
 button.normal:hover {
-  background-color: var(--color-sombra);
+  background-color: rgba(127, 127, 127, 0.22);
 }

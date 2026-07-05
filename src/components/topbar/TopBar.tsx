@@ -1,6 +1,7 @@
 import style from "./TopBar.module.css";
 import PiscinasElMaipoIcon from "../ui/Icons/piscinasDelMaipoIcon";
 import CustomDropmenu from "../ui/customdropmenu/NavBarComponent";
+import ThemeToggle from "../ui/ThemeToggle/ThemeToggle";
 
 export const TopBar = () => {
   return (
@@ -13,7 +14,10 @@ export const TopBar = () => {
         />
         <span>Piscinas El Maipo</span>
       </div>
-      <CustomDropmenu />
+      <div className={style.topBarActions}>
+        <ThemeToggle />
+        <CustomDropmenu />
+      </div>
     </div>
   );
 };

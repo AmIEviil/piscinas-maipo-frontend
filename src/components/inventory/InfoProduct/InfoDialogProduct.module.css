@@ -4,13 +4,13 @@
   flex-direction: column;
   gap: 1.5rem;
   padding: 1rem;
-  background-color: white;
+  background-color: var(--color-fondo);
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .historialTitle {
-  color: #24588b;
+  color: var(--color-titulo);
   font-size: 16px;
   font-weight: 700;
 }

@@ -15,8 +15,8 @@
 }
 
 .actionButton {
-  background-color: white;
-  color: black;
+  background-color: var(--color-fondo);
+  color: var(--color-gris-oscuro);
   font-weight: 700;
   padding: 10px;
   border-radius: 16px;
