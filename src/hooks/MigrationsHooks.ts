@@ -30,15 +30,13 @@ export const useGetHistoryMigrations = () => {
   });
 };
 
+// El userId ya no se envía: el backend registra en la auditoría el usuario del
+// token, que no es falsificable desde el cliente.
 export const useExecuteMigration = () => {
   const queryClient = useQueryClient();
-  const userId = useBoundStore((state) => state.userData?.id);
   return useMutation({
     mutationFn: async (migrationName: string) => {
-      const response = await MigrationsService.executeMigration(
-        migrationName,
-        userId!
-      );
+      const response = await MigrationsService.executeMigration(migrationName);
       return response;
     },
     onSuccess: () => {
@@ -49,13 +47,9 @@ export const useExecuteMigration = () => {
 
 export const useRevertMigration = () => {
   const queryClient = useQueryClient();
-  const userId = useBoundStore((state) => state.userData?.id);
   return useMutation({
     mutationFn: async (migrationName: string) => {
-      const response = await MigrationsService.revertMigration(
-        migrationName,
-        userId!
-      );
+      const response = await MigrationsService.revertMigration(migrationName);
       return response;
     },
     onSuccess: () => {

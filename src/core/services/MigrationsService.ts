@@ -67,13 +67,12 @@ export const MigrationsService = {
     }
   },
 
-  executeMigration: async (
-    migrationName: string,
-    userId: string
-  ): Promise<void> => {
+  // El backend toma el actor de la auditoría desde el token, ya no se envía
+  // el userId en la URL.
+  executeMigration: async (migrationName: string): Promise<void> => {
     try {
       const response = await apiClient.post(
-        `api/migrations/execute/${migrationName}/${userId}`
+        `api/migrations/execute/${migrationName}`
       );
       return response.data;
     } catch (error) {
@@ -82,13 +81,10 @@ export const MigrationsService = {
     }
   },
 
-  revertMigration: async (
-    migrationName: string,
-    userId: string
-  ): Promise<void> => {
+  revertMigration: async (migrationName: string): Promise<void> => {
     try {
       const response = await apiClient.post(
-        `api/migrations/revert/${migrationName}/${userId}`
+        `api/migrations/revert/${migrationName}`
       );
       return response.data;
     } catch (error) {

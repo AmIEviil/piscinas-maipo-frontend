@@ -8,7 +8,9 @@ const apiClient = axios.create({
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
+    // "Access-Control-Allow-Origin" es una cabecera de RESPUESTA: enviarla en
+    // la petición no tiene efecto de seguridad y forzaba un preflight extra
+    // en cada llamada.
   },
 });
 

@@ -34,5 +34,6 @@ export interface UpdateUser {
 export interface CreateUserResponse {
   message: string;
   userId: string;
-  activationToken: string;
+  // El backend ya no devuelve el token de activacion: viaja solo por correo al
+  // titular de la cuenta.
 }
