@@ -58,19 +58,12 @@ const BodyLogin = () => {
   const handleRequestReset = async () => {
     setError(null);
     try {
+      // El backend siempre responde igual (no revela si la cuenta existe).
       await requestResetMutation.mutateAsync(forgotFields);
       setStep("forgot-success");
-    } catch (err) {
-      const msg = (
-        err as unknown as { response?: { data?: { message?: string } } }
-      )?.response?.data?.message;
-      if (msg === "user_or_email_not_found") {
-        setError(t("modules.login.forgot_password.error_not_found"));
-      } else if (msg === "user_blocked") {
-        setError(t("modules.login.forgot_password.error_blocked"));
-      } else {
-        setError(t("modules.login.forgot_password.error_generic"));
-      }
+    } catch {
+      // Solo errores reales (red/servidor); mensaje genérico.
+      setError(t("modules.login.forgot_password.error_generic"));
     }
   };
 

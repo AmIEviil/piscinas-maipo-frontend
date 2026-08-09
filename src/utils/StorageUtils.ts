@@ -14,6 +14,7 @@ export class StorageUtils {
       // Clear localStorage items
       const localStorageKeys = [
         "token",
+        "piscinas-store",
         "bound-store",
         "userData",
         "refreshToken",
@@ -53,6 +54,7 @@ export class StorageUtils {
 
       const authKeys = [
         "token",
+        "piscinas-store",
         "bound-store",
         "userData",
         "refreshToken",
@@ -75,7 +77,8 @@ export class StorageUtils {
    */
   static clearBoundStoreState(): void {
     try {
-      // Clear the bound-store from localStorage
+      // Clear the persisted store from localStorage (persist key is "piscinas-store")
+      localStorage.removeItem("piscinas-store");
       localStorage.removeItem("bound-store");
 
       // Note: The bound store state will be automatically reset to initial values
