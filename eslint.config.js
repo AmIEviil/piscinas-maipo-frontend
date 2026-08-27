@@ -23,6 +23,18 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      // Omitir una propiedad destructurandola y quedandose con el resto es el
+      // idioma que usa `partialize` en BoundedStore para no persistir el token.
+      // Sin `ignoreRestSiblings` la variable descartada se reporta como no usada.
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          ignoreRestSiblings: true,
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
 )
