@@ -18,6 +18,7 @@ import { getWindowWidth } from "../../../../utils/WindowUtils";
 import MaintenanceFieldsMobile from "./MaintenancesFieldsMobile";
 import { formatDateToLocalString } from "../../../../utils/DateUtils";
 import Button from "../../../ui/button/Button";
+import { BREAKPOINTS } from "../../../../constant/breakpoints";
 
 interface MaintenanceFieldsProps {
   clientId: string;
@@ -157,11 +158,11 @@ const MaintenanceFields = ({
     <div className={style.container}>
       <h3 className={style.title}>Nueva Mantención</h3>
 
-      {windowWidth > 720 ? (
+      {windowWidth > BREAKPOINTS.tablet ? (
         <div className={style.formGrid}>
           {/* Sección Izquierda: Datos Generales */}
           <div className={style.sectionGeneral}>
-            <div className="flex flex-row gap-4">
+            <div className="flex flex-row flex-wrap gap-4">
               <Calendar
                 title="Fecha de Mantención"
                 className="w-fit!"

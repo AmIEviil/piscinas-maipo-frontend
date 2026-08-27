@@ -12,7 +12,7 @@
 }
 .titleChart {
   font-weight: 700;
-  font-size: 24px;
+  font-size: var(--fs-xl);
 }
 
 .chartsContainer {
@@ -37,19 +37,19 @@
   grid-template-columns: repeat(3, 1fr);
 }
 
-@media screen and (max-width: 1580px) {
+@media screen and (max-width: 1440px) {
   .bodyHomeContainer {
     flex-wrap: wrap;
   }
 }
 
-@media screen and (max-width: 1020px) {
+@media screen and (max-width: 1024px) {
   .resumeMaintenance {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media screen and (max-width: 720px) {
+@media screen and (max-width: 768px) {
   .bodyHomeContainer {
     display: flex;
     flex-wrap: nowrap;
@@ -57,18 +57,25 @@
     width: 100%;
   }
 
-  .chartsContainer,
-  .resumeMaintenance {
-    display: flex;
-    flex-direction: row;
-    max-width: 100%;
-    overflow-x: auto;
-    padding-bottom: 1rem;
-    gap: 2rem;
+  .chartsHomeContainer {
+    width: 100%;
   }
 
+  /*
+   * Una tarjeta por fila. Antes eran un carrusel horizontal: las tarjetas se
+   * comprimian hasta dejar los botones reducidos a un menu de tres puntos y
+   * los numeros del medidor montados entre si, y para ver la cuarta habia que
+   * desplazar de lado. Desplazar hacia abajo es mas simple para el publico de
+   * la aplicacion.
+   */
+  .chartsContainer,
   .resumeMaintenance {
-    gap: 3rem;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    max-width: 100%;
+    overflow-x: visible;
+    gap: var(--sp-4);
+    padding: var(--sp-3);
   }
 }

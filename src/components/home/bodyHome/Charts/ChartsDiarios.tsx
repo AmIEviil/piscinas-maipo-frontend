@@ -3,9 +3,6 @@ import type { IResumeMaintenance } from "../../../../service/maintenance.interfa
 import GaugeChart from "../../../ui/charts/gauge/GaugeChart";
 import style from "./ChartsDiarios.module.css";
 import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
-import CustomDropmenuV2 from "../../../ui/customdropmenu/CustomDropmenuV2";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { useBoundStore } from "../../../../store/BoundedStore";
 
 interface ProductsChart {
@@ -21,7 +18,6 @@ const ChartDiario = ({
 }: ProductsChart) => {
   const noMaintenancesToDo = productData.programadas === 0;
   const navigate = useNavigate();
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const setDayFilter = useBoundStore((state) => state.setDayFilter);
 
   const handleSeeDayDetails = () => {
@@ -29,55 +25,27 @@ const ChartDiario = ({
     navigate("/clientes");
   };
 
-  const options = [
-    {
-      label: "Ir a Clientes",
-      onClick: () => navigate("/clientes"),
-    },
-    {
-      label: "Detalles dia",
-      onClick: () => {
-        handleSeeDayDetails();
-      },
-    },
-  ];
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    // Limpieza al desmontar
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
   return (
     <div className={style.diasChartContainer}>
       {loading && <CircularProgress />}
       {productData && !loading ? (
         <>
-          {windowWidth > 720 ? (
-            <div className={style.actionsContainer}>
-              <button
-                className={style.actionButton}
-                onClick={handleSeeDayDetails}
-              >
-                Detalles dia
-              </button>
-              <button
-                className={style.actionButton}
-                onClick={() => navigate("/clientes")}
-              >
-                Ir a Clientes
-              </button>
-            </div>
-          ) : (
-            <CustomDropmenuV2 options={options} icon={<MoreHorizIcon />} />
-          )}
+          {/*
+            Igual que en BidonesChart: en celular esto era un menu de tres
+            puntos sin etiqueta. Con la tarjeta a ancho completo los dos
+            botones caben en una fila y se leen sin tener que abrirlos.
+          */}
+          <div className={style.actionsContainer}>
+            <button className={style.actionButton} onClick={handleSeeDayDetails}>
+              Detalles dia
+            </button>
+            <button
+              className={style.actionButton}
+              onClick={() => navigate("/clientes")}
+            >
+              Ir a Clientes
+            </button>
+          </div>
           <div className={style.chartContainer}>
             {noMaintenancesToDo ? (
               <span className={style.noMaintenancesToDo}>

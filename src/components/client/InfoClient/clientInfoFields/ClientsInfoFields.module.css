@@ -7,18 +7,39 @@
 }
 
 .inputEditElement {
-  padding: 4px 8px !important;
-  font-size: 14px !important;
+  padding: 0.25rem 0.5rem !important;
+  font-size: var(--fs-base) !important;
   border: 1px solid var(--color-secundario) !important;
   border-radius: 8px !important;
+}
+
+.headerContainer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: 0;
+  font-size: var(--fs-lg);
 }
 
 .titleContainer {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 0.5rem;
-  width: 100%;
+  gap: var(--sp-2);
+  /* Ocupa el ancho disponible pero puede bajar de linea completa: con un
+     flex-basis holgado, cuando el titulo no cabe junto al boton de cerrar es
+     el boton el que envuelve, no el nombre del cliente. */
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.closeContainer {
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 .inputWrapper {
   display: flex;
@@ -28,7 +49,9 @@
 
 .inputContainer {
   transition: visibility 0.3s ease-in-out;
-  gap: 0.5rem;
+  gap: var(--sp-2);
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .customInputContainer {
@@ -42,8 +65,8 @@
 }
 
 .inputField {
-  padding: 8px;
-  font-size: 14px;
+  padding: 0.5rem;
+  font-size: var(--fs-base);
   border: 1px solid var(--color-secundario);
   border-radius: 8px;
 }
@@ -80,10 +103,10 @@
   flex-direction: row;
   align-items: center;
   background-color: var(--color-fondo-suave);
-  margin: 10px;
+  margin: 0.5rem;
   height: fit-content;
-  padding: 8px;
-  border-radius: 16px;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
   width: fit-content;
   gap: 0.5rem;
 }
@@ -92,7 +115,7 @@
   margin-right: 0.5rem;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .labelsContainer {
     grid-auto-flow: row;
     grid-template-columns: 1fr;

@@ -33,7 +33,7 @@
 .actionButton {
   color: var(--gold-500);
   text-align: right;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
   line-height: 22.7px; /* 162.143% */
   letter-spacing: 0.28px;

@@ -12,12 +12,12 @@
 .migration-modal-body {
   display: flex;
   flex-direction: column;
-  font-size: 18px;
+  font-size: var(--fs-md);
   width: 100%;
 }
 
 .text-migration-modal {
-  font-size: 14px;
+  font-size: var(--fs-base);
   display: flex;
   flex-wrap: wrap;
 }

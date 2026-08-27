@@ -52,7 +52,7 @@
 }
 
 /* Ajustes responsivos */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .gridContainer {
     grid-template-columns: 1fr;
   }

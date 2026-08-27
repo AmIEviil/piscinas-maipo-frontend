@@ -97,7 +97,7 @@ const MapFromCoords = ({
               style={{
                 color: "#1976d2",
                 textDecoration: "underline",
-                fontSize: "14px",
+                fontSize: "var(--fs-base)",
                 fontWeight: "500",
               }}
             >

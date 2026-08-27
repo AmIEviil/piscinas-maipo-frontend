@@ -16,6 +16,7 @@ import { useClientResumenMonthStore } from "../../../../store/ClientStore";
 import { useModalStore } from "../../../../store/ModalStore";
 import BodyRepairs from "../../../repairs/BodyRepairs";
 import Button from "../../../ui/button/Button";
+import { BREAKPOINTS } from "../../../../constant/breakpoints";
 
 export interface IClientForm {
   [key: string]: {
@@ -51,7 +52,7 @@ const ClientFields = ({
     (state) => state.openModal,
   );
   const [windowWidth, setWindowWidth] = useState(getWindowWidth());
-  const [showClientInfo, setShowClientInfo] = useState(windowWidth > 720);
+  const [showClientInfo, setShowClientInfo] = useState(windowWidth > BREAKPOINTS.tablet);
   const [editTitle, setEditTitle] = useState(false);
   const [addingFields, setAddingFields] = useState(false);
   const [addingField, setAddingField] = useState<{
@@ -188,7 +189,11 @@ const ClientFields = ({
 
   return (
     <div className={style.clientInfoContainer}>
-      <div style={{ padding: 0 }} className="flex flex-row gap-2 text-xl">
+      {/* Cabecera de la ficha: el nombre y la direccion del cliente pueden ser
+          largos, asi que el bloque envuelve y el boton de cerrar baja de linea
+          en vez de robarle ancho al titulo. Antes, en celular con letra grande,
+          el nombre quedaba partido en una palabra por linea. */}
+      <div className={style.headerContainer}>
         <div className={style.titleContainer}>
           <div
             className="gap-4 flex"
@@ -222,7 +227,7 @@ const ClientFields = ({
             {editTitle ? <CheckIcon /> : <PencilIcon />}
           </button>
         </div>
-        <div>
+        <div className={style.closeContainer}>
           <Button
             label="Cerrar"
             variant="tertiary"
@@ -235,11 +240,11 @@ const ClientFields = ({
       <div
         className="flex flex-row items-center text-center align-middle w-full gap-2 cursor-pointer"
         onClick={() =>
-          windowWidth < 720 ? setShowClientInfo(!showClientInfo) : null
+          windowWidth < BREAKPOINTS.tablet ? setShowClientInfo(!showClientInfo) : null
         }
       >
         <span className="font-medium ">Info Cliente</span>
-        {windowWidth < 720 && (
+        {windowWidth < BREAKPOINTS.tablet && (
           <span className="cursor-pointer">
             <CaretIcon direction="down" />
           </span>
@@ -332,7 +337,7 @@ const ClientFields = ({
               )}
             </div>
             <div className="flex flex-col justify-between flex-1">
-              {windowWidth > 720 && (
+              {windowWidth > BREAKPOINTS.tablet && (
                 <div>
                   {hasMaintenances && (
                     <button className="secondary" onClick={setModalVisible}>
@@ -347,7 +352,7 @@ const ClientFields = ({
             </div>
           </>
         )}
-        {windowWidth > 990 && (
+        {windowWidth > BREAKPOINTS.laptop && (
           <div>
             <GoogleMapFromAddress
               lat={coordenadas?.lat ?? 0}

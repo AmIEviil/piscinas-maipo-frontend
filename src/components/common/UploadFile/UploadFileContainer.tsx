@@ -150,7 +150,7 @@ const UploadFileContainer = ({
                 <div style={{ display: "flex", flexDirection: "column" }}>
                   <span
                     style={{
-                      fontSize: "14px",
+                      fontSize: "var(--fs-base)",
                       fontWeight: 500,
                       whiteSpace: "nowrap",
                       overflow: "hidden",
@@ -160,7 +160,7 @@ const UploadFileContainer = ({
                   >
                     {file.name}
                   </span>
-                  <span style={{ fontSize: "11px", color: "#999" }}>
+                  <span style={{ fontSize: "var(--fs-sm)", color: "var(--color-texto-secundario)" }}>
                     {(file.size / 1024).toFixed(1)} KB
                   </span>
                 </div>

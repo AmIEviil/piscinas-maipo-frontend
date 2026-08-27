@@ -1,32 +1,36 @@
 .filtersContainer {
   display: flex;
   justify-content: space-between;
-  gap: 1.5rem;
-  padding: 1rem;
+  gap: var(--sp-5);
+  padding: var(--sp-4);
   background-color: var(--color-fondo-suave);
-  border-radius: 16px;
-  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--sp-4);
   flex-wrap: wrap;
-  align-items: center;
+  align-items: end;
 }
 
 .filtersContainer .filters {
   display: flex;
   flex-direction: row;
-  align-items: center;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-3);
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .filtersContainer p {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
   color: var(--color-gris-oscuro);
   font-weight: 500;
 }
 
 .filtersContainer input,
 .filtersContainer select {
-  min-width: 150px;
+  min-width: 10rem;
+  min-height: var(--tap-min);
 }
 
 .filtersContainer input:focus,
@@ -37,35 +41,74 @@
 .actionsFilters {
   display: flex;
   flex-direction: row;
-  margin-left: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
 }
 
-@media screen and (max-width: 1280px) {
+.actionsFilters button,
+.actionButton {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+}
+
+/* El boton de filtros solo existe en celular. */
+.toggleFiltersButton {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: var(--sp-2) var(--sp-3);
+  border: 2px solid var(--color-secundario);
+  border-radius: var(--radius-md);
+  background-color: var(--color-fondo);
+  color: var(--color-primario);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 1024px) {
   .filtersContainer {
-    gap: 0.5rem;
-    padding: 0.5rem;
-    justify-content: center;
-    /* background-color: var(--color-fondo); */
-    border-radius: 16px;
-    margin-bottom: 0.5rem;
-    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3);
+    margin-bottom: var(--sp-3);
     width: 100%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .filtersContainer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-2);
+  }
+
+  .toggleFiltersButton {
+    display: inline-flex;
   }
 
   .filtersContainer .filters {
-    display: flex;
-    flex-direction: row;
-    gap: 0rem;
-  }
-  .actionsFilters {
-    justify-content: space-between;
-    align-items: center;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .filtersContainer {
-    flex-wrap: nowrap;
+    display: none;
     flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .filtersContainer .filtersOpen {
+    display: flex;
+  }
+
+  .filtersContainer input,
+  .filtersContainer select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .actionsFilters {
+    justify-content: flex-end;
+    width: 100%;
   }
 }

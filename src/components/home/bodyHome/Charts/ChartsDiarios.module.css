@@ -21,19 +21,20 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2rem;
-  padding: 10px;
+  gap: var(--sp-6);
+  padding: var(--sp-2);
 }
 
 .actionButton {
   background-color: white;
   color: black;
   font-weight: 700;
-  padding: 10px;
-  border-radius: 16px;
+  padding: var(--sp-2) var(--sp-3);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-md);
   border: 2px solid var(--color-secundario);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--fs-base);
   transition: all 0.2s ease-in-out;
 }
 
@@ -47,8 +48,11 @@
   outline: none;
 }
 
-@media screen and (max-width: 720px) {
+@media screen and (max-width: 768px) {
   .diasChartContainer {
+    /* Ancho completo de la columna, no fit-content: dentro de una sola
+       columna la tarjeta debe ocupar la pantalla. */
+    width: 100%;
     flex-direction: column;
     align-items: center;
     height: fit-content;
@@ -57,6 +61,14 @@
 
   .actionsContainer {
     flex-direction: row;
-    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    gap: var(--sp-2);
+    padding: var(--sp-2);
+  }
+
+  .actionButton {
+    flex: 1 1 8rem;
   }
 }

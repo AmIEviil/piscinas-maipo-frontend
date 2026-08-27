@@ -130,7 +130,7 @@ const ClientFieldRenderer = ({
             <span className="text-xs text-red-400 font-semibold uppercase mb-1">
               {getLabel(fieldKey)} (Desconocido)
             </span>
-            <span className="text-sm text-gray-400">
+            <span className="text-sm text-gray-600">
               {String(fieldData.value)}
             </span>
           </div>

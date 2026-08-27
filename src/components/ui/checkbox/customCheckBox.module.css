@@ -1,10 +1,15 @@
 .container {
-  display: block;
   position: relative;
-  padding-left: 35px;
-  margin-bottom: 12px;
+  /* En em: la caja y el texto de la etiqueta crecen juntos con el control de
+     tamano de letra. Con la caja fija en 24px, a partir del tercer nivel el
+     texto la superaba y el conjunto quedaba descuadrado. */
+  padding-left: 1.75em;
+  margin-bottom: 0.6em;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
   cursor: pointer;
-  font-size: 22px;
+  font-size: var(--fs-lg);
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -23,13 +28,14 @@
 /* Create a custom checkbox */
 .checkmark {
   position: absolute;
-  top: 0;
   left: 0;
-  height: 24px;
-  width: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1.2em;
+  width: 1.2em;
   background-color: white;
   border: 2px solid #131313;
-  border-radius: 4px;
+  border-radius: 0.2em;
 }
 
 /* On mouse-over, add a grey background color */
@@ -57,12 +63,12 @@
 
 /* Style the checkmark/indicator */
 .container .checkmark:after {
-  left: 9px;
-  top: 5px;
-  width: 5px;
-  height: 10px;
+  left: 0.42em;
+  top: 0.2em;
+  width: 0.25em;
+  height: 0.5em;
   border: solid white;
-  border-width: 0 3px 3px 0;
+  border-width: 0 0.15em 0.15em 0;
   -webkit-transform: rotate(45deg);
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);

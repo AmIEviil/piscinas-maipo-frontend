@@ -25,12 +25,12 @@
   margin-bottom: 10px;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1024px) {
   .bodyLogin {
     padding: 0px;
   }
   .errorMessage {
-    font-size: 14px;
+    font-size: var(--fs-base);
     margin-bottom: 0;
   }
   .bodyContent {

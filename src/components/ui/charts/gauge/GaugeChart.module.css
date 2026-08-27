@@ -1,6 +1,11 @@
 .gaugeContainer {
   height: fit-content;
-  width: fit-content;
+  /* El medidor mide 200px fijos y sus etiquetas van posicionadas sobre el.
+     Con width:fit-content dentro de un contenedor que se encoge, el SVG se
+     comprimia y los valores minimo, actual y maximo se montaban unos sobre
+     otros. */
+  width: 12.5rem;
+  min-width: 12.5rem;
 }
 .titleGaugeContainer {
   display: flex;

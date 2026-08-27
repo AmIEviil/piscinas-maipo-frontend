@@ -6,10 +6,11 @@
 .btn-tool,
 .btn-tool-no-stroke {
   display: inline-flex;
-  padding: 7px 16px;
+  padding: var(--sp-2) var(--sp-4);
+  min-height: var(--tap-min);
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
   border-radius: var(--Value-Corner-radius-8px, 8px);
   font-weight: 700;
   font-family: "Calibri", sans-serif;
@@ -203,7 +204,7 @@
 }
 
 .Linkbutton {
-  font-size: 14px;
+  font-size: var(--fs-base);
   text-decoration: underline;
   color: var(--primary-gold-300-cta);
 }

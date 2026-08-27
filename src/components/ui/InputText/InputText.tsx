@@ -39,7 +39,12 @@ const InputText = ({
   }, [value]);
 
   return (
-    <div>
+    // El dimensionado va en una clase y no en un estilo en linea porque
+    // depende del eje del contenedor: en escritorio la barra de filtros es una
+    // fila y el campo debe crecer a lo ancho, mientras que en celular es una
+    // columna, donde un flex-basis se interpreta como alto y dejaba un hueco
+    // vacio debajo del campo. Ver .input-text-block en styles/responsive.css.
+    <div className="input-text-block">
       <TextField
         label={title}
         value={internalValue}
@@ -47,6 +52,7 @@ const InputText = ({
         placeholder={placeholder}
         disabled={disabled}
         sx={{
+          width: "100%",
           "& .MuiOutlinedInput-input": {
             padding: "0.5rem",
           },

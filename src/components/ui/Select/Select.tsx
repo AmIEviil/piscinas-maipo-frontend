@@ -49,7 +49,9 @@ const CustomSelect = ({
           {title} {required && <span className="required">*</span>}
         </label>
       )}
-      <FormControl sx={{ m: 0.5, minWidth: 150, width: "100%" }}>
+      {/* minWidth en rem y no en px: con 150px fijos la etiqueta "Buscar por
+          Comuna" quedaba cortada apenas se subia el tamano de letra. */}
+      <FormControl sx={{ m: 0.5, minWidth: "12rem", width: "100%" }}>
         <InputLabel
           className={`${style.customInputLabel} ${icon ? style.withIcon : ""}`}
           id="demo-simple-select"

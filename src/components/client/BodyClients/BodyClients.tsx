@@ -45,6 +45,7 @@ import {
   type FilterItem,
 } from "../../common/FiltersContainer/FiltersContainer";
 import type { FilterValue } from "../../../service/employee.interface";
+import { BREAKPOINTS } from "../../../constant/breakpoints";
 
 interface IfilterQuery {
   nombre?: string;
@@ -463,10 +464,10 @@ const BodyClients = () => {
 
   return (
     <div className="pt-4 ">
-      <div className={style.filtersContainer}>
+      <div className={style.filtersWrapper}>
         <FiltersContainer filters={filters} actionButtons={actionsButtons} />
       </div>
-      {windowWidth < 600 && selectedClients.length > 0 && (
+      {windowWidth < BREAKPOINTS.tablet && selectedClients.length > 0 && (
         <div className="flex flex-row w-full items-center justify-center pt-4">
           <button
             onClick={() => handleSeeMultiSelectClients(currentClientIndex)}
@@ -510,7 +511,7 @@ const BodyClients = () => {
               <td>{client.dia_mantencion}</td>
               <td>{client.ruta}</td>
               <td>{formatMoneyNumber(client.valor_mantencion)}</td>
-              <td className="flex flex-col gap-2 sm:gap-4 items-center justify-center">
+              <td className="flex flex-row flex-wrap gap-2 items-center justify-center">
                 <Tooltip title="Ver detalles Cliente" arrow leaveDelay={0}>
                   <button
                     className="actions"

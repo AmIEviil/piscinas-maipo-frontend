@@ -11,6 +11,6 @@
 
 .historialTitle {
   color: #24588b;
-  font-size: 16px;
+  font-size: var(--fs-base);
   font-weight: 700;
 }

@@ -1,0 +1,198 @@
+/*
+ * Reglas responsive transversales.
+ *
+ * Viven aca, y no repetidas en cada componente, porque la aplicacion abre sus
+ * formularios en mas de doce modales distintos (react-bootstrap y MUI) y todos
+ * necesitan el mismo comportamiento en celular.
+ */
+
+/*
+ * Nada debe provocar scroll horizontal del documento.
+ *
+ * Los <svg> quedan FUERA de esta regla a proposito. Casi todos son iconos de
+ * tamano fijo dentro de celdas o botones estrechos, y con max-width:100% mas
+ * height:auto se encogian hasta el ancho disponible: un icono de 24px acababa
+ * midiendo 6px dentro de la columna de acciones.
+ */
+img,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/*
+ * Iconos de accion de las tablas (ver, editar, eliminar, ordenar).
+ *
+ * Los iconos propios del proyecto llevan width y height fijos en el SVG, asi
+ * que no crecian con el control de tamano de letra: con el texto en 24px los
+ * lapices y papeleras de 24px se veian diminutos al lado del dato. En em
+ * acompanan a la letra. Los de MUI ya se dimensionan en em y quedan fuera.
+ */
+td button > svg:not(.MuiSvgIcon-root),
+th button > svg:not(.MuiSvgIcon-root) {
+  width: 1.5em;
+  height: 1.5em;
+}
+
+/* Areas tactiles: por debajo de 44px un adulto mayor falla el toque. */
+button,
+.btn,
+[role="button"],
+a.btn {
+  min-height: var(--tap-min);
+}
+
+/* Los iconos-boton no deben estirarse a lo ancho por el min-height. */
+.MuiIconButton-root {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+}
+
+.MuiInputBase-root,
+.MuiOutlinedInput-root,
+.MuiSelect-select,
+.form-control,
+.form-select {
+  min-height: var(--tap-min);
+  font-size: var(--fs-base);
+}
+
+.MuiFormLabel-root,
+.MuiInputLabel-root,
+.MuiMenuItem-root,
+.MuiTypography-body1,
+.MuiTypography-body2,
+.MuiButton-root,
+.MuiTab-root {
+  font-size: var(--fs-base);
+}
+
+/* --- Modales a pantalla completa en celular --------------------------------
+ *
+ * Un formulario de doce campos dentro de un modal centrado de 300px de alto
+ * deja ver dos campos a la vez. A pantalla completa se aprovecha el alto real
+ * del telefono y el contenido hace su propio scroll.
+ */
+@media screen and (max-width: 768px) {
+  /* react-bootstrap */
+  .modal-dialog {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    margin: 0 !important;
+  }
+
+  .modal-content {
+    height: 100%;
+    border-radius: 0;
+    border: none;
+  }
+
+  /* Varios modales limitan su cuerpo a 80dvh con utilidades de Tailwind. A
+     pantalla completa esa cota deja una franja muerta abajo. */
+  .modal-body {
+    overflow-y: auto;
+    padding: var(--sp-3);
+    max-height: none;
+  }
+
+  .modal-header,
+  .modal-footer {
+    padding: var(--sp-3);
+    flex-shrink: 0;
+  }
+
+  /* Los botones del pie apilados y a ancho completo: en una barra horizontal
+     quedan demasiado angostos para acertarles. */
+  .modal-footer > * {
+    flex: 1 1 100%;
+    margin: 0 0 var(--sp-2) 0;
+  }
+
+  /* MUI */
+  .MuiDialog-paper {
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* --- Campo de texto --------------------------------------------------------
+ *
+ * En escritorio la barra de filtros es una fila: el campo crece con el espacio
+ * libre y nunca baja de 12rem, para quedar del mismo ancho que los selects
+ * vecinos aunque se suba el tamano de letra.
+ */
+.input-text-block {
+  flex: 1 1 12rem;
+  min-width: 12rem;
+}
+
+@media screen and (max-width: 768px) {
+  /* En celular la barra se apila en columna, y ahi un flex-basis de 12rem se
+     interpreta como ALTO: el campo quedaba con un hueco vacio debajo. */
+  .input-text-block {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* --- Formularios ---------------------------------------------------------- */
+
+/* Rejilla comun de formularios: tres columnas en escritorio, dos en tablet y
+   una en celular. */
+.form-grid-responsive {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--sp-4);
+  align-items: end;
+}
+
+@media screen and (max-width: 768px) {
+  .form-grid-responsive {
+    grid-template-columns: 1fr;
+    gap: var(--sp-3);
+  }
+}
+
+/* --- Texto secundario ------------------------------------------------------
+ *
+ * #b7b7b7 sobre blanco da 1.9:1 y no cumple el minimo de 4.5:1. Se conserva
+ * como color de borde, pero el texto usa --color-texto-secundario.
+ */
+.text-secondary,
+.MuiFormHelperText-root {
+  color: var(--color-texto-secundario) !important;
+}
+
+/* --- Ancho de los modales en escritorio ------------------------------------
+ *
+ * Bootstrap fija el ancho maximo de sus modales en px (500, 800, 1140). Al
+ * subir el tamano de letra el contenido crece pero la caja no, y los
+ * formularios de cliente o mantencion quedaban apretados dentro del mismo
+ * ancho. En rem la caja acompana al texto, y el min() evita que se salga de
+ * pantalla en monitores angostos.
+ */
+@media screen and (min-width: 769px) {
+  .modal-dialog {
+    max-width: min(92vw, 40rem);
+  }
+
+  .modal-dialog.modal-sm {
+    max-width: min(92vw, 22rem);
+  }
+
+  .modal-dialog.modal-lg {
+    max-width: min(94vw, 56rem);
+  }
+
+  .modal-dialog.modal-xl {
+    max-width: min(96vw, 76rem);
+  }
+}

@@ -37,7 +37,7 @@
 .collapsableTable_headerText {
   display: flex;
   gap: 0.5rem;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
 }
 
@@ -84,7 +84,7 @@
   gap: 8px;
   align-self: stretch;
   border: 1px solid var(--black-300);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 400;
 }
 .collapsableTable_bodyCell:last-child {
@@ -101,7 +101,7 @@
 
 .noApplyField {
   text-overflow: ellipsis;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   line-height: 19.4px;
   letter-spacing: 0.24px;
@@ -132,4 +132,110 @@ tr:hover .collapsableTable_checkbox {
 
 tr:hover .collapsableTable_checkbox {
   color: white;
+}
+
+/*
+ * Vista de tarjetas en celular.
+ *
+ * La tabla de clientes tiene diez columnas: en 375px es ilegible sin
+ * desplazamiento horizontal. Cada fila pasa a tarjeta con el titulo de la
+ * columna al lado del dato (data-label lo inyecta CollapsableTable.tsx).
+ * Las filas de grupo se conservan como separador, que es lo que ordena el
+ * listado por dia o por ruta.
+ */
+@media screen and (max-width: 768px) {
+  .collapsableTable_container {
+    max-height: none;
+    overflow: visible;
+    border-radius: 0;
+  }
+
+  .collapsableTable_element {
+    display: block;
+    border: none;
+    background-color: transparent;
+  }
+
+  .collapsableTable_element tbody {
+    display: block;
+  }
+
+  /* Cabecera oculta visualmente, presente para lectores de pantalla. */
+  .collapsableTable_header {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .collapsableTable_groupRow {
+    display: block;
+    margin: var(--sp-4) 0 var(--sp-2);
+  }
+
+  .collapsableTable_groupCell {
+    display: block;
+    padding: var(--sp-2) var(--sp-3);
+    background-color: var(--color-fondo-suave);
+    border-radius: var(--radius-md);
+    border-bottom: none;
+  }
+
+  .collapsableTable_groupContentContainer {
+    height: auto;
+    min-height: var(--tap-min);
+  }
+
+  .collapsableTable_element tbody tr:not(.collapsableTable_groupRow) {
+    display: block;
+    background-color: var(--color-fondo);
+    border: 2px solid var(--color-fondo-suave);
+    border-radius: var(--radius-md);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    margin-bottom: var(--sp-3);
+    padding: var(--sp-2) 0;
+  }
+
+  .collapsableTable_element tbody tr:not(.collapsableTable_groupRow) > td {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-2);
+    height: auto;
+    min-height: var(--tap-min);
+    padding: var(--sp-2) var(--sp-3);
+    border: none;
+    border-bottom: 1px solid var(--color-fondo-suave);
+    text-align: right;
+  }
+
+  .collapsableTable_element tbody tr:not(.collapsableTable_groupRow) > td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--color-primario);
+    text-align: left;
+  }
+
+  /* Celdas sin titulo, como la del checkbox o la de acciones. */
+  .collapsableTable_element
+    tbody
+    tr:not(.collapsableTable_groupRow)
+    > td:not([data-label])::before {
+    content: none;
+  }
+
+  .collapsableTable_element
+    tbody
+    tr:not(.collapsableTable_groupRow)
+    > td:last-child {
+    border-bottom: none;
+    justify-content: flex-end;
+  }
+
+  .collapsableTable_bodyCell {
+    height: auto;
+  }
 }

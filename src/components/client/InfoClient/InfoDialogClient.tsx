@@ -44,6 +44,7 @@ import ResumeMaintenance from "./resumeMaintenances/ResumeMaintenance";
 import { useModalStore } from "../../../store/ModalStore";
 import FieldGroup from "../../ui/labelField/FieldGroup";
 import { usePermits } from "../../../utils/roleUtils";
+import { BREAKPOINTS } from "../../../constant/breakpoints";
 
 interface InfoClientDialogProps {
   open: boolean;
@@ -98,7 +99,7 @@ const InfoClientDialog = ({
 
   const [isAddingMaintenance, setIsAddingMaintenance] = useState(false);
   const [windowWidth, setWindowWidth] = useState(getWindowWidth());
-  const [showMaintenances, setShowMaintenances] = useState(windowWidth > 720);
+  const [showMaintenances, setShowMaintenances] = useState(windowWidth > BREAKPOINTS.tablet);
   const { products, fetchProducts } = useProductStore();
 
   const [months, setMonths] = useState<string[]>([]);

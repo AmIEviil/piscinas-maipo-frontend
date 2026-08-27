@@ -1,0 +1,6 @@
+/* BodyEmployees referencia .iconAction, que hasta ahora no existia: el archivo
+   estaba vacio y los iconos de accion salian con el tamano por defecto. */
+.iconAction {
+  width: 1.25rem;
+  height: 1.25rem;
+}

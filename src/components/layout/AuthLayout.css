@@ -1,15 +1,23 @@
-.mainLayoutContainer {
-  /* background: var(--color-fondo); */
-  padding: 16px;
+/*
+ * Este archivo definia .mainLayoutContainer y .main-content, que son las
+ * clases de MainLayout.css y no las que usa AuthLayout.tsx
+ * (.authLayoutContainer y .auth-content). Resultado: no estilaba el login y,
+ * al ser CSS global, competia con el layout principal por las mismas reglas,
+ * incluido un margin-top de 60px y un height de 90dvh que ya no corresponden.
+ */
+
+.authLayoutContainer {
+  display: flex;
   flex: 1;
-  margin: 0 auto;
+  width: 100%;
+  min-height: 100dvh;
 }
 
-.main-content {
-  /* background: var(--color-fondo); */
-  padding: 16px;
+.auth-content {
+  display: flex;
   flex: 1;
-  margin: 0 auto;
-  margin-top: 60px;
-  height: 90dvh;
+  width: 100%;
+  /* min-height y no height: con letra grande el formulario de acceso supera
+     el alto de la ventana y debe poder desplazarse. */
+  min-height: 100dvh;
 }

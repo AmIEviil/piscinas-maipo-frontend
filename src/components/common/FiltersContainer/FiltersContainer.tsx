@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import React from "react";
+import React, { useState } from "react";
 import style from "./FitlersContainer.module.css";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import InputText from "../../ui/InputText/InputText";
 import CustomSelect, { type IOptionsSelect } from "../../ui/Select/Select";
 import Tooltip from "@mui/material/Tooltip";
@@ -31,9 +33,29 @@ export const FiltersContainer: React.FC<FiltersContainerProps> = ({
   filters,
   actionButtons = [],
 }) => {
+  /**
+   * En celular los filtros ocupan casi toda la pantalla y empujan la tabla
+   * fuera de vista. Se colapsan detras de un boton, que solo aparece por
+   * debajo de 768px; en tablet y escritorio los filtros siguen siempre
+   * visibles y este estado no se usa.
+   */
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
   return (
     <div className={style.filtersContainer}>
-      <div className={style.filters}>
+      <button
+        type="button"
+        className={style.toggleFiltersButton}
+        onClick={() => setFiltersOpen((open) => !open)}
+        aria-expanded={filtersOpen}
+      >
+        {filtersOpen ? <ExpandLessIcon /> : <FilterListIcon />}
+        {filtersOpen ? "Ocultar filtros" : "Mostrar filtros"}
+      </button>
+
+      <div
+        className={`${style.filters} ${filtersOpen ? style.filtersOpen : ""}`}
+      >
         {filters.map((filter, index) => {
           switch (filter.type) {
             case "text":

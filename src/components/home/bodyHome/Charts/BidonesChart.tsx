@@ -4,9 +4,6 @@ import { type IMetricsProduct } from "../../../../service/products.interface";
 import { CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useSolicitudProductosStore } from "../../../../store/SolicitudProductosStore";
-import CustomDropmenuV2 from "../../../ui/customdropmenu/CustomDropmenuV2";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import { useEffect, useState } from "react";
 
 interface ProductsChart {
   showPercentage?: boolean;
@@ -22,57 +19,35 @@ const BidonesChart = ({
   const navigate = useNavigate();
 
   const { openModal, setTypeProduct } = useSolicitudProductosStore();
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   const handleOpenModal = () => {
     setTypeProduct(productData.tipo);
     openModal();
   };
 
-  const options = [
-    {
-      label: "Ir a Inventario",
-      onClick: () => navigate("/inventario"),
-    },
-    {
-      label: "Solicitar Productos",
-      onClick: handleOpenModal,
-    },
-  ];
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    // Limpieza al desmontar
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
   return (
     <div className={style.bidonesChartContainer}>
       {loading && <CircularProgress />}
       {productData && !loading ? (
         <>
-          {windowWidth > 720 ? (
-            <div className={style.actionsContainer}>
-              <button
-                className={style.actionButton}
-                onClick={() => navigate("/inventario")}
-              >
-                Ir a Inventario
-              </button>
-              <button className={style.actionButton} onClick={handleOpenModal}>
-                Solicitar Productos
-              </button>
-            </div>
-          ) : (
-            <CustomDropmenuV2 options={options} icon={<MoreHorizIcon />} />
-          )}
+          {/*
+            En celular esto era un menu de tres puntos sin etiqueta. Ahora que
+            la tarjeta ocupa el ancho completo de la pantalla los dos botones
+            caben en una fila, y una accion con su nombre a la vista es mucho
+            mas facil de usar que un icono que hay que descubrir. El cambio de
+            columna a fila lo hace el CSS, sin depender de window.innerWidth.
+          */}
+          <div className={style.actionsContainer}>
+            <button
+              className={style.actionButton}
+              onClick={() => navigate("/inventario")}
+            >
+              Ir a Inventario
+            </button>
+            <button className={style.actionButton} onClick={handleOpenModal}>
+              Solicitar Productos
+            </button>
+          </div>
           <div>
             <GaugeChart
               minValue={0}

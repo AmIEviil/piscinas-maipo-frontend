@@ -21,7 +21,7 @@
 }
 .revisionTabsHeader {
   display: flex;
-  gap: 12px;
+  gap: var(--sp-3);
   justify-content: center;
   align-items: center;
   width: 100%;
@@ -30,13 +30,16 @@
 
 .revisionTabButton {
   display: flex;
-  width: 83px;
-  height: 24px;
-  padding-bottom: 1px;
+  /* Antes 83x24px fijos: con letra grande el nombre de la revision se salia
+     del boton y el alto quedaba por debajo del minimo tactil. */
+  min-width: 5rem;
+  min-height: var(--tap-min);
+  padding: var(--sp-1) var(--sp-2);
   flex-direction: column;
   justify-content: center;
   align-items: center;
   border-radius: 0;
+  white-space: nowrap;
 }
 
 .revisionTabButton.active {
@@ -46,7 +49,7 @@
 
 .titleBlue {
   color: #24588b;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
   padding-top: 0.5rem;
 }

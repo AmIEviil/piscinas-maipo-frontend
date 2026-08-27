@@ -9,7 +9,7 @@
 
 .input-title {
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--color-primario);
 }
 
@@ -46,7 +46,7 @@
   width: 100%;
   padding: 10px 12px;
   padding-left: 38px; /* espacio para el icono */
-  font-size: 14px;
+  font-size: var(--fs-base);
   border: 1px solid var(--color-detalle-claro);
   border-radius: 16px;
   background-color: var(--color-fondo-suave);
