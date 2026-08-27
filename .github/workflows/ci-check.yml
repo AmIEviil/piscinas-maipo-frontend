@@ -1,11 +1,21 @@
 name: CI Check (Quality Control)
 
-# Se ejecuta en pushes a 'dev' y en Pull Requests hacia 'main'
+# Corre en toda rama menos main, y en los Pull Requests hacia main y hacia dev.
+#
+# Antes solo cubria los pushes a 'dev' y los PR hacia 'main': una rama de
+# trabajo podia acumular commits sin que se validara nada, y como el flujo de
+# este repositorio integra en 'dev', el PR de una rama de feature tampoco
+# disparaba el check. Se alinea con el ci-check.yml del backend.
+#
+# 'main' se excluye del push a proposito: ahi ya corre deploy.yml, y validar
+# despues de desplegar no sirve de nada.
 on:
   push:
-    branches: ["dev"]
+    branches-ignore: ["main"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "dev"]
+  # Permite lanzarlo a mano desde la pestana Actions sobre cualquier rama.
+  workflow_dispatch:
 
 jobs:
   validate:
