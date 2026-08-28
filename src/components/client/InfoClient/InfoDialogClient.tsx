@@ -22,7 +22,7 @@ import {
   formatDateToDDMMYYYY,
   formatMonthTitle,
 } from "../../../utils/DateUtils";
-import ClientFields from "./clientInfoFields/ClientInfoFields";
+import ClientProfilePanel from "./profile/ClientProfilePanel";
 import { Modal } from "react-bootstrap";
 import Button from "../../ui/button/Button";
 import {
@@ -111,10 +111,6 @@ const InfoClientDialog = ({
   const abrirBoleta = useClientResumenMonthStore((state) => state.openModal);
   const setOpenModal = useModalStore((state) => state.openModal);
   const handleCloseModal = useModalStore((state) => state.closeModal);
-
-  const [coordenadas, setCoordenadas] = useState<
-    { lat: number; lng: number } | undefined
-  >(undefined);
 
   const [windowWidth, setWindowWidth] = useState(getWindowWidth());
   const [showMaintenances, setShowMaintenances] = useState(windowWidth > BREAKPOINTS.tablet);
@@ -262,36 +258,6 @@ const InfoClientDialog = ({
     };
   }, []);
 
-  useEffect(() => {
-    if (!clientInfo?.direccion || !clientInfo?.comuna) return;
-
-    const direccion = `${clientInfo.direccion.value}, ${clientInfo.comuna.value}, Chile`;
-
-    const getCoordsFromAddress = async (address: string) => {
-      try {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-            address,
-          )}&format=json`,
-        );
-        const data = await response.json();
-        if (!data[0]) {
-          setCoordenadas(undefined);
-          return;
-        }
-
-        setCoordenadas({
-          lat: Number.parseFloat(data[0].lat),
-          lng: Number.parseFloat(data[0].lon),
-        });
-      } catch (error) {
-        console.error("Error al obtener coordenadas:", error);
-      }
-    };
-
-    getCoordsFromAddress(direccion);
-  }, [clientInfo]);
-
   const handleClose = () => {
     // Si el dialogo entero se cierra a mitad del encadenado (dentro de la
     // ventana de 260-460ms entre guardar la mantencion y que la hoja de pago
@@ -300,7 +266,6 @@ const InfoClientDialog = ({
     // puente) sobre el modal ya cerrado o reabierto con otro cliente.
     limpiarTimersEncadenado();
     setPuenteVeloVisible(false);
-    setCoordenadas(undefined);
     setHojaMantencionAbierta(false);
     setMaintenanceToEdit(null);
     setHojaPagoAbierta(false);
@@ -818,15 +783,11 @@ const InfoClientDialog = ({
             aria-labelledby="pestana-ficha"
           >
             {clientInfo && (
-              <ClientFields
-                key={currentIndex}
+              <ClientProfilePanel
                 clientInfo={clientInfo}
-                coordenadas={coordenadas}
-                hasMaintenances={mantencionesDelMes.length > 0}
-                onClose={handleClose}
-                onUpdate={() => {
-                  if (onClientUpdated) onClientUpdated();
-                }}
+                puedeEditar={isSuperAdmin}
+                onVerReparaciones={abrirReparaciones}
+                onActualizado={() => onClientUpdated?.()}
               />
             )}
           </div>
