@@ -30,8 +30,8 @@ import type { IComprobantePago } from "../../../service/ComprobantePagos.interfa
 import ComprobantesContainer from "./comprobantesContainer/ComprobantesContainer";
 import LoadingSpinner from "../../ui/loading/Loading";
 import { useClientResumenMonthStore } from "../../../store/ClientStore";
-import ResumeMaintenance from "./resumeMaintenances/ResumeMaintenance";
 import MaintenanceTimeline from "./maintenances/MaintenanceTimeline";
+import MonthStatusPanel from "./maintenances/MonthStatusPanel";
 import { useModalStore } from "../../../store/ModalStore";
 import FieldGroup from "../../ui/labelField/FieldGroup";
 import { usePermits } from "../../../utils/roleUtils";
@@ -488,14 +488,22 @@ const InfoClientDialog = ({
                           onRegistrarProxima={() => setHojaMantencionAbierta(true)}
                           puedeEliminar={isSuperAdmin}
                         />
-                        <aside className={style.columnaLado}>{/* Task 13 */}</aside>
+                        <aside className={style.columnaLado}>
+                          <MonthStatusPanel
+                            mesActivo={mesActivo}
+                            valorMantencion={clientInfo?.valor_mantencion?.value ?? 0}
+                            mantencionesDelMes={mantencionesDelMes}
+                            montoPagado={comprobantesDelMes.reduce(
+                              (suma, c) => suma + (c.monto ?? 0),
+                              0,
+                            )}
+                            onGenerarBoleta={abrirBoleta}
+                            puedeGenerarBoleta={
+                              isSuperAdmin && mantencionesDelMes.length > 0
+                            }
+                          />
+                        </aside>
                       </div>
-                      <ResumeMaintenance
-                        key={clientInfo?.valor_mantencion.value}
-                        currentMonth={mesActivo ?? ""}
-                        valor_mantencion={clientInfo?.valor_mantencion.value ?? 0}
-                        mantencionesMesActual={mantencionesDelMes}
-                      />
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-3 ">
