@@ -5,7 +5,6 @@ import {
   type IMaintenanceUpdate,
 } from "../../../service/maintenance.interface";
 import style from "./InfoDialogClient.module.css";
-import TableGeneric from "../../ui/table/Table";
 import { getWindowWidth } from "../../../utils/WindowUtils";
 
 //Icons
@@ -22,20 +21,17 @@ import {
   formatDateToDDMMYYYY,
   formatMonthTitle,
 } from "../../../utils/DateUtils";
-import SeeMoreButton from "../../common/SeeMore/SeeMoreButton";
 import ClientFields from "./clientInfoFields/ClientInfoFields";
 import { Modal } from "react-bootstrap";
 import Button from "../../ui/button/Button";
 import { useUploadComprobantePago } from "../../../hooks/ComprobantePagosHooks";
-import { formatName, getAbbreviation } from "../../../utils/formatTextUtils";
+import { formatName } from "../../../utils/formatTextUtils";
 import type { IComprobantePago } from "../../../service/ComprobantePagos.interface";
 import ComprobantesContainer from "./comprobantesContainer/ComprobantesContainer";
 import LoadingSpinner from "../../ui/loading/Loading";
 import { useClientResumenMonthStore } from "../../../store/ClientStore";
-import PencilIcon from "../../ui/Icons/PencilIcon";
-import TrashIcon from "../../ui/Icons/TrashIcon";
-import { Tooltip } from "@mui/material";
 import ResumeMaintenance from "./resumeMaintenances/ResumeMaintenance";
+import MaintenanceTimeline from "./maintenances/MaintenanceTimeline";
 import { useModalStore } from "../../../store/ModalStore";
 import FieldGroup from "../../ui/labelField/FieldGroup";
 import { usePermits } from "../../../utils/roleUtils";
@@ -146,25 +142,22 @@ const InfoClientDialog = ({
     );
   }, [mesActivo, comprobantesClient]);
 
-  const cloroProducts =
-    products?.filter((p) => p.tipo.nombre === "Cloro") || [];
-  const otherProducts =
-    products?.filter((p) => p.tipo.nombre !== "Cloro") || [];
+  /** Proximo dia de la semana que coincide con el dia de mantencion. */
+  const proximaVisita = useMemo(() => {
+    const dias = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
+    const dia = String(clientInfo?.dia_mantencion?.value ?? "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "");
+    const objetivo = dias.indexOf(dia);
+    if (objetivo < 0) return null;
 
-  const titlesTable = [
-    { label: "Fecha Mantencion", key: "fechaMantencion", showOrderBy: false },
-    ...cloroProducts
-      .map((p) =>
-        p.nombre
-          ? { label: p.nombre, key: "nombre", showOrderBy: false }
-          : { label: "", key: "nombre", showOrderBy: false },
-      )
-      .filter(Boolean),
-    { label: "Otros", key: "otros", showOrderBy: false },
-    { label: "Realizada", key: "realizada", showOrderBy: false },
-    { label: "Recibio Pago", key: "recibioPago", showOrderBy: false },
-    { label: "", key: "acciones", showOrderBy: false },
-  ];
+    const hoy = new Date();
+    const delta = (objetivo - hoy.getDay() + 7) % 7 || 7;
+    const proxima = new Date(hoy);
+    proxima.setDate(hoy.getDate() + delta);
+    return proxima;
+  }, [clientInfo]);
 
   useEffect(() => {
     if (products.length === 0) {
@@ -486,87 +479,16 @@ const InfoClientDialog = ({
                 <div className={`${isAddingMaintenance ? "hidden" : "block"}`}>
                   {Object.keys(maintenancesClient ?? {}).length ? (
                     <div className="flex flex-col gap-3">
-                      <div>
-                        <TableGeneric
-                          titles={titlesTable}
-                          data={mantencionesDelMes}
-                          renderRow={(mantencion) => (
-                            <tr key={mantencion.id}>
-                              <td>
-                                {formatDateToDDMMYYYY(mantencion.fechaMantencion)}
-                              </td>
-                              {cloroProducts.map((prod) => {
-                                const used = mantencion.productos.find(
-                                  (p) => p.product.id === prod.id,
-                                );
-                                return (
-                                  <td key={prod.id}>
-                                    {used ? used.cantidad : 0}
-                                  </td>
-                                );
-                              })}
-                              <td>
-                                {mantencion.productos
-                                  .filter((prodUsed) =>
-                                    otherProducts.some(
-                                      (op) => op.id === prodUsed.product.id,
-                                    ),
-                                  )
-                                  .map((prodUsed) => (
-                                    <div
-                                      key={prodUsed.product.id}
-                                      style={{ whiteSpace: "nowrap" }}
-                                    >
-                                      {getAbbreviation(prodUsed.product.nombre)} -{" "}
-                                      {prodUsed.cantidad}
-                                    </div>
-                                  ))}
-                              </td>
-                              <td>{mantencion.realizada ? "Sí" : "No"}</td>
-                              <td className="pr-0!">
-                                <span className="flex items-center gap-2 justify-between pr-0!">
-                                  {mantencion.recibioPago ? "Sí" : "No"}
-
-                                  {mantencion.observaciones && (
-                                    <SeeMoreButton
-                                      content={mantencion.observaciones}
-                                    />
-                                  )}
-                                </span>
-                              </td>
-                              <td className="p-2! text-center">
-                                <Tooltip
-                                  title={"Editar Mantención"}
-                                  arrow
-                                  leaveDelay={0}
-                                >
-                                  <button
-                                    className="normal p-1!"
-                                    onClick={() =>
-                                      handleEditMaintenance(mantencion)
-                                    }
-                                  >
-                                    <PencilIcon />
-                                  </button>
-                                </Tooltip>
-                                <Tooltip
-                                  title={"Eliminar Mantención"}
-                                  arrow
-                                  leaveDelay={0}
-                                >
-                                  <button
-                                    className="normal p-1!"
-                                    onClick={() =>
-                                      handleDeleteMaintenance(mantencion)
-                                    }
-                                  >
-                                    <TrashIcon />
-                                  </button>
-                                </Tooltip>
-                              </td>
-                            </tr>
-                          )}
+                      <div className={style.dosColumnas}>
+                        <MaintenanceTimeline
+                          mantenciones={mantencionesDelMes}
+                          proximaVisita={proximaVisita}
+                          onEditar={handleEditMaintenance}
+                          onEliminar={handleDeleteMaintenance}
+                          onRegistrarProxima={() => setHojaMantencionAbierta(true)}
+                          puedeEliminar={isSuperAdmin}
                         />
+                        <aside className={style.columnaLado}>{/* Task 13 */}</aside>
                       </div>
                       <ResumeMaintenance
                         key={clientInfo?.valor_mantencion.value}
