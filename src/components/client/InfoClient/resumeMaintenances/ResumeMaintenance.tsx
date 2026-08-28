@@ -3,20 +3,8 @@ import style from "./ResumeMaintenance.module.css";
 import { useEffect, useState } from "react";
 import { useClientResumenMonthStore } from "../../../../store/ClientStore";
 import type { IMaintenance } from "../../../../service/maintenance.interface";
-
-export interface ResumenMaterial {
-  cantidad: number;
-  valorUnitario: number;
-  total: number;
-}
-
-export interface ResumenMonth {
-  resumenMateriales: Record<string, ResumenMaterial>;
-  mes: string;
-  totalMantencion: number;
-  totalProductos: number;
-  granTotal: number;
-}
+import type { ResumenMonth } from "../types";
+export type { ResumenMonth };
 
 interface ResumeMaintenanceProps {
   currentMonth: string;

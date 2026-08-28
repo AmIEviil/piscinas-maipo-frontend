@@ -1,8 +1,10 @@
 import { create, type StateCreator } from "zustand";
 import { clientService } from "../core/services/ClientsService";
 import type { Client } from "../service/client.interface";
-import type { IClientForm } from "../components/client/InfoClient/clientInfoFields/ClientInfoFields";
-import type { ResumenMonth } from "../components/client/InfoClient/resumeMaintenances/ResumeMaintenance";
+import type {
+  IClientForm,
+  ResumenMonth,
+} from "../components/client/InfoClient/types";
 
 interface ClientStore {
   clients: Client[];

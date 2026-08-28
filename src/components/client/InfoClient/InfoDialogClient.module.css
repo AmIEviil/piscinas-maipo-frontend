@@ -1,54 +1,177 @@
-.buttonInfo {
-  border: 2px solid var(--color-secundario);
-  background-color: var(--color-secundario);
-  justify-content: center;
-  font-size: var(--fs-base);
-}
+/*
+ * Superficies del modal de ficha del cliente.
+ *
+ * El problema que resuelve este archivo: el modal era blanco puro sobre
+ * blanco, sin jerarquia. Aca se definen cuatro niveles de superficie y una
+ * franja de color en la cabecera. La marca celeste queda reservada para lo
+ * interactivo; no decora.
+ *
+ * Todo en rem: el control de tamano de letra cambia el font-size de <html> y
+ * esto debe escalar con el. Los cortes de layout se hacen con @container
+ * sobre .modal, no con @media sobre la ventana, porque lo que importa es el
+ * espacio disponible dentro del modal.
+ */
 
-.buttonInfo:hover {
-  background-color: var(--color-fondo);
-  border: 2px solid var(--color-secundario);
-  color: var(--color-primario);
-  transition: all 0.2s ease;
-}
+.modal {
+  /* Tema claro */
+  --modal-lienzo: #f0f5fa;
+  --modal-superficie: #ffffff;
+  --modal-superficie-2: #e9f1f8;
+  --modal-superficie-3: #d9e7f2;
+  --modal-borde: #c3d5e3;
+  --modal-borde-fuerte: #96b2c7;
+  --modal-texto: #0c1e2a;
+  --modal-texto-2: #425c6c;
+  --modal-acento: #0a6f99;
+  --modal-acento-2: #084f6e;
+  --modal-acento-suave: #ddeef8;
+  --modal-ok: #12693a;
+  --modal-ok-suave: #d4efde;
+  --modal-alerta: #8a5100;
+  --modal-alerta-suave: #fbebcd;
+  --modal-peligro: #9c1f19;
+  --modal-peligro-suave: #f9dbd8;
+  --modal-cab-bg: #0b3d55;
+  --modal-cab-bg-2: #0f5673;
+  --modal-cab-texto: #ffffff;
+  --modal-cab-texto-2: #b8d5e4;
+  --modal-cab-borde: #1c6285;
+  --modal-hoja-w: 27rem;
 
-.maintenancesContainer {
+  container-type: inline-size;
   display: flex;
-  flex-direction: row;
-  gap: 1rem;
-  border-top: 2px solid var(--color-secundario);
-  padding-top: 1rem;
-  justify-items: center;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  max-height: 90dvh;
+  background: var(--modal-lienzo);
+  color: var(--modal-texto);
+  border-radius: 1.25rem;
+  box-shadow: 0 0.25rem 0.875rem var(--color-sombra);
 }
 
-.tableContainer {
-  width: 100%;
+:global([data-theme="dark"]) .modal {
+  --modal-lienzo: #0a1520;
+  --modal-superficie: #13212d;
+  --modal-superficie-2: #1b2d3b;
+  --modal-superficie-3: #223846;
+  --modal-borde: #2c4557;
+  --modal-borde-fuerte: #436073;
+  --modal-texto: #e9f2f8;
+  --modal-texto-2: #a2b9c8;
+  --modal-acento: #4dc2f2;
+  --modal-acento-2: #8bd9f9;
+  --modal-acento-suave: #0e3040;
+  --modal-ok: #67e397;
+  --modal-ok-suave: #0f311e;
+  --modal-alerta: #f3bf5e;
+  --modal-alerta-suave: #382a0d;
+  --modal-peligro: #ff968e;
+  --modal-peligro-suave: #3b1613;
+  --modal-cab-bg: #061c28;
+  --modal-cab-bg-2: #0a2c3d;
+  --modal-cab-texto: #eaf4fa;
+  --modal-cab-texto-2: #8fb3c6;
+  --modal-cab-borde: #17435c;
 }
 
-@media (max-width: 768px) {
-  .maintenancesContainer {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
+/* Las tres regiones fijas no se encogen; solo el panel scrollea. */
+.regionFija {
+  flex: 0 0 auto;
+}
+
+/* Cabecera fija: franja de color con la identidad del cliente. */
+.cabecera {
+  composes: regionFija;
+  background: linear-gradient(
+    160deg,
+    var(--modal-cab-bg) 0%,
+    var(--modal-cab-bg-2) 100%
+  );
+  color: var(--modal-cab-texto);
+  padding: 1rem 1.25rem 0.85rem;
+}
+
+/* Pestanas de navegacion entre secciones del modal. */
+.pestanas {
+  composes: regionFija;
+  display: flex;
+  gap: 0.25rem;
+  padding: 0 0.75rem;
+  background: var(--modal-superficie-3);
+  border-bottom: 0.0625rem solid var(--modal-borde);
+  overflow-x: auto;
+}
+
+/* Carrusel de meses, compartido entre las pestanas que lo necesitan. */
+.barraMes {
+  composes: regionFija;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.7rem 1rem;
+  background: var(--modal-superficie);
+  border-bottom: 0.0625rem solid var(--modal-borde);
+}
+
+.barraMes[hidden] {
+  display: none;
+}
+
+.panel {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 1.1rem 1rem 1.4rem;
+  display: none;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.panel[data-activo="si"] {
+  display: flex;
+}
+
+/* Dos columnas dentro de un panel, decidido por el ancho del modal. */
+.dosColumnas {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+@container (min-width: 55rem) {
+  .dosColumnas {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 19.5rem;
+    align-items: start;
+  }
+  .columnaLado {
+    position: sticky;
+    top: 0;
   }
 }
 
-@media (max-width: 768px) {
-  .detailsInfoContainer {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-  .labelsContainer {
-    display: flex;
-    width: 100%;
-    background-attachment: red !important;
-    flex-direction: column;
-    align-items: center;
-  }
-  .labelItemContainer {
-    display: flex;
-    flex-wrap: wrap;
-    width: 100%;
-  }
+.pie {
+  composes: regionFija;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  background: var(--modal-superficie);
+  border-top: 0.0625rem solid var(--modal-borde);
+}
+
+.piePosicion {
+  font-size: var(--fs-md);
+  font-weight: 700;
+}
+
+.pieNav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pieFin {
+  margin-left: auto;
 }

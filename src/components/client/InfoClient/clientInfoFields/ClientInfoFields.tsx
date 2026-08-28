@@ -17,14 +17,8 @@ import { useModalStore } from "../../../../store/ModalStore";
 import BodyRepairs from "../../../repairs/BodyRepairs";
 import Button from "../../../ui/button/Button";
 import { BREAKPOINTS } from "../../../../constant/breakpoints";
-
-export interface IClientForm {
-  [key: string]: {
-    key: string;
-    value: any;
-    type: string;
-  };
-}
+import type { IClientForm } from "../types";
+export type { IClientForm };
 
 interface Field {
   key: string;

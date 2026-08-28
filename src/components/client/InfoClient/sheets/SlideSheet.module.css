@@ -1,0 +1,145 @@
+/*
+ * Hoja deslizante generica sobre el modal de ficha del cliente.
+ *
+ * Se posiciona en absoluto dentro de `.modal` (Task 6), que ya declara
+ * position:relative, overflow:hidden y container-type:inline-size. Por eso
+ * este archivo no vuelve a declarar superficies propias: consume los
+ * `--modal-*` de InfoDialogClient.module.css.
+ *
+ * Todo en rem, igual que el resto del modal: el corte de layout entre
+ * escritorio y celular se hace con @container sobre `.modal`, nunca con
+ * @media sobre la ventana.
+ */
+
+.velo {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(4, 16, 24, 0.58);
+  backdrop-filter: blur(0.125rem);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.velo[data-abierto="si"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.hoja {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 11;
+  width: min(var(--modal-hoja-w), 92%);
+  background: var(--modal-lienzo);
+  border-left: 0.0625rem solid var(--modal-borde);
+  box-shadow: -1.125rem 0 2.75rem rgba(4, 16, 24, 0.35);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(101%);
+  transition: transform 0.26s cubic-bezier(0.2, 0.7, 0.3, 1);
+  /* visibility evita que los elementos de una hoja cerrada sigan siendo
+     alcanzables con Tab desde el contenido de atras. */
+  visibility: hidden;
+}
+
+.hoja[data-abierto="si"] {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+@container (max-width: 40rem) {
+  .hoja {
+    top: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: 88%;
+    border-left: 0;
+    border-top: 0.0625rem solid var(--modal-borde);
+    border-radius: 1.25rem 1.25rem 0 0;
+    box-shadow: 0 -1.125rem 2.75rem rgba(4, 16, 24, 0.4);
+    transform: translateY(101%);
+  }
+  .hoja[data-abierto="si"] {
+    transform: translateY(0);
+  }
+}
+
+.cabecera {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  border-bottom: 0.0625rem solid var(--modal-borde);
+  background: var(--modal-superficie);
+}
+
+.titulo {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 800;
+}
+
+.titulo small {
+  display: block;
+  font-size: var(--fs-sm);
+  font-weight: 400;
+  color: var(--modal-texto-2);
+}
+
+.paso {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--modal-acento);
+}
+
+.cerrar {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: var(--fs-lg);
+  line-height: 1;
+  cursor: pointer;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: var(--radius-md);
+  background: var(--modal-superficie-2);
+  color: var(--modal-texto);
+  border: 0.0625rem solid var(--modal-borde);
+}
+
+.cerrar:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+.cuerpo {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.05rem;
+}
+
+.pie {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-top: 0.0625rem solid var(--modal-borde);
+  background: var(--modal-superficie);
+}

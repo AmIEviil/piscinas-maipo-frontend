@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useMemo, useState } from "react";
 import {
   type IMaintenance,
@@ -24,11 +22,8 @@ import {
   formatDateToDDMMYYYY,
   formatMonthTitle,
 } from "../../../utils/DateUtils";
-import CustomPagination from "../../ui/pagination/Pagination";
 import SeeMoreButton from "../../common/SeeMore/SeeMoreButton";
-import ClientFields, {
-  type IClientForm,
-} from "./clientInfoFields/ClientInfoFields";
+import ClientFields from "./clientInfoFields/ClientInfoFields";
 import { Modal } from "react-bootstrap";
 import Button from "../../ui/button/Button";
 import { useUploadComprobantePago } from "../../../hooks/ComprobantePagosHooks";
@@ -45,6 +40,12 @@ import { useModalStore } from "../../../store/ModalStore";
 import FieldGroup from "../../ui/labelField/FieldGroup";
 import { usePermits } from "../../../utils/roleUtils";
 import { BREAKPOINTS } from "../../../constant/breakpoints";
+import type { IClientForm } from "./types";
+import ClientDialogHeader from "./header/ClientDialogHeader";
+import ClientTabs, { type PestanaId } from "./tabs/ClientTabs";
+import { useMonthNavigation } from "./hooks/useMonthNavigation";
+import MonthBar from "./monthBar/MonthBar";
+import BodyRepairs from "../../repairs/BodyRepairs";
 
 interface InfoClientDialogProps {
   open: boolean;
@@ -90,6 +91,7 @@ const InfoClientDialog = ({
   const setClientInfo = useClientResumenMonthStore(
     (state) => state.setClientInfo,
   );
+  const abrirBoleta = useClientResumenMonthStore((state) => state.openModal);
   const setOpenModal = useModalStore((state) => state.openModal);
   const handleCloseModal = useModalStore((state) => state.closeModal);
 
@@ -102,32 +104,47 @@ const InfoClientDialog = ({
   const [showMaintenances, setShowMaintenances] = useState(windowWidth > BREAKPOINTS.tablet);
   const { products, fetchProducts } = useProductStore();
 
-  const [months, setMonths] = useState<string[]>([]);
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
   const [maintenanceToEdit, setMaintenanceToEdit] =
     useState<IMaintenance | null>(null);
 
-  const currentMonth = months[currentMonthIndex] ?? null;
-  const mantencionesMesActual = useMemo(() => {
-    if (!currentMonth) return [];
+  const [pestanaActiva, setPestanaActiva] = useState<PestanaId>("mantenciones");
+  const { meses, mesActivo, setMesActivo } = useMonthNavigation(maintenancesClient);
+  const [hojaMantencionAbierta, setHojaMantencionAbierta] = useState(false);
+  const [hojaPagoAbierta, setHojaPagoAbierta] = useState(false);
+  // Sin consumidor visual todavia: las Tasks 13-15 leen estos flags para
+  // mostrar la hoja deslizante correspondiente.
+  void hojaMantencionAbierta;
+  void hojaPagoAbierta;
 
-    const list = maintenancesClient?.[currentMonth];
-    if (!Array.isArray(list)) return [];
+  // Defensa por si isSuperAdmin cambiara con el dialogo ya abierto en
+  // "cobros" (p. ej. una demora de hidratacion del rol): ClientTabs deja de
+  // renderizar esa pestana para el no-superadmin, y sin este efecto
+  // ninguna pestana quedaria con tabIndex 0 (activa == "cobros" no calza
+  // con ningun boton montado), ademas de dejar al usuario sin forma de
+  // volver a activar una pestana desde la UI.
+  useEffect(() => {
+    if (!isSuperAdmin && pestanaActiva === "cobros") {
+      setPestanaActiva("mantenciones");
+    }
+  }, [isSuperAdmin, pestanaActiva]);
 
-    return [...list].sort((a, b) =>
+  const mantencionesDelMes = useMemo(() => {
+    if (!mesActivo) return [];
+    const lista = maintenancesClient?.[mesActivo];
+    if (!Array.isArray(lista)) return [];
+    return [...lista].sort((a, b) =>
       String(a.fechaMantencion).localeCompare(String(b.fechaMantencion)),
     );
-  }, [currentMonth, maintenancesClient]);
+  }, [mesActivo, maintenancesClient]);
 
-  const comprobantesMesActual = useMemo(() => {
-    if (!currentMonth) return [];
-    const list = comprobantesClient?.[currentMonth];
-    if (!Array.isArray(list)) return [];
-
-    return [...list].sort((a, b) =>
+  const comprobantesDelMes = useMemo(() => {
+    if (!mesActivo) return [];
+    const lista = comprobantesClient?.[mesActivo];
+    if (!Array.isArray(lista)) return [];
+    return [...lista].sort((a, b) =>
       String(a.fecha_emision).localeCompare(String(b.fecha_emision)),
     );
-  }, [currentMonth, comprobantesClient]);
+  }, [mesActivo, comprobantesClient]);
 
   const cloroProducts =
     products?.filter((p) => p.tipo.nombre === "Cloro") || [];
@@ -198,37 +215,20 @@ const InfoClientDialog = ({
     getCoordsFromAddress(direccion);
   }, [clientInfo]);
 
-  useEffect(() => {
-    if (!maintenancesClient) return;
-
-    const sortedMonths = Object.entries(maintenancesClient)
-      .filter(([_, value]) => Array.isArray(value) && value.length > 0)
-      .map(([key]) => key)
-      .map((m) => {
-        const [year, month] = m.split("-");
-        return `${year}-${month.padStart(2, "0")}`;
-      })
-      .sort((a, b) => a.localeCompare(b));
-
-    setMonths(sortedMonths);
-    setCurrentMonthIndex(sortedMonths.length - 1);
-  }, [maintenancesClient]);
-
   const handleClose = () => {
     setCoordenadas(undefined);
     setIsAddingMaintenance(false);
     setMaintenanceToEdit(null);
     setResumenMonthStore(null);
     setClientInfo({} as IClientForm);
-    setMonths([]);
-    setCurrentMonthIndex(0);
+    setPestanaActiva("mantenciones");
     onClose();
   };
 
   useEffect(() => {
-    if (!currentMonth && !clientInfo) return;
+    if (!mesActivo && !clientInfo) return;
     setClientInfo(clientInfo as IClientForm);
-  }, [currentMonth, clientInfo, setClientInfo]);
+  }, [mesActivo, clientInfo, setClientInfo]);
 
   const handleAcceptMaintenance = async (
     maintenanceData: IMaintenanceCreate | IMaintenanceUpdate,
@@ -264,44 +264,12 @@ const InfoClientDialog = ({
     setMaintenanceToEdit(null);
   };
 
-  const renderFooter = () => {
-    if (totalRecords <= 1) return null;
-
-    return (
-      <>
-        <div>
-          <span className="font-bold">
-            {currentIndex + 1}/{totalRecords}
-          </span>
-        </div>
-        <div>
-          <CustomPagination
-            actualPage={currentIndex + 1}
-            totalPages={totalRecords}
-            onPageChange={(page) => {
-              if (page > currentIndex + 1) {
-                onNextClient();
-              } else {
-                onPreviousClient();
-              }
-            }}
-          />
-        </div>
-      </>
-    );
-  };
-
-  const dialogFooter = useMemo(
-    () => renderFooter(),
-    [totalRecords, currentIndex, onNextClient, onPreviousClient],
-  );
-
   const handleSubmitComprobante = async (data: {
     monto: number;
     fecha_pago: string;
     comprobante?: File;
   }) => {
-    if (!data || !clientInfo) return;
+    if (!data || !clientInfo || !mesActivo) return;
     try {
       const formData = new FormData();
       if (data.comprobante) {
@@ -312,7 +280,7 @@ const InfoClientDialog = ({
       formData.append(
         "nombre",
         formatName(
-          `Pago_Mantencion_${formatMonthTitle(currentMonth)}_${
+          `Pago_Mantencion_${formatMonthTitle(mesActivo)}_${
             clientInfo.nombre.value
           }`,
         ),
@@ -396,218 +364,299 @@ const InfoClientDialog = ({
     setMaintenanceToEdit(null);
   };
 
+  const abrirReparaciones = () => {
+    setOpenModal({
+      dialogClassName: "h-[40dvh]!",
+      bodyClassName: "max-h-[55dvh] overflow-auto custom-scrollbar",
+      header: "Reparaciones",
+      content: (
+        <BodyRepairs
+          nombreCliente={clientInfo?.nombre.value}
+          showFilters={false}
+        />
+      ),
+    });
+  };
+
   return (
     <Modal
       show={open}
       onHide={handleClose}
       size="xl"
       centered
-      style={{ borderRadius: 32 }}
+      contentClassName={style.modal}
       dialogClassName="max-h-[90dvh]"
       enforceFocus={false}
     >
       {loading ? (
-        <Modal.Body className="flex justify-center items-center p-10 min-h-160! max-h-[40dvh]">
+        <div className="flex justify-center items-center p-10 min-h-80">
           <LoadingSpinner />
-        </Modal.Body>
+        </div>
       ) : (
-        <Modal.Body className="max-h-[80dvh] overflow-auto custom-scrollbar ">
+        <>
           {clientInfo && (
-            <ClientFields
-              key={currentIndex}
+            <ClientDialogHeader
               clientInfo={clientInfo}
-              coordenadas={coordenadas}
-              hasMaintenances={mantencionesMesActual.length > 0}
-              onClose={handleClose}
-              onUpdate={() => {
-                if (onClientUpdated) onClientUpdated();
-              }}
+              onCerrar={handleClose}
+              onGenerarBoleta={abrirBoleta}
+              onVerReparaciones={abrirReparaciones}
+              puedeGenerarBoleta={mantencionesDelMes.length > 0}
             />
           )}
-          <div className="flex flex-row justify-between items-center pb-1">
-            <button
-              onClick={() => setShowMaintenances(!showMaintenances)}
-              disabled={
-                !maintenancesClient ||
-                Object.keys(maintenancesClient).length === 0
+
+          <ClientTabs
+            activa={pestanaActiva}
+            onCambiar={setPestanaActiva}
+            conteos={{
+              mantenciones: mantencionesDelMes.length,
+              // El conteo tambien queda gateado por las dudas (p. ej. si
+              // algun consumidor futuro pasa ocultarCobros=false), pero con
+              // la pestana oculta ClientTabs nunca llega a leer este valor.
+              cobros: isSuperAdmin ? comprobantesDelMes.length : 0,
+            }}
+            // Reproduce el comportamiento previo al rediseno: el no-superadmin
+            // no veia la seccion de comprobantes en absoluto. Una pestana
+            // deshabilitada-pero-visible no bastaba (sin `disabled`/
+            // `aria-disabled`, el foco de flecha igual podia aterrizar ahi),
+            // asi que se oculta por completo en vez de solo bloquear el click.
+            ocultarCobros={!isSuperAdmin}
+          />
+
+          {pestanaActiva !== "ficha" && (
+            <MonthBar
+              meses={meses}
+              mesActivo={mesActivo}
+              onCambiarMes={setMesActivo}
+              etiquetaAccion={
+                pestanaActiva === "cobros" ? "Registrar pago" : "Registrar mantencion"
               }
-              className="cursor-pointer flex items-center gap-1 font-medium w-fit normal p-2! hover:text-white!"
-            >
-              {Object.keys(maintenancesClient ?? {}).length
-                ? "Ver Mantenciones"
-                : "Sin Mantenciones"}
-              {Object.keys(maintenancesClient ?? {}).length ? (
-                <CaretIcon direction={`${showMaintenances ? "down" : "up"}`} />
-              ) : null}
-            </button>
-            <div className={style.buttonContainer}>
+              mostrarAccion={pestanaActiva === "mantenciones" || isSuperAdmin}
+              onAccion={() =>
+                pestanaActiva === "cobros"
+                  ? setHojaPagoAbierta(true)
+                  : setHojaMantencionAbierta(true)
+              }
+            />
+          )}
+
+          <div
+            className={style.panel}
+            data-activo={pestanaActiva === "mantenciones" ? "si" : "no"}
+            role="tabpanel"
+            id="panel-mantenciones"
+            aria-labelledby="pestana-mantenciones"
+          >
+            <div className="flex flex-row justify-between items-center pb-1">
               <button
-                className={`${style.buttonInfo} p-1!`}
-                onClick={() => {
-                  if (isAddingMaintenance) {
-                    onCancelAddingMaintenance();
-                  } else {
-                    onAddingMaintenance();
-                  }
-                }}
+                onClick={() => setShowMaintenances(!showMaintenances)}
+                disabled={
+                  !maintenancesClient ||
+                  Object.keys(maintenancesClient).length === 0
+                }
+                className="cursor-pointer flex items-center gap-1 font-medium w-fit normal p-2! hover:text-white!"
               >
-                {isAddingMaintenance
-                  ? "Cancelar mantención"
-                  : "Agregar nueva mantención"}
-                <AddIcon />
-              </button>
-            </div>
-          </div>
-
-          {showMaintenances && (
-            <>
-              <div className={`${isAddingMaintenance ? "hidden" : "block"}`}>
+                {Object.keys(maintenancesClient ?? {}).length
+                  ? "Ver Mantenciones"
+                  : "Sin Mantenciones"}
                 {Object.keys(maintenancesClient ?? {}).length ? (
-                  <div className={style.maintenancesContainer}>
-                    <div className={style.tableContainer}>
-                      <div className="flex items-center justify-between py-3">
-                        <button
-                          disabled={currentMonthIndex === 0}
-                          onClick={() => setCurrentMonthIndex((i) => i - 1)}
-                        >
-                          <CaretIcon direction="left" color="white" />
-                        </button>
+                  <CaretIcon direction={`${showMaintenances ? "down" : "up"}`} />
+                ) : null}
+              </button>
+              <div>
+                <button
+                  className="flex items-center gap-1 p-1!"
+                  onClick={() => {
+                    if (isAddingMaintenance) {
+                      onCancelAddingMaintenance();
+                    } else {
+                      onAddingMaintenance();
+                    }
+                  }}
+                >
+                  {isAddingMaintenance
+                    ? "Cancelar mantención"
+                    : "Agregar nueva mantención"}
+                  <AddIcon />
+                </button>
+              </div>
+            </div>
 
-                        <h3 className="text-lg font-bold">
-                          {currentMonth ? formatMonthTitle(currentMonth) : ""}
-                        </h3>
+            {showMaintenances && (
+              <>
+                <div className={`${isAddingMaintenance ? "hidden" : "block"}`}>
+                  {Object.keys(maintenancesClient ?? {}).length ? (
+                    <div className="flex flex-col gap-3">
+                      <div>
+                        <TableGeneric
+                          titles={titlesTable}
+                          data={mantencionesDelMes}
+                          renderRow={(mantencion) => (
+                            <tr key={mantencion.id}>
+                              <td>
+                                {formatDateToDDMMYYYY(mantencion.fechaMantencion)}
+                              </td>
+                              {cloroProducts.map((prod) => {
+                                const used = mantencion.productos.find(
+                                  (p) => p.product.id === prod.id,
+                                );
+                                return (
+                                  <td key={prod.id}>
+                                    {used ? used.cantidad : 0}
+                                  </td>
+                                );
+                              })}
+                              <td>
+                                {mantencion.productos
+                                  .filter((prodUsed) =>
+                                    otherProducts.some(
+                                      (op) => op.id === prodUsed.product.id,
+                                    ),
+                                  )
+                                  .map((prodUsed) => (
+                                    <div
+                                      key={prodUsed.product.id}
+                                      style={{ whiteSpace: "nowrap" }}
+                                    >
+                                      {getAbbreviation(prodUsed.product.nombre)} -{" "}
+                                      {prodUsed.cantidad}
+                                    </div>
+                                  ))}
+                              </td>
+                              <td>{mantencion.realizada ? "Sí" : "No"}</td>
+                              <td className="pr-0!">
+                                <span className="flex items-center gap-2 justify-between pr-0!">
+                                  {mantencion.recibioPago ? "Sí" : "No"}
 
-                        <button
-                          disabled={currentMonthIndex >= months.length - 1}
-                          onClick={() => setCurrentMonthIndex((i) => i + 1)}
-                        >
-                          <CaretIcon direction="right" color="white" />
-                        </button>
-                      </div>
-                      <TableGeneric
-                        titles={titlesTable}
-                        data={mantencionesMesActual}
-                        renderRow={(mantencion) => (
-                          <tr key={mantencion.id}>
-                            <td>
-                              {formatDateToDDMMYYYY(mantencion.fechaMantencion)}
-                            </td>
-                            {cloroProducts.map((prod) => {
-                              const used = mantencion.productos.find(
-                                (p) => p.product.id === prod.id,
-                              );
-                              return (
-                                <td key={prod.id}>
-                                  {used ? used.cantidad : 0}
-                                </td>
-                              );
-                            })}
-                            <td>
-                              {mantencion.productos
-                                .filter((prodUsed) =>
-                                  otherProducts.some(
-                                    (op) => op.id === prodUsed.product.id,
-                                  ),
-                                )
-                                .map((prodUsed) => (
-                                  <div
-                                    key={prodUsed.product.id}
-                                    style={{ whiteSpace: "nowrap" }}
+                                  {mantencion.observaciones && (
+                                    <SeeMoreButton
+                                      content={mantencion.observaciones}
+                                    />
+                                  )}
+                                </span>
+                              </td>
+                              <td className="p-2! text-center">
+                                <Tooltip
+                                  title={"Editar Mantención"}
+                                  arrow
+                                  leaveDelay={0}
+                                >
+                                  <button
+                                    className="normal p-1!"
+                                    onClick={() =>
+                                      handleEditMaintenance(mantencion)
+                                    }
                                   >
-                                    {getAbbreviation(prodUsed.product.nombre)} -{" "}
-                                    {prodUsed.cantidad}
-                                  </div>
-                                ))}
-                            </td>
-                            <td>{mantencion.realizada ? "Sí" : "No"}</td>
-                            <td className="pr-0!">
-                              <span className="flex items-center gap-2 justify-between pr-0!">
-                                {mantencion.recibioPago ? "Sí" : "No"}
-
-                                {mantencion.observaciones && (
-                                  <SeeMoreButton
-                                    content={mantencion.observaciones}
-                                  />
-                                )}
-                              </span>
-                            </td>
-                            <td className="p-2! text-center">
-                              <Tooltip
-                                title={"Editar Mantención"}
-                                arrow
-                                leaveDelay={0}
-                              >
-                                <button
-                                  className="normal p-1!"
-                                  onClick={() =>
-                                    handleEditMaintenance(mantencion)
-                                  }
+                                    <PencilIcon />
+                                  </button>
+                                </Tooltip>
+                                <Tooltip
+                                  title={"Eliminar Mantención"}
+                                  arrow
+                                  leaveDelay={0}
                                 >
-                                  <PencilIcon />
-                                </button>
-                              </Tooltip>
-                              <Tooltip
-                                title={"Eliminar Mantención"}
-                                arrow
-                                leaveDelay={0}
-                              >
-                                <button
-                                  className="normal p-1!"
-                                  onClick={() =>
-                                    handleDeleteMaintenance(mantencion)
-                                  }
-                                >
-                                  <TrashIcon />
-                                </button>
-                              </Tooltip>
-                            </td>
-                          </tr>
-                        )}
+                                  <button
+                                    className="normal p-1!"
+                                    onClick={() =>
+                                      handleDeleteMaintenance(mantencion)
+                                    }
+                                  >
+                                    <TrashIcon />
+                                  </button>
+                                </Tooltip>
+                              </td>
+                            </tr>
+                          )}
+                        />
+                      </div>
+                      <ResumeMaintenance
+                        key={clientInfo?.valor_mantencion.value}
+                        currentMonth={mesActivo ?? ""}
+                        valor_mantencion={clientInfo?.valor_mantencion.value ?? 0}
+                        mantencionesMesActual={mantencionesDelMes}
                       />
                     </div>
-                    <ResumeMaintenance
-                      key={clientInfo?.valor_mantencion.value}
-                      currentMonth={currentMonth}
-                      valor_mantencion={clientInfo?.valor_mantencion.value ?? 0}
-                      mantencionesMesActual={mantencionesMesActual}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-3 ">
-                    <p className="text-gray-500">
-                      No hay mantenciones para mostrar
-                    </p>
-                  </div>
-                )}
-              </div>
-              {isAddingMaintenance && (
-                <MaintenanceFields
-                  clientId={clientInfo?.id.value ?? ""}
-                  valorMantencion={clientInfo?.valor_mantencion.value ?? 0}
-                  productosList={products}
-                  onAccept={handleAcceptMaintenance}
-                  onCancel={handleCancelMaintenance}
-                  isEditing={!!maintenanceToEdit}
-                  mantencionData={maintenanceToEdit}
-                />
-              )}
-              {maintenancesClient &&
-                isSuperAdmin &&
-                Object.keys(maintenancesClient).length > 0 && (
-                  <ComprobantesContainer
-                    comprobantesData={comprobantesMesActual}
-                    onApprove={handleSubmitComprobante}
+                  ) : (
+                    <div className="flex flex-col items-center gap-3 ">
+                      <p className="text-gray-500">
+                        No hay mantenciones para mostrar
+                      </p>
+                    </div>
+                  )}
+                </div>
+                {isAddingMaintenance && (
+                  <MaintenanceFields
+                    clientId={clientInfo?.id.value ?? ""}
+                    valorMantencion={clientInfo?.valor_mantencion.value ?? 0}
+                    productosList={products}
+                    onAccept={handleAcceptMaintenance}
+                    onCancel={handleCancelMaintenance}
+                    isEditing={!!maintenanceToEdit}
+                    mantencionData={maintenanceToEdit}
                   />
                 )}
-            </>
-          )}
-        </Modal.Body>
+              </>
+            )}
+          </div>
+
+          <div
+            className={style.panel}
+            data-activo={pestanaActiva === "cobros" ? "si" : "no"}
+            role="tabpanel"
+            id="panel-cobros"
+            aria-labelledby="pestana-cobros"
+          >
+            {maintenancesClient &&
+              isSuperAdmin &&
+              Object.keys(maintenancesClient).length > 0 && (
+                <ComprobantesContainer
+                  comprobantesData={comprobantesDelMes}
+                  onApprove={handleSubmitComprobante}
+                />
+              )}
+          </div>
+
+          <div
+            className={style.panel}
+            data-activo={pestanaActiva === "ficha" ? "si" : "no"}
+            role="tabpanel"
+            id="panel-ficha"
+            aria-labelledby="pestana-ficha"
+          >
+            {clientInfo && (
+              <ClientFields
+                key={currentIndex}
+                clientInfo={clientInfo}
+                coordenadas={coordenadas}
+                hasMaintenances={mantencionesDelMes.length > 0}
+                onClose={handleClose}
+                onUpdate={() => {
+                  if (onClientUpdated) onClientUpdated();
+                }}
+              />
+            )}
+          </div>
+        </>
       )}
 
-      <Modal.Footer>
-        {dialogFooter}
-        <Button label="Cerrar" onClick={handleClose} variant="primary" />
-      </Modal.Footer>
+      {/* Fuera del ternario de loading a proposito: antes del rewrite el
+          Modal.Footer era un hermano incondicional, asi que Cerrar y la
+          paginacion seguian disponibles mientras cargaban los datos. */}
+      <div className={style.pie}>
+        {totalRecords > 1 && (
+          <>
+            <span className={style.piePosicion}>
+              Cliente {currentIndex + 1} <small>de {totalRecords}</small>
+            </span>
+            <div className={style.pieNav}>
+              <Button label="‹ Anterior" variant="tertiary" onClick={onPreviousClient} />
+              <Button label="Siguiente ›" variant="tertiary" onClick={onNextClient} />
+            </div>
+          </>
+        )}
+        <div className={style.pieFin}>
+          <Button label="Cerrar" variant="primary" onClick={handleClose} />
+        </div>
+      </div>
     </Modal>
   );
 };
