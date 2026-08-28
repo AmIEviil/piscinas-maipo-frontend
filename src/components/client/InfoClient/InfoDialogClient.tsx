@@ -11,6 +11,7 @@ import { getWindowWidth } from "../../../utils/WindowUtils";
 import AddIcon from "@mui/icons-material/Add";
 import CaretIcon from "../../ui/Icons/CaretIcon";
 import MaintenanceSheet from "./sheets/MaintenanceSheet";
+import PaymentSheet from "./sheets/PaymentSheet";
 import {
   useCreateMaintenance,
   useDeleteMaintenance,
@@ -42,6 +43,12 @@ import ClientTabs, { type PestanaId } from "./tabs/ClientTabs";
 import { useMonthNavigation } from "./hooks/useMonthNavigation";
 import MonthBar from "./monthBar/MonthBar";
 import BodyRepairs from "../../repairs/BodyRepairs";
+
+interface VisitaCubrible {
+  id: string;
+  etiqueta: string;
+  monto: number;
+}
 
 interface InfoClientDialogProps {
   open: boolean;
@@ -106,9 +113,15 @@ const InfoClientDialog = ({
   const { meses, mesActivo, setMesActivo } = useMonthNavigation(maintenancesClient);
   const [hojaMantencionAbierta, setHojaMantencionAbierta] = useState(false);
   const [hojaPagoAbierta, setHojaPagoAbierta] = useState(false);
-  // Sin consumidor visual todavia: la Task 15 lee este flag para mostrar la
-  // hoja de pago.
-  void hojaPagoAbierta;
+  // Visita recien creada/editada que encadeno el registro del pago: viene
+  // marcada y bloqueada en la hoja de pago. null cuando la hoja de pago se
+  // abre directo desde la pestana Cobros (sin encadenado).
+  const [visitaFijada, setVisitaFijada] = useState<VisitaCubrible | null>(
+    null,
+  );
+  // true solo mientras la hoja de pago esta encadenada tras guardar una
+  // mantencion; false cuando se abre directo desde Cobros.
+  const [pagoEncadenado, setPagoEncadenado] = useState(false);
 
   // Defensa por si isSuperAdmin cambiara con el dialogo ya abierto en
   // "cobros" (p. ej. una demora de hidratacion del rol): ClientTabs deja de
@@ -139,6 +152,22 @@ const InfoClientDialog = ({
       String(a.fecha_emision).localeCompare(String(b.fecha_emision)),
     );
   }, [mesActivo, comprobantesClient]);
+
+  // Opciones de la hoja de pago para "que visitas cubre este pago": las
+  // visitas del mes que aun no tienen pago, salvo la recien fijada (esa ya
+  // viene aparte, marcada y bloqueada, para que no aparezca dos veces
+  // mientras el listado del mes todavia no refresca tras el guardado).
+  const visitasSinPago = useMemo(
+    () =>
+      mantencionesDelMes
+        .filter((m) => !m.recibioPago && m.id !== visitaFijada?.id)
+        .map((m) => ({
+          id: m.id,
+          etiqueta: formatDateToDDMMYYYY(m.fechaMantencion),
+          monto: clientInfo?.valor_mantencion?.value ?? 0,
+        })),
+    [mantencionesDelMes, clientInfo, visitaFijada],
+  );
 
   /** Proximo dia de la semana que coincide con el dia de mantencion. */
   const proximaVisita = useMemo(() => {
@@ -210,6 +239,9 @@ const InfoClientDialog = ({
     setCoordenadas(undefined);
     setHojaMantencionAbierta(false);
     setMaintenanceToEdit(null);
+    setHojaPagoAbierta(false);
+    setPagoEncadenado(false);
+    setVisitaFijada(null);
     setResumenMonthStore(null);
     setClientInfo({} as IClientForm);
     setPestanaActiva("mantenciones");
@@ -223,20 +255,20 @@ const InfoClientDialog = ({
 
   const handleAcceptMaintenance = async (
     maintenanceData: IMaintenanceCreate | IMaintenanceUpdate,
-  ) => {
+  ): Promise<IMaintenance | undefined> => {
     try {
-      if (maintenanceToEdit) {
-        // MODO EDICIÓN
-        await updateMaintenance.mutateAsync({
-          id: maintenanceToEdit.id,
-          data: maintenanceData as IMaintenanceUpdate,
-        });
-      } else {
-        // MODO CREACIÓN
-        await createMaintenance.mutateAsync(
-          maintenanceData as IMaintenanceCreate,
-        );
-      }
+      // Se guarda el resultado en ambas ramas (no solo se espera la
+      // promesa): el encadenado con la hoja de pago necesita el id de la
+      // mantencion recien creada/editada para fijarla, marcada y bloqueada,
+      // en la lista de "que visitas cubre este pago".
+      const resultado = maintenanceToEdit
+        ? await updateMaintenance.mutateAsync({
+            id: maintenanceToEdit.id,
+            data: maintenanceData as IMaintenanceUpdate,
+          })
+        : await createMaintenance.mutateAsync(
+            maintenanceData as IMaintenanceCreate,
+          );
 
       // Reset y refresh
       setMaintenanceToEdit(null);
@@ -244,15 +276,47 @@ const InfoClientDialog = ({
       if (onMaintenanceCreated) {
         onMaintenanceCreated();
       }
+
+      return resultado;
     } catch (err) {
       console.error("Error al guardar mantención:", err);
+      return undefined;
     }
+  };
+
+  // La regla del encadenado: nunca dos hojas abiertas. La hoja de mantencion
+  // se cierra por completo (setHojaMantencionAbierta(false)) y solo despues,
+  // cuando termina su transicion de salida, entra la hoja de pago.
+  const guardarMantencion = async (
+    datos: IMaintenanceCreate | IMaintenanceUpdate,
+    registrarPago: boolean,
+  ) => {
+    const creada = await handleAcceptMaintenance(datos);
+    setHojaMantencionAbierta(false);
+
+    if (!registrarPago) return;
+
+    // La hoja de mantencion tiene 260ms de transicion de salida (ver
+    // SlideSheet.module.css, `.hoja`). Se espera a que termine para que
+    // nunca haya dos dialogos vivos a la vez.
+    setVisitaFijada(
+      creada
+        ? {
+            id: creada.id,
+            etiqueta: formatDateToDDMMYYYY(creada.fechaMantencion),
+            monto: clientInfo?.valor_mantencion?.value ?? 0,
+          }
+        : null,
+    );
+    setPagoEncadenado(true);
+    window.setTimeout(() => setHojaPagoAbierta(true), 260);
   };
 
   const handleSubmitComprobante = async (data: {
     monto: number;
     fecha_pago: string;
     comprobante?: File;
+    mantencionIds?: string[];
   }) => {
     if (!data || !clientInfo || !mesActivo) return;
     try {
@@ -272,6 +336,11 @@ const InfoClientDialog = ({
       );
       formData.append("fecha_emision", data.fecha_pago);
       formData.append("monto", data.monto.toString());
+      // Repetido, una entrada por id: es lo que el controlador normaliza a
+      // un arreglo (Task 5, backend).
+      for (const id of data.mantencionIds ?? []) {
+        formData.append("mantencionIds", id);
+      }
 
       await uploadComprobanteMutation.mutateAsync(formData);
       if (onComprobanteChanged) {
@@ -280,6 +349,36 @@ const InfoClientDialog = ({
     } catch (error) {
       console.error("Error al subir el comprobante:", error);
     }
+  };
+
+  const guardarPago = async (datos: {
+    monto: number;
+    fecha_pago: string;
+    comprobante?: File;
+    mantencionIds: string[];
+  }) => {
+    await handleSubmitComprobante(datos);
+    setHojaPagoAbierta(false);
+    setPagoEncadenado(false);
+    setVisitaFijada(null);
+  };
+
+  // "Omitir por ahora" y el cierre en general de la hoja de pago: la
+  // mantencion ya quedo guardada con recibioPago = true en el paso anterior,
+  // asi que no se pierde nada por no adjuntar el comprobante ahora - queda
+  // disponible para subirlo despues desde la pestana Cobros.
+  const cerrarHojaPago = () => {
+    setHojaPagoAbierta(false);
+    setPagoEncadenado(false);
+    setVisitaFijada(null);
+  };
+
+  // Apertura directa desde el boton del MonthBar en la pestana Cobros: sin
+  // paso 1 y sin visita fijada.
+  const abrirHojaPagoDirecta = () => {
+    setPagoEncadenado(false);
+    setVisitaFijada(null);
+    setHojaPagoAbierta(true);
   };
 
   const handleEditMaintenance = (maintenance: IMaintenance) => {
@@ -413,7 +512,7 @@ const InfoClientDialog = ({
               mostrarAccion={pestanaActiva === "mantenciones" || isSuperAdmin}
               onAccion={() =>
                 pestanaActiva === "cobros"
-                  ? setHojaPagoAbierta(true)
+                  ? abrirHojaPagoDirecta()
                   : setHojaMantencionAbierta(true)
               }
             />
@@ -505,10 +604,16 @@ const InfoClientDialog = ({
               setHojaMantencionAbierta(false);
               setMaintenanceToEdit(null);
             }}
-            onGuardar={async (datos) => {
-              await handleAcceptMaintenance(datos);
-              setHojaMantencionAbierta(false);
-            }}
+            onGuardar={guardarMantencion}
+          />
+
+          <PaymentSheet
+            abierta={hojaPagoAbierta}
+            encadenada={pagoEncadenado}
+            visitaFijada={visitaFijada}
+            visitasSinPago={visitasSinPago}
+            onCerrar={cerrarHojaPago}
+            onGuardar={guardarPago}
           />
 
           <div

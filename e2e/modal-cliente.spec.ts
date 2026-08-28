@@ -105,6 +105,42 @@ test("la hoja deslizante atrapa el foco y cierra con Escape", async ({ page }) =
   expect(textoEnfocado.toLowerCase()).toContain("registrar mantencion");
 });
 
+test("marcar pago encadena la hoja de cobro, y nunca hay dos abiertas", async ({ page }) => {
+  await abrirPrimerCliente(page);
+  await page.getByRole("button", { name: /registrar mantencion/i }).click();
+
+  // "Guardar mantencion"/"Guardar y registrar el pago" viene deshabilitado
+  // hasta que la visita este marcada como realizada o tenga algun producto
+  // (ver MaintenanceSheet.tsx, prop disabled del boton primario).
+  await page.getByRole("radio", { name: /si, se hizo/i }).check();
+  await page.getByRole("radio", { name: /si, pago/i }).check();
+  await expect(page.getByText(/paso 1 de 2/i)).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /guardar y registrar el pago/i })
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: /guardar y registrar el pago/i }).click();
+
+  const hojaPago = page.getByRole("dialog", { name: /registrar el pago/i });
+  await expect(hojaPago).toBeVisible();
+  await expect(page.getByText(/la mantencion quedo guardada/i)).toBeVisible();
+
+  // La hoja de mantencion ya no esta.
+  await expect(
+    page.getByRole("dialog", { name: /registrar mantencion/i })
+  ).toBeHidden();
+
+  // Nunca dos hojas abiertas a la vez. Se cuenta por [aria-modal="true"] y
+  // no por el rol "dialog" a secas: el <Modal> de react-bootstrap que
+  // envuelve toda la ficha del cliente tambien trae role="dialog" (ver
+  // react-bootstrap/esm/Modal.js) pero no aria-modal, asi que un conteo sin
+  // filtrar contaria ese modal de fondo mas la hoja de pago y siempre daria
+  // 2, incluso con el encadenado funcionando bien.
+  expect(
+    await page.locator('[role="dialog"][aria-modal="true"]:visible').count()
+  ).toBe(1);
+});
+
 /**
  * Abre el modal del primer cliente del listado.
  *

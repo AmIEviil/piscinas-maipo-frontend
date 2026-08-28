@@ -1,0 +1,175 @@
+/*
+ * Hoja de registro de pago.
+ *
+ * Porta `.confirmacion`, `.cubre`, `.cubre__item`, `.cubre__caja`,
+ * `.cubre__nueva` y `.cubre__monto` del mockup D (`mockup-d-hibrido.html`),
+ * mas los `.campo`, `.control`, `.rotulo`/`.grupo` y `.pista` compartidos
+ * (identicos a los de MaintenanceSheet.module.css: son el mismo lenguaje
+ * visual de campo/control en toda la familia de hojas), reemplazando sus
+ * colores fijos por los tokens `--modal-*` y sus tamanos de letra bajo 1rem
+ * por `var(--fs-base)` cuando el texto es un dato de negocio (la etiqueta de
+ * la visita, el monto): ese piso lo fija el contrato global del rediseno.
+ *
+ * `.nueva` (mapeado de `.cubre__nueva`) es la unica excepcion: es una
+ * anotacion de metadato ("recien creada"), no el dato de negocio en si (que
+ * es la etiqueta/monto de la visita, ya en `--fs-base`), asi que se queda
+ * bajo 1rem pero nunca por debajo del piso de metadatos del proyecto,
+ * `--fs-sm` (0.9375rem) - el mockup usaba .8125rem, mas chico que cualquier
+ * texto que exista hoy en el modal.
+ *
+ * El checkbox de "que visitas cubre" es un control primario de esta hoja:
+ * `.cubreItem span` usa min-height 3.25rem, por encima de `--tap-min`
+ * (2.75rem) a proposito, igual que lo trae el mockup.
+ *
+ * Todo en rem para escalar con el control de tamano de letra del TopBar; el
+ * corte de layout es responsabilidad de SlideSheet.module.css (@container
+ * sobre `.modal`), este archivo no define ninguno propio.
+ */
+
+.confirmacion {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--modal-ok-suave);
+  border: 0.0625rem solid var(--modal-ok);
+  color: var(--modal-ok);
+  font-size: var(--fs-base);
+  font-weight: 700;
+}
+
+.confirmacion span {
+  font-size: var(--fs-lg);
+  line-height: 1;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.grupo {
+  composes: campo;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.campo > label,
+.rotulo {
+  font-size: var(--fs-base);
+  font-weight: 700;
+}
+
+.pista {
+  font-size: var(--fs-sm);
+  color: var(--modal-texto-2);
+  font-weight: 400;
+}
+
+.control {
+  font: inherit;
+  font-size: var(--fs-base);
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  min-height: var(--tap-min);
+  background: var(--modal-superficie);
+  color: var(--modal-texto);
+  border: 0.125rem solid var(--modal-borde-fuerte);
+  border-radius: var(--radius-md);
+}
+
+.control:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+/* Lista de visitas que cubre el pago */
+.cubre {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cubreItem {
+  position: relative;
+}
+
+.cubreItem input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cubreItem span {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  cursor: pointer;
+  min-height: 3.25rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--modal-superficie);
+  border: 0.125rem solid var(--modal-borde-fuerte);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-base);
+}
+
+.caja {
+  flex: 0 0 auto;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 0.35rem;
+  border: 0.125rem solid var(--modal-borde-fuerte);
+  background: var(--modal-superficie-2);
+  display: grid;
+  place-items: center;
+  font-size: var(--fs-base);
+  font-weight: 900;
+  color: transparent;
+}
+
+.cubreItem input:checked + span {
+  background: var(--modal-acento-suave);
+  border-color: var(--modal-acento);
+}
+
+.cubreItem input:checked + span .caja {
+  background: var(--modal-acento);
+  border-color: var(--modal-acento);
+  color: #fff;
+}
+
+:global([data-theme="dark"]) .cubreItem input:checked + span .caja {
+  color: #04131b;
+}
+
+.cubreItem input:disabled + span {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.cubreItem input:focus-visible + span {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+.montoOpcion {
+  margin-left: auto;
+  font-size: var(--fs-base);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.nueva {
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--modal-ok);
+  background: var(--modal-ok-suave);
+  border: 0.0625rem solid var(--modal-ok);
+  border-radius: 999rem;
+  padding: 0.1rem 0.5rem;
+}
