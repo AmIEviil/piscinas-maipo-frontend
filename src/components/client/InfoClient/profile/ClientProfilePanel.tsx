@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DateTime } from "luxon";
 import type { IClientForm } from "../types";
 import { useChangeFieldValue } from "../../../../utils/formUtils";
 import { toUpperCaseFirstLetter, formatMoneyNumber } from "../../../../utils/formatTextUtils";
@@ -34,6 +35,24 @@ const mostrar = (clave: string, valor: unknown) => {
   if (clave.includes("valor")) return formatMoneyNumber(valor as number);
   if (clave.includes("fecha")) return formatDateToDDMMYYYY(valor as string);
   return String(valor);
+};
+
+/**
+ * Valor de `fecha_ingreso` en el formato que exige `<input type="date">`
+ * (`yyyy-MM-dd`). Usa Luxon en vez de `new Date(...).toISOString()` a
+ * proposito: una fecha "YYYY-MM-DD" pasada a `new Date` se interpreta como
+ * UTC medianoche, y en un huso horario detras de UTC (Chile) eso vuelve a
+ * mostrar el dia anterior -el mismo desplazamiento que
+ * `DateUtils.formatDateToDDMMYYYY` ya documenta y evita con
+ * `DateTime.fromISO`.
+ */
+const fechaParaInput = (valor: unknown): string => {
+  if (!valor) return "";
+  const fecha =
+    typeof valor === "string"
+      ? DateTime.fromISO(valor)
+      : DateTime.fromJSDate(valor as Date);
+  return fecha.isValid ? fecha.toFormat("yyyy-MM-dd") : "";
 };
 
 /**
@@ -104,7 +123,49 @@ const ClientProfilePanel = ({
             <label className={style.etiqueta} htmlFor={`campo-${clave}`}>
               {toUpperCaseFirstLetter(clave.replace(/_/g, " "))}
             </label>
-            {editando ? (
+            {editando && clave === "isActive" ? (
+              // Select en vez del <input> generico: el campo es booleano, y
+              // el <input> de texto de mas abajo enviaria literalmente lo que
+              // el usuario tipee ("si", "TRUE", " ") a un campo boolean del
+              // API. El viejo ClientInfoFields nunca dejaba editar (ni ver)
+              // este campo -- handleVisibleField descartaba todo boolean --
+              // asi que no hay comportamiento previo que preservar aca, solo
+              // uno nuevo que evitar romper.
+              <select
+                id={`campo-${clave}`}
+                className={style.control}
+                value={borrador[clave]?.value ? "true" : "false"}
+                onChange={(e) =>
+                  setBorrador((previo) => ({
+                    ...previo,
+                    [clave]: { ...previo[clave], value: e.target.value === "true" },
+                  }))
+                }
+              >
+                <option value="true">Activo</option>
+                <option value="false">Inactivo</option>
+              </select>
+            ) : editando && clave === "fecha_ingreso" ? (
+              // Input de fecha en vez del <input> generico: el <input> de
+              // texto de mas abajo mostraria el valor crudo guardado (ISO u
+              // otro) y aceptaria cualquier texto, perdiendo el date picker
+              // que UseRenderField.tsx ya daba para este mismo campo. El
+              // input nativo entrega "yyyy-MM-dd" tal cual en su evento de
+              // cambio: se guarda ese string directo, sin pasar por Date ni
+              // por su desplazamiento de zona horaria.
+              <input
+                id={`campo-${clave}`}
+                type="date"
+                className={style.control}
+                value={fechaParaInput(borrador[clave]?.value)}
+                onChange={(e) =>
+                  setBorrador((previo) => ({
+                    ...previo,
+                    [clave]: { ...previo[clave], value: e.target.value },
+                  }))
+                }
+              />
+            ) : editando ? (
               <input
                 id={`campo-${clave}`}
                 className={style.control}
