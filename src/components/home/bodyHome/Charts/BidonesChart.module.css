@@ -1,6 +1,23 @@
+/*
+ * Tarjeta de un producto.
+ *
+ * Es una columna en cualquier ancho: medidor arriba, acciones abajo. Antes era
+ * una fila (botones al lado del medidor) que se volvia columna solo en celular,
+ * y con width: fit-content la tarjeta imponia su ancho a la rejilla: dos
+ * columnas de tarjetas anchas mas dos secciones lado a lado era lo que se salia
+ * de la pantalla en monitores grandes.
+ *
+ * La tarjeta ocupa ahora la celda que la rejilla le da y nunca al reves.
+ */
 .bidonesChartContainer {
   display: flex;
-  width: fit-content;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  min-width: 0;
+  padding: var(--sp-3);
   border-radius: 16px;
   border: 2px solid var(--color-secundario);
   box-shadow: 0 2px 8px var(--color-sombra);
@@ -8,10 +25,10 @@
 
 .actionsContainer {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: var(--sp-6);
-  padding: var(--sp-2);
+  gap: var(--sp-2);
+  width: 100%;
 }
 
 .actionButton {
@@ -25,6 +42,9 @@
   cursor: pointer;
   font-size: var(--fs-base);
   transition: all 0.2s ease-in-out;
+  /* Dos acciones por fila si caben, apiladas si no. Con la letra en grande la
+     segunda baja sola en vez de salirse de la tarjeta. */
+  flex: 1 1 8rem;
 }
 
 .actionButton:hover {
@@ -33,29 +53,6 @@
   color: var(--color-primario);
 }
 
-.actionButton:focus {
-  outline: none;
-}
-
-@media screen and (max-width: 768px) {
-  .bidonesChartContainer {
-    /* Ancho completo de la columna, no fit-content: dentro de una sola
-       columna la tarjeta debe ocupar la pantalla. */
-    width: 100%;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .actionsContainer {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-    gap: var(--sp-2);
-    padding: var(--sp-2);
-  }
-
-  .actionButton {
-    flex: 1 1 8rem;
-  }
-}
+/* Sin regla :focus { outline: none }. La que habia ganaba en especificidad al
+   :focus-visible global de tokens.css y dejaba el boton sin anillo de foco:
+   navegando con teclado no se veia donde estabas parado. */

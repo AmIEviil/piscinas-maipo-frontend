@@ -1,0 +1,43 @@
+.toggleGroup {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+}
+
+.toggleButton {
+  background-color: transparent;
+  color: inherit;
+  font-weight: 600;
+  font-size: var(--fs-base);
+  padding: var(--sp-2) var(--sp-4);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-secundario);
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.toggleButton:hover {
+  background-color: var(--color-secundario);
+  color: var(--color-primario);
+}
+
+/*
+ * La opcion activa no se distingue solo por color: el fondo lleno mas el peso
+ * de la letra la marcan tambien para quien no percibe la diferencia de tono, y
+ * aria-checked la anuncia al lector de pantalla.
+ */
+.toggleButtonActive {
+  background-color: var(--color-secundario);
+  color: var(--color-primario);
+  font-weight: 800;
+}
+
+@media screen and (max-width: 480px) {
+  .toggleButton {
+    /* Cuatro opciones no caben en una fila de telefono: dos y dos. */
+    flex: 1 1 8rem;
+    padding-inline: var(--sp-2);
+  }
+}

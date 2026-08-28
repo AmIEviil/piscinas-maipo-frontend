@@ -1,0 +1,91 @@
+/*
+ * Estilos comunes de las vistas agregadas del Home (barras, reparto y tabla).
+ * A diferencia de los medidores, estas vistas ocupan el ancho completo de su
+ * seccion: son una sola figura que habla de todos los elementos.
+ */
+.aggregateChart {
+  width: 100%;
+  /* El grafico no fuerza scroll horizontal del documento: se adapta al ancho
+     que le den. El alto lo calcula el componente en rem, para que crezca con el
+     nivel de letra. */
+  min-width: 0;
+}
+
+/* Cifra que resume la vista de reparto. Se escribe, no se deduce del arco. */
+.heroFigure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  margin: 0 0 var(--sp-2);
+  text-align: center;
+}
+
+.heroFigure strong {
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  line-height: var(--lh-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.heroFigure span {
+  font-size: var(--fs-base);
+  opacity: 0.9;
+}
+
+.emptyMessage {
+  margin: 0;
+  padding: var(--sp-5) var(--sp-3);
+  text-align: center;
+  font-size: var(--fs-base);
+  max-width: 28rem;
+  margin-inline: auto;
+}
+
+/* --- Tabla ---------------------------------------------------------------- */
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-base);
+  /* Las columnas de cifras se leen alineadas. */
+  font-variant-numeric: tabular-nums;
+}
+
+.tableCaption {
+  caption-side: top;
+  padding-bottom: var(--sp-2);
+  font-size: var(--fs-sm);
+  text-align: left;
+  opacity: 0.9;
+}
+
+.dataTable th,
+.dataTable td {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--viz-border);
+  white-space: nowrap;
+}
+
+.dataTable thead th {
+  text-align: left;
+  font-weight: 700;
+  border-bottom-width: 2px;
+}
+
+.dataTable tbody th {
+  text-align: left;
+  font-weight: 600;
+  /* El nombre del producto es lo unico que puede partirse en varias lineas. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.dataTable td {
+  text-align: right;
+}
+
+.dataTable tbody tr:last-child th,
+.dataTable tbody tr:last-child td {
+  border-bottom: none;
+}

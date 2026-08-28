@@ -92,6 +92,23 @@ export const HomeView = () => {
     openModal();
   };
 
+  /**
+   * Solicitud abierta desde el indicador de stock bajo del panel.
+   *
+   * Comparte la preseleccion con la alerta, pero no marca solicitudDesdeAlerta:
+   * el indicador esta siempre a la vista y encadenar la alerta de mantenciones
+   * cada vez que se cierra el modal seria una interrupcion sin motivo.
+   */
+  const handleSolicitarDesdeKpi = () => {
+    const masCritico = lowStockProducts[0];
+    setProductosSolicitables(lowStockProducts);
+    if (masCritico) {
+      setSelectedProductId(masCritico.id ?? "");
+      setTypeProduct(masCritico.nombre);
+    }
+    openModal();
+  };
+
   const handleCerrarSolicitud = () => {
     closeModal();
     if (solicitudDesdeAlerta.current) {
@@ -129,9 +146,16 @@ export const HomeView = () => {
 
   return (
     <div>
-      <div>
-        <BodyHome />
-      </div>
+      {/*
+        Los indicadores del panel se alimentan del stock bajo y del dia habil
+        que esta vista ya consulto para las alertas: se pasan como props para no
+        repetir la misma peticion dentro de BodyHome.
+      */}
+      <BodyHome
+        productosBajoMinimo={lowStockProducts.length}
+        diaActual={diaActual}
+        onVerBajoMinimo={handleSolicitarDesdeKpi}
+      />
       <LowStockAlertModal
         open={alertaVisible === "lowStock"}
         productos={lowStockProducts}

@@ -6,16 +6,11 @@ import { useNavigate } from "react-router";
 import { useBoundStore } from "../../../../store/BoundedStore";
 
 interface ProductsChart {
-  showPercentage?: boolean;
   loading?: boolean;
   productData: IResumeMaintenance;
 }
 
-const ChartDiario = ({
-  showPercentage = false,
-  productData,
-  loading,
-}: ProductsChart) => {
+const ChartDiario = ({ productData, loading }: ProductsChart) => {
   const noMaintenancesToDo = productData.programadas === 0;
   const navigate = useNavigate();
   const setDayFilter = useBoundStore((state) => state.setDayFilter);
@@ -30,14 +25,33 @@ const ChartDiario = ({
       {loading && <CircularProgress />}
       {productData && !loading ? (
         <>
-          {/*
-            Igual que en BidonesChart: en celular esto era un menu de tres
-            puntos sin etiqueta. Con la tarjeta a ancho completo los dos
-            botones caben en una fila y se leen sin tener que abrirlos.
-          */}
+          <div className={style.chartContainer}>
+            {noMaintenancesToDo ? (
+              <span className={style.noMaintenancesToDo}>
+                Sin mantenciones programadas para el día {productData.dia}
+              </span>
+            ) : (
+              /*
+               * Antes el valor del medidor salia de un ternario sobre
+               * showPercentage cuyas dos ramas devolvian `realizadas`: la prop
+               * no cambiaba nada y se elimino junto con el ternario.
+               */
+              <GaugeChart
+                minValue={0}
+                maxValue={productData.programadas}
+                actualValue={productData.realizadas}
+                actualValueLabel="Mantenciones realizadas"
+                maxValueLabel="Mantenciones programadas"
+                title={productData.dia}
+              />
+            )}
+          </div>
+
+          {/* Igual que en BidonesChart: acciones debajo y con nombre a la
+              vista, no un menu de tres puntos sin etiqueta. */}
           <div className={style.actionsContainer}>
             <button className={style.actionButton} onClick={handleSeeDayDetails}>
-              Detalles dia
+              Detalles día
             </button>
             <button
               className={style.actionButton}
@@ -45,26 +59,6 @@ const ChartDiario = ({
             >
               Ir a Clientes
             </button>
-          </div>
-          <div className={style.chartContainer}>
-            {noMaintenancesToDo ? (
-              <span className={style.noMaintenancesToDo}>
-                Sin Mantenciones programadas para el dia {productData.dia}
-              </span>
-            ) : (
-              <GaugeChart
-                minValue={0}
-                maxValue={productData.programadas}
-                actualValue={
-                  showPercentage
-                    ? productData.realizadas
-                    : productData.realizadas
-                }
-                actualValueLabel="Mantenciones realizadas"
-                maxValueLabel="Mantenciones programadas"
-                title={productData.dia}
-              />
-            )}
           </div>
         </>
       ) : null}

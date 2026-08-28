@@ -1,6 +1,17 @@
+/*
+ * Tarjeta de un dia. Mismo criterio que BidonesChart: columna en cualquier
+ * ancho y sin width: fit-content, para que sea la rejilla la que reparta el
+ * espacio y no la tarjeta la que lo imponga.
+ */
 .diasChartContainer {
   display: flex;
-  width: fit-content;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  min-width: 0;
+  padding: var(--sp-3);
   border-radius: 16px;
   border: 2px solid var(--color-secundario);
   box-shadow: 0 2px 8px var(--color-sombra);
@@ -10,19 +21,24 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  /* Un dia sin mantenciones muestra solo un texto: sin este minimo la tarjeta
+     quedaba mucho mas baja que sus vecinas y la fila se veia rota. */
+  min-height: 10rem;
 }
 
 .noMaintenancesToDo {
   text-align: center;
-  max-width: 200px;
+  max-width: 14rem;
+  font-size: var(--fs-base);
 }
 
 .actionsContainer {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: var(--sp-6);
-  padding: var(--sp-2);
+  gap: var(--sp-2);
+  width: 100%;
 }
 
 .actionButton {
@@ -36,6 +52,7 @@
   cursor: pointer;
   font-size: var(--fs-base);
   transition: all 0.2s ease-in-out;
+  flex: 1 1 8rem;
 }
 
 .actionButton:hover {
@@ -44,31 +61,4 @@
   color: var(--color-primario);
 }
 
-.actionButton:focus {
-  outline: none;
-}
-
-@media screen and (max-width: 768px) {
-  .diasChartContainer {
-    /* Ancho completo de la columna, no fit-content: dentro de una sola
-       columna la tarjeta debe ocupar la pantalla. */
-    width: 100%;
-    flex-direction: column;
-    align-items: center;
-    height: fit-content;
-    justify-content: center;
-  }
-
-  .actionsContainer {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-    gap: var(--sp-2);
-    padding: var(--sp-2);
-  }
-
-  .actionButton {
-    flex: 1 1 8rem;
-  }
-}
+/* Sin regla :focus { outline: none }: ver la nota en BidonesChart.module.css. */

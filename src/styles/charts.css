@@ -1,0 +1,47 @@
+/*
+ * Tokens de los graficos del panel.
+ *
+ * Las tarjetas de graficos se pintan sobre --color-gris-oscuro, que es el
+ * INVERSO del fondo de pagina: con el tema claro la superficie es #2b2b2b
+ * (oscura) y con el tema oscuro es #e9e9e9 (clara). Por eso los valores por
+ * defecto de aqui son los pensados para fondo oscuro, y se cambian a los de
+ * fondo claro dentro de [data-theme="dark"]: al reves de lo habitual.
+ *
+ * Los colores de serie no viven aca sino en chartPalette.ts, porque MUI X
+ * Charts los recibe como prop de JavaScript y las var() de CSS no se resuelven
+ * dentro de un atributo de presentacion SVG. Este archivo cubre lo que sí pinta
+ * el CSS: tinta, rejilla, bordes y las tarjetas de indicadores.
+ *
+ * Ambos juegos de serie estan validados como paleta categorica de ocho ranuras
+ * contra su superficie real (banda de luminosidad, croma minimo, separacion
+ * para daltonismo y piso de vision normal). Las ranuras que quedan bajo 3:1 de
+ * contraste se compensan con etiqueta directa, leyenda y vista de tabla: el
+ * color nunca es el unico portador del dato.
+ */
+
+:root {
+  /* Superficie real de las tarjetas de grafico y su tinta. */
+  --viz-surface: var(--color-gris-oscuro);
+  --viz-ink: #ffffff;
+  --viz-ink-muted: #c3c2b7;
+  --viz-grid: #4a4a4a;
+  --viz-border: rgba(255, 255, 255, 0.14);
+
+  /*
+   * Paleta de estado. Es fija, nunca se tematiza y jamas se reutiliza como
+   * color de serie. Rojo y verde no se distinguen con deuteranopia (dE 4.1),
+   * asi que siempre viajan con icono y etiqueta: por eso no se usan en las
+   * barras ni en las donas, solo en los indicadores, donde el texto manda.
+   */
+  --viz-good: #0ca30c;
+  --viz-warning: #fab219;
+  --viz-serious: #ec835a;
+  --viz-critical: #d03b3b;
+
+  [data-theme="dark"] {
+    --viz-ink: #0b0b0b;
+    --viz-ink-muted: #52514e;
+    --viz-grid: #c9c9c9;
+    --viz-border: rgba(11, 11, 11, 0.14);
+  }
+}
