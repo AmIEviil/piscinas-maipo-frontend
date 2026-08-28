@@ -55,7 +55,13 @@ const PaymentCard = ({
     )}
 
     <div className={style.comprobanteAcciones}>
-      {comprobante.viewUrl && (
+      {/* fileInfo tambien se exige aca (no solo viewUrl): el kind que arma
+          InfoDialogClient.mapComprobantePago para MediaVisualizer sale de
+          fileInfo.mimeType, asi que sin fileInfo la vista previa cae al
+          branch "other" -> un iframe vacio. Sin este chequeo, un comprobante
+          con viewUrl pero sin fileInfo (subida a medio procesar) mostraria
+          un boton Ver que no muestra nada. */}
+      {comprobante.viewUrl && comprobante.fileInfo && (
         <button type="button" className={style.botonSecundario} onClick={onVer}>
           Ver
         </button>

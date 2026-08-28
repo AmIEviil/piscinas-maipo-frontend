@@ -656,7 +656,7 @@ const InfoClientDialog = ({
               onCerrar={handleClose}
               onGenerarBoleta={abrirBoleta}
               onVerReparaciones={abrirReparaciones}
-              puedeGenerarBoleta={mantencionesDelMes.length > 0}
+              puedeGenerarBoleta={isSuperAdmin && mantencionesDelMes.length > 0}
             />
           )}
 
