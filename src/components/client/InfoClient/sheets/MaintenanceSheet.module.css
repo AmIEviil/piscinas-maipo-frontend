@@ -1,0 +1,274 @@
+/*
+ * Campos de la hoja de registro de mantencion.
+ *
+ * Porta `.campo`, `.rotulo`, `.pista`, `.control`, `.opciones`, `.opcion`,
+ * `.nota-encadena`, `.agregar`, `.stepper`, `.elegidos`, `.elegido` y
+ * `.total-hoja` del mockup D (`mockup-d-hibrido.html`), reemplazando sus
+ * colores fijos por los tokens `--modal-*` del modal y sus tamanos de letra
+ * bajo 1rem por `var(--fs-base)` cuando el texto es un dato de negocio
+ * (nombre de producto, cantidad): ese piso lo fija el contrato global del
+ * rediseno y ya se aplico igual en MaintenanceTimeline.module.css y
+ * MonthStatusPanel.module.css. `.pista` se queda en `var(--fs-sm)` a
+ * proposito: son metadatos ("(opcional)", el aviso de encadenado), nunca un
+ * dato de negocio.
+ *
+ * Los botones "+`/`-" del stepper y los pares Si/No superan el area tactil
+ * minima (`--tap-min`, 2.75rem) tal como los porta el mockup; `.elegidoQuitar`
+ * (mapeado de `.elegido__x`) se agranda respecto del mockup para no quedar
+ * por debajo de esa misma cota.
+ *
+ * El <fieldset> que agrupa cada par de opciones (`.grupo`) reusa el layout de
+ * `.campo` y solo agrega el reset de borde/margen/relleno que un <fieldset>
+ * trae por defecto en el navegador.
+ *
+ * Todo en rem para escalar con el control de tamano de letra del TopBar; el
+ * corte de layout es responsabilidad de SlideSheet.module.css (@container
+ * sobre `.modal`), este archivo no define ninguno propio.
+ */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.grupo {
+  composes: campo;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.campo > label,
+.rotulo {
+  font-size: var(--fs-base);
+  font-weight: 700;
+}
+
+.pista {
+  font-size: var(--fs-sm);
+  color: var(--modal-texto-2);
+  font-weight: 400;
+}
+
+.control {
+  font: inherit;
+  font-size: var(--fs-base);
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  min-height: var(--tap-min);
+  background: var(--modal-superficie);
+  color: var(--modal-texto);
+  border: 0.125rem solid var(--modal-borde-fuerte);
+  border-radius: var(--radius-md);
+}
+
+.control:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+textarea.control {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+.opciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.opcion {
+  position: relative;
+}
+
+.opcion input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.opcion span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 3.5rem;
+  padding: 0.6rem;
+  cursor: pointer;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--modal-texto-2);
+  background: var(--modal-superficie);
+  border: 0.125rem solid var(--modal-borde-fuerte);
+  border-radius: var(--radius-md);
+}
+
+.opcion input:checked + span {
+  background: var(--modal-ok-suave);
+  color: var(--modal-ok);
+  border-color: var(--modal-ok);
+}
+
+.opcionNo input:checked + span {
+  background: var(--modal-alerta-suave);
+  color: var(--modal-alerta);
+  border-color: var(--modal-alerta);
+}
+
+.opcion input:focus-visible + span {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+.avisoEncadena {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--modal-acento);
+  background: var(--modal-acento-suave);
+  border: 0.0625rem solid var(--modal-acento);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.7rem;
+}
+
+.error {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--modal-peligro);
+}
+
+.agregar {
+  display: grid;
+  gap: 0.6rem;
+  align-items: end;
+  grid-template-columns: minmax(0, 1fr) 8.5rem;
+}
+
+.agregarBtn {
+  grid-column: 1 / -1;
+  font: inherit;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  min-height: var(--tap-min);
+  background: var(--modal-superficie);
+  color: var(--modal-acento);
+  border: 0.125rem solid var(--modal-acento);
+  border-radius: var(--radius-md);
+}
+
+.agregarBtn:hover {
+  background: var(--modal-acento-suave);
+}
+
+.agregarBtn:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+.stepper {
+  display: flex;
+}
+
+.stepper button {
+  font: inherit;
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  width: 2.9rem;
+  min-height: var(--tap-min);
+  background: var(--modal-superficie-2);
+  color: var(--modal-acento);
+  border: 0.125rem solid var(--modal-borde-fuerte);
+}
+
+.stepper button:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  border-right: 0;
+}
+
+.stepper button:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  border-left: 0;
+}
+
+.stepper button:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+.stepper input {
+  text-align: center;
+  border-radius: 0;
+}
+
+.elegidos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.elegido {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--modal-superficie);
+  border: 0.0625rem solid var(--modal-borde);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+}
+
+.elegidoNombre {
+  flex: 1 1 auto;
+  font-size: var(--fs-base);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.elegidoCantidad {
+  font-size: var(--fs-base);
+  font-weight: 800;
+  color: var(--modal-acento);
+  background: var(--modal-acento-suave);
+  border-radius: 999px;
+  padding: 0.1rem 0.65rem;
+}
+
+.elegidoQuitar {
+  font: inherit;
+  font-size: var(--fs-base);
+  cursor: pointer;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--modal-peligro);
+  border: 0.09375rem solid var(--modal-peligro);
+}
+
+.elegidoQuitar:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+.totalHoja {
+  background: var(--modal-acento-suave);
+  border: 0.0625rem solid var(--modal-acento);
+  border-radius: var(--radius-md);
+  padding: 0.8rem 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.totalHoja b {
+  font-size: var(--fs-lg);
+}

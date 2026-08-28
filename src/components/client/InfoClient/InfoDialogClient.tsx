@@ -10,7 +10,7 @@ import { getWindowWidth } from "../../../utils/WindowUtils";
 //Icons
 import AddIcon from "@mui/icons-material/Add";
 import CaretIcon from "../../ui/Icons/CaretIcon";
-import MaintenanceFields from "./maintenancesFields/MaintenancesFields";
+import MaintenanceSheet from "./sheets/MaintenanceSheet";
 import {
   useCreateMaintenance,
   useDeleteMaintenance,
@@ -95,7 +95,6 @@ const InfoClientDialog = ({
     { lat: number; lng: number } | undefined
   >(undefined);
 
-  const [isAddingMaintenance, setIsAddingMaintenance] = useState(false);
   const [windowWidth, setWindowWidth] = useState(getWindowWidth());
   const [showMaintenances, setShowMaintenances] = useState(windowWidth > BREAKPOINTS.tablet);
   const { products, fetchProducts } = useProductStore();
@@ -107,9 +106,8 @@ const InfoClientDialog = ({
   const { meses, mesActivo, setMesActivo } = useMonthNavigation(maintenancesClient);
   const [hojaMantencionAbierta, setHojaMantencionAbierta] = useState(false);
   const [hojaPagoAbierta, setHojaPagoAbierta] = useState(false);
-  // Sin consumidor visual todavia: las Tasks 13-15 leen estos flags para
-  // mostrar la hoja deslizante correspondiente.
-  void hojaMantencionAbierta;
+  // Sin consumidor visual todavia: la Task 15 lee este flag para mostrar la
+  // hoja de pago.
   void hojaPagoAbierta;
 
   // Defensa por si isSuperAdmin cambiara con el dialogo ya abierto en
@@ -210,7 +208,7 @@ const InfoClientDialog = ({
 
   const handleClose = () => {
     setCoordenadas(undefined);
-    setIsAddingMaintenance(false);
+    setHojaMantencionAbierta(false);
     setMaintenanceToEdit(null);
     setResumenMonthStore(null);
     setClientInfo({} as IClientForm);
@@ -241,7 +239,6 @@ const InfoClientDialog = ({
       }
 
       // Reset y refresh
-      setIsAddingMaintenance(false);
       setMaintenanceToEdit(null);
 
       if (onMaintenanceCreated) {
@@ -250,11 +247,6 @@ const InfoClientDialog = ({
     } catch (err) {
       console.error("Error al guardar mantención:", err);
     }
-  };
-
-  const handleCancelMaintenance = () => {
-    setIsAddingMaintenance(false);
-    setMaintenanceToEdit(null);
   };
 
   const handleSubmitComprobante = async (data: {
@@ -292,7 +284,7 @@ const InfoClientDialog = ({
 
   const handleEditMaintenance = (maintenance: IMaintenance) => {
     setMaintenanceToEdit(maintenance);
-    setIsAddingMaintenance(true);
+    setHojaMantencionAbierta(true);
     if (onMaintenanceCreated) {
       onMaintenanceCreated();
     }
@@ -349,12 +341,7 @@ const InfoClientDialog = ({
 
   const onAddingMaintenance = () => {
     if (!showMaintenances) setShowMaintenances(true);
-    setIsAddingMaintenance(true);
-  };
-
-  const onCancelAddingMaintenance = () => {
-    setIsAddingMaintenance(false);
-    setMaintenanceToEdit(null);
+    setHojaMantencionAbierta(true);
   };
 
   const abrirReparaciones = () => {
@@ -458,17 +445,9 @@ const InfoClientDialog = ({
               <div>
                 <button
                   className="flex items-center gap-1 p-1!"
-                  onClick={() => {
-                    if (isAddingMaintenance) {
-                      onCancelAddingMaintenance();
-                    } else {
-                      onAddingMaintenance();
-                    }
-                  }}
+                  onClick={onAddingMaintenance}
                 >
-                  {isAddingMaintenance
-                    ? "Cancelar mantención"
-                    : "Agregar nueva mantención"}
+                  Agregar nueva mantención
                   <AddIcon />
                 </button>
               </div>
@@ -476,57 +455,61 @@ const InfoClientDialog = ({
 
             {showMaintenances && (
               <>
-                <div className={`${isAddingMaintenance ? "hidden" : "block"}`}>
-                  {Object.keys(maintenancesClient ?? {}).length ? (
-                    <div className="flex flex-col gap-3">
-                      <div className={style.dosColumnas}>
-                        <MaintenanceTimeline
-                          mantenciones={mantencionesDelMes}
-                          proximaVisita={proximaVisita}
-                          onEditar={handleEditMaintenance}
-                          onEliminar={handleDeleteMaintenance}
-                          onRegistrarProxima={() => setHojaMantencionAbierta(true)}
-                          puedeEliminar={isSuperAdmin}
+                {Object.keys(maintenancesClient ?? {}).length ? (
+                  <div className="flex flex-col gap-3">
+                    <div className={style.dosColumnas}>
+                      <MaintenanceTimeline
+                        mantenciones={mantencionesDelMes}
+                        proximaVisita={proximaVisita}
+                        onEditar={handleEditMaintenance}
+                        onEliminar={handleDeleteMaintenance}
+                        onRegistrarProxima={() => setHojaMantencionAbierta(true)}
+                        puedeEliminar={isSuperAdmin}
+                      />
+                      <aside className={style.columnaLado}>
+                        <MonthStatusPanel
+                          mesActivo={mesActivo}
+                          valorMantencion={clientInfo?.valor_mantencion?.value ?? 0}
+                          mantencionesDelMes={mantencionesDelMes}
+                          montoPagado={comprobantesDelMes.reduce(
+                            (suma, c) => suma + (c.monto ?? 0),
+                            0,
+                          )}
+                          onGenerarBoleta={abrirBoleta}
+                          puedeGenerarBoleta={
+                            isSuperAdmin && mantencionesDelMes.length > 0
+                          }
                         />
-                        <aside className={style.columnaLado}>
-                          <MonthStatusPanel
-                            mesActivo={mesActivo}
-                            valorMantencion={clientInfo?.valor_mantencion?.value ?? 0}
-                            mantencionesDelMes={mantencionesDelMes}
-                            montoPagado={comprobantesDelMes.reduce(
-                              (suma, c) => suma + (c.monto ?? 0),
-                              0,
-                            )}
-                            onGenerarBoleta={abrirBoleta}
-                            puedeGenerarBoleta={
-                              isSuperAdmin && mantencionesDelMes.length > 0
-                            }
-                          />
-                        </aside>
-                      </div>
+                      </aside>
                     </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-3 ">
-                      <p className="text-gray-500">
-                        No hay mantenciones para mostrar
-                      </p>
-                    </div>
-                  )}
-                </div>
-                {isAddingMaintenance && (
-                  <MaintenanceFields
-                    clientId={clientInfo?.id.value ?? ""}
-                    valorMantencion={clientInfo?.valor_mantencion.value ?? 0}
-                    productosList={products}
-                    onAccept={handleAcceptMaintenance}
-                    onCancel={handleCancelMaintenance}
-                    isEditing={!!maintenanceToEdit}
-                    mantencionData={maintenanceToEdit}
-                  />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3 ">
+                    <p className="text-gray-500">
+                      No hay mantenciones para mostrar
+                    </p>
+                  </div>
                 )}
               </>
             )}
           </div>
+
+          <MaintenanceSheet
+            abierta={hojaMantencionAbierta}
+            clientId={clientInfo?.id?.value ?? ""}
+            valorMantencion={clientInfo?.valor_mantencion?.value ?? 0}
+            productosList={products}
+            mantencionAEditar={maintenanceToEdit}
+            puedeRegistrarPago={isSuperAdmin}
+            onCerrar={() => {
+              setHojaMantencionAbierta(false);
+              setMaintenanceToEdit(null);
+            }}
+            onGuardar={async (datos) => {
+              await handleAcceptMaintenance(datos);
+              setHojaMantencionAbierta(false);
+            }}
+          />
 
           <div
             className={style.panel}
