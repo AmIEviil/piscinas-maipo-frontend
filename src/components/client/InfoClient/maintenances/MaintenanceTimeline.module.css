@@ -89,7 +89,7 @@
 }
 
 .visitaFecha {
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
   color: var(--modal-texto-2);
 }
 
@@ -109,9 +109,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
   font-weight: 700;
-  padding: 0.28rem 0.7rem;
+  padding: 0.3rem 0.75rem;
   border-radius: 0.5rem;
   border: 0.09375rem solid var(--modal-borde);
   background: var(--modal-superficie-2);
@@ -143,8 +143,8 @@
 }
 
 .producto {
-  font-size: var(--fs-sm);
-  padding: 0.25rem 0.65rem;
+  font-size: var(--fs-base);
+  padding: 0.3rem 0.7rem;
   border-radius: 999rem;
   background: var(--modal-superficie-2);
   border: 0.0625rem solid var(--modal-borde);
