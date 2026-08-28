@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   type IMaintenance,
   type IMaintenanceCreate,
@@ -49,6 +49,15 @@ interface VisitaCubrible {
   etiqueta: string;
   monto: number;
 }
+
+// Duraciones que SlideSheet.module.css declara para `.hoja` (transform,
+// 0.26s) y `.velo` (opacity, 0.2s). Duplicadas aca a proposito: SlideSheet no
+// las expone como constantes, y el puente de velo del encadenado (ver
+// guardarMantencion) necesita conocerlas para saber cuanto durar. Si esos
+// valores cambian en SlideSheet.module.css, estos dos deben actualizarse
+// junto con ellos.
+const TRANSICION_HOJA_MS = 260;
+const TRANSICION_VELO_MS = 200;
 
 interface InfoClientDialogProps {
   open: boolean;
@@ -122,6 +131,43 @@ const InfoClientDialog = ({
   // true solo mientras la hoja de pago esta encadenada tras guardar una
   // mantencion; false cuando se abre directo desde Cobros.
   const [pagoEncadenado, setPagoEncadenado] = useState(false);
+  // Puente entre los velos de las dos hojas encadenadas: cubre el fondo
+  // mientras el velo de la hoja de mantencion ya termino de apagarse pero el
+  // de la hoja de pago todavia no llega a su propia opacidad plena. Ver
+  // guardarMantencion.
+  const [puenteVeloVisible, setPuenteVeloVisible] = useState(false);
+  // Handles de los dos setTimeout del encadenado (abrir la hoja de pago,
+  // apagar el puente). Guardados en refs -no en variables locales- porque
+  // sobreviven a un cierre temprano del dialogo entero: sin limpiarlos, un
+  // cierre dentro de esa ventana de 260-460ms deja el timer vivo, que
+  // despues reabre la hoja de pago (o esconde el puente) sobre el dialogo
+  // ya cerrado o reabierto con otro cliente.
+  const hojaPagoTimeoutRef = useRef<number | null>(null);
+  const puenteVeloTimeoutRef = useRef<number | null>(null);
+
+  const limpiarTimersEncadenado = () => {
+    if (hojaPagoTimeoutRef.current !== null) {
+      window.clearTimeout(hojaPagoTimeoutRef.current);
+      hojaPagoTimeoutRef.current = null;
+    }
+    if (puenteVeloTimeoutRef.current !== null) {
+      window.clearTimeout(puenteVeloTimeoutRef.current);
+      puenteVeloTimeoutRef.current = null;
+    }
+  };
+
+  // Red de seguridad si el componente se desmonta con el encadenado a medio
+  // camino (los refs no dependen de closures viejas: se leen via .current).
+  useEffect(() => {
+    return () => {
+      if (hojaPagoTimeoutRef.current !== null) {
+        window.clearTimeout(hojaPagoTimeoutRef.current);
+      }
+      if (puenteVeloTimeoutRef.current !== null) {
+        window.clearTimeout(puenteVeloTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Defensa por si isSuperAdmin cambiara con el dialogo ya abierto en
   // "cobros" (p. ej. una demora de hidratacion del rol): ClientTabs deja de
@@ -236,6 +282,13 @@ const InfoClientDialog = ({
   }, [clientInfo]);
 
   const handleClose = () => {
+    // Si el dialogo entero se cierra a mitad del encadenado (dentro de la
+    // ventana de 260-460ms entre guardar la mantencion y que la hoja de pago
+    // termine de aparecer), hay que cortar los timers pendientes: si no,
+    // igual disparan despues y reabren la hoja de pago (o esconden el
+    // puente) sobre el modal ya cerrado o reabierto con otro cliente.
+    limpiarTimersEncadenado();
+    setPuenteVeloVisible(false);
     setCoordenadas(undefined);
     setHojaMantencionAbierta(false);
     setMaintenanceToEdit(null);
@@ -296,9 +349,6 @@ const InfoClientDialog = ({
 
     if (!registrarPago) return;
 
-    // La hoja de mantencion tiene 260ms de transicion de salida (ver
-    // SlideSheet.module.css, `.hoja`). Se espera a que termine para que
-    // nunca haya dos dialogos vivos a la vez.
     setVisitaFijada(
       creada
         ? {
@@ -309,7 +359,34 @@ const InfoClientDialog = ({
         : null,
     );
     setPagoEncadenado(true);
-    window.setTimeout(() => setHojaPagoAbierta(true), 260);
+
+    // Puente de velo: sube ya, en el mismo tick en que empieza a cerrar la
+    // hoja de mantencion, y se mantiene visible hasta que el velo propio de
+    // la hoja de pago llegue a su propia opacidad plena (TRANSICION_HOJA_MS
+    // + TRANSICION_VELO_MS despues). Sin el, entre el momento en que el
+    // velo de la hoja de mantencion termina de apagarse (TRANSICION_VELO_MS)
+    // y el momento en que arranca a abrirse el de la hoja de pago
+    // (TRANSICION_HOJA_MS) quedaria un hueco de fondo descubierto -y
+    // clickeable, porque un velo en opacidad 0 tambien tiene
+    // pointer-events:none.
+    setPuenteVeloVisible(true);
+    limpiarTimersEncadenado();
+
+    // La hoja de mantencion tiene 260ms de transicion de salida (ver
+    // SlideSheet.module.css, `.hoja`). Se espera a que termine para que
+    // nunca haya dos dialogos vivos a la vez.
+    hojaPagoTimeoutRef.current = window.setTimeout(() => {
+      hojaPagoTimeoutRef.current = null;
+      setHojaPagoAbierta(true);
+    }, TRANSICION_HOJA_MS);
+
+    // El velo de la hoja de pago (SlideSheet propio) tarda otros
+    // TRANSICION_VELO_MS en llegar a opacidad plena desde que la hoja abre;
+    // recien ahi el puente deja de hacer falta.
+    puenteVeloTimeoutRef.current = window.setTimeout(() => {
+      puenteVeloTimeoutRef.current = null;
+      setPuenteVeloVisible(false);
+    }, TRANSICION_HOJA_MS + TRANSICION_VELO_MS);
   };
 
   const handleSubmitComprobante = async (data: {
@@ -358,6 +435,13 @@ const InfoClientDialog = ({
     mantencionIds: string[];
   }) => {
     await handleSubmitComprobante(datos);
+    // Defensivo: para cuando esto corre, los timers del encadenado ya
+    // deberian haber disparado solos (la hoja de pago solo es interactuable
+    // una vez abierta). Se limpian igual por si el usuario alcanzo a
+    // guardar en la ventana de 260-460ms, antes de que el timer del puente
+    // dispare.
+    limpiarTimersEncadenado();
+    setPuenteVeloVisible(false);
     setHojaPagoAbierta(false);
     setPagoEncadenado(false);
     setVisitaFijada(null);
@@ -368,14 +452,19 @@ const InfoClientDialog = ({
   // asi que no se pierde nada por no adjuntar el comprobante ahora - queda
   // disponible para subirlo despues desde la pestana Cobros.
   const cerrarHojaPago = () => {
+    limpiarTimersEncadenado();
+    setPuenteVeloVisible(false);
     setHojaPagoAbierta(false);
     setPagoEncadenado(false);
     setVisitaFijada(null);
   };
 
   // Apertura directa desde el boton del MonthBar en la pestana Cobros: sin
-  // paso 1 y sin visita fijada.
+  // paso 1 y sin visita fijada. Tambien corta cualquier encadenado que
+  // hubiera quedado a medio camino.
   const abrirHojaPagoDirecta = () => {
+    limpiarTimersEncadenado();
+    setPuenteVeloVisible(false);
     setPagoEncadenado(false);
     setVisitaFijada(null);
     setHojaPagoAbierta(true);
@@ -592,6 +681,10 @@ const InfoClientDialog = ({
               </>
             )}
           </div>
+
+          {puenteVeloVisible && (
+            <div className={style.puenteVelo} aria-hidden="true" />
+          )}
 
           <MaintenanceSheet
             abierta={hojaMantencionAbierta}

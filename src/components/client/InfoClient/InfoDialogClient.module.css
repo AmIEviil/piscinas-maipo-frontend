@@ -175,3 +175,29 @@
 .pieFin {
   margin-left: auto;
 }
+
+/*
+ * Puente de velo del encadenado mantencion -> pago (Task 15,
+ * InfoDialogClient.tsx: guardarMantencion / puenteVeloVisible).
+ *
+ * Visualmente identico, a proposito, al velo abierto de SlideSheet.tsx
+ * (`.velo[data-abierto="si"]` en SlideSheet.module.css): mismo color, mismo
+ * blur, mismo z-index. Es lo que permite que aparecer/desaparecer sin
+ * transicion propia (a diferencia de `.velo`, que fundido en opacity) no se
+ * note: cuando se monta ya coincide en apariencia con el velo de la hoja
+ * que se esta yendo, y cuando se desmonta el velo de la hoja de pago ya
+ * esta en su opacidad plena debajo. No tiene transition ni data-abierto
+ * porque su presencia en el DOM ya es el estado (ver puenteVeloVisible),
+ * sin paso intermedio que pueda dejar un frame descubierto.
+ *
+ * pointer-events: auto a proposito: bloquea la interaccion con el fondo
+ * durante el puente, igual que hace `.velo` mientras esta abierto.
+ */
+.puenteVelo {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(4, 16, 24, 0.58);
+  backdrop-filter: blur(0.125rem);
+  pointer-events: auto;
+}
