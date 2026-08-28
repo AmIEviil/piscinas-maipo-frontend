@@ -12,10 +12,12 @@
  * proposito: son metadatos ("(opcional)", el aviso de encadenado), nunca un
  * dato de negocio.
  *
- * Los botones "+`/`-" del stepper y los pares Si/No superan el area tactil
- * minima (`--tap-min`, 2.75rem) tal como los porta el mockup; `.elegidoQuitar`
- * (mapeado de `.elegido__x`) se agranda respecto del mockup para no quedar
- * por debajo de esa misma cota.
+ * Los botones "+`/`-" del stepper (min-width 2.9rem, min-height 3rem) y los
+ * pares Si/No (min-height 3.5rem) superan el area tactil minima (`--tap-min`,
+ * 2.75rem) tal como los porta el mockup, a proposito: son los controles que
+ * mas se tocan del formulario. `.elegidoQuitar` (mapeado de `.elegido__x`)
+ * se agranda respecto del mockup para no quedar por debajo de esa misma
+ * cota.
  *
  * El <fieldset> que agrupa cada par de opciones (`.grupo`) reusa el layout de
  * `.campo` y solo agrega el reset de borde/margen/relleno que un <fieldset>
@@ -182,8 +184,8 @@ textarea.control {
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
-  width: 2.9rem;
-  min-height: var(--tap-min);
+  min-width: 2.9rem;
+  min-height: 3rem;
   background: var(--modal-superficie-2);
   color: var(--modal-acento);
   border: 0.125rem solid var(--modal-borde-fuerte);
