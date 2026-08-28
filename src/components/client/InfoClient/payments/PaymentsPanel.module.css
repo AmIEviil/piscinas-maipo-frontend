@@ -1,0 +1,319 @@
+/*
+ * Pestana Cobros: tarjetas de comprobante + panel lateral de cobranza del
+ * mes.
+ *
+ * Porta del mockup D (`mockup-d-hibrido.html`): `.aviso`, `.comps` (aca
+ * `.comprobantes`), `.comp` y sus partes (`.comprobante*`), `.pend-lista`
+ * (`.pendientes`) y `.pend` (`.pendiente`), mas `.panel-lado`, `.monto` y
+ * `.dos-col` (`.dosColumnas`/`.columnaLado`), compartidos con
+ * MonthStatusPanel.module.css (Task 13) e InfoDialogClient.module.css: los
+ * tres archivos definen el mismo lenguaje visual porque cada modulo CSS esta
+ * scopeado a su propio componente, asi que no hay forma de reutilizar una
+ * clase entre archivos sin duplicarla.
+ *
+ * Igual que en los tres paneles anteriores, los colores fijos del mockup se
+ * cambian por los tokens `--modal-*` (luz y `[data-theme="dark"]` ya resueltos
+ * ahi) y los border-radius se convierten 1:1 de los `--r-*` del mockup a rem
+ * literales (no existe un `--radius-lg` compartido en `tokens.css`, y el
+ * resto de la familia de paneles ya sigue este mismo patron).
+ *
+ * El piso de tipografia del rediseno ("ningun dato de negocio bajo 1rem")
+ * sube `.comp__cubre` (que dato de negocio, "que visita cubre" este pago) de
+ * los .9375rem del mockup a `var(--fs-base)`, igual que ya hizo
+ * MaintenanceTimeline.module.css con `.producto`. `.comprobanteMeta` (fecha +
+ * tipo de archivo) es metadato puro y se queda en `var(--fs-sm)`.
+ *
+ * Los cortes de layout van con `@container` sobre `.modal` (definido en
+ * InfoDialogClient.module.css) para no reintroducir el scroll horizontal que
+ * esta pestana viene a resolver; nunca `@media` sobre el ancho de ventana.
+ * Todo en rem para escalar con el control de tamano de letra del TopBar.
+ */
+
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.75rem;
+  background: var(--modal-alerta-suave);
+  border: 0.0625rem solid var(--modal-alerta);
+  color: var(--modal-alerta);
+  font-size: var(--fs-base);
+  font-weight: 600;
+}
+
+.vacio {
+  margin: 0;
+  padding: 1rem 0;
+  font-size: var(--fs-base);
+  color: var(--modal-texto-2);
+}
+
+/* Dos columnas: identico a `.dosColumnas`/`.columnaLado` de
+   InfoDialogClient.module.css, duplicado porque este modulo esta scopeado a
+   PaymentsPanel. */
+.dosColumnas {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+@container (min-width: 55rem) {
+  .dosColumnas {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 19.5rem;
+    align-items: start;
+  }
+  .columnaLado {
+    position: sticky;
+    top: 0;
+  }
+}
+
+.comprobantes {
+  display: grid;
+  gap: 0.7rem;
+}
+
+@container (min-width: 43.75rem) {
+  .comprobantes {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.comprobante {
+  background: var(--modal-superficie);
+  border: 0.0625rem solid var(--modal-borde);
+  border-left: 0.25rem solid var(--modal-acento);
+  border-radius: 0.75rem;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.comprobanteTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.comprobanteNombre {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.comprobanteMeta {
+  font-size: var(--fs-sm);
+  color: var(--modal-texto-2);
+}
+
+.comprobanteMonto {
+  margin-left: auto;
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.cubre {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.cubreItem {
+  font-size: var(--fs-base);
+  padding: 0.3rem 0.7rem;
+  border-radius: 999rem;
+  background: var(--modal-superficie-2);
+  border: 0.0625rem solid var(--modal-borde);
+  color: var(--modal-texto);
+}
+
+.cubreItem b {
+  color: var(--modal-acento);
+}
+
+.comprobanteAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+/* Botones de la tarjeta: fusion de `.btn` + `.btn--sm` del mockup, siguiendo
+   el patron ya usado en MaintenanceTimeline.module.css. min-height cubre
+   `--tap-min`: Ver/Descargar/Eliminar son los controles mas dificiles de
+   alcanzar hoy en la tabla que esto reemplaza. */
+.botonSecundario,
+.botonFantasma,
+.botonPeligro {
+  font: inherit;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  min-height: var(--tap-min);
+  border-radius: 0.75rem;
+  border: 0.125rem solid transparent;
+}
+
+.botonSecundario:focus-visible,
+.botonFantasma:focus-visible,
+.botonPeligro:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+.botonSecundario {
+  background: var(--modal-superficie);
+  color: var(--modal-acento);
+  border-color: var(--modal-acento);
+}
+
+.botonSecundario:hover {
+  background: var(--modal-acento-suave);
+}
+
+.botonFantasma {
+  background: var(--modal-superficie);
+  color: var(--modal-texto-2);
+  border-color: var(--modal-borde-fuerte);
+}
+
+.botonFantasma:hover {
+  background: var(--modal-superficie-2);
+  color: var(--modal-texto);
+}
+
+.botonPeligro {
+  background: var(--modal-superficie);
+  color: var(--modal-peligro);
+  border-color: var(--modal-peligro);
+}
+
+.botonPeligro:hover {
+  background: var(--modal-peligro-suave);
+}
+
+/* Panel lateral "Cobranza del mes": identico a `.panel`/`.cabecera`/`.cuerpo`
+   de MonthStatusPanel.module.css (Task 13). */
+.panelLado {
+  background: var(--modal-superficie);
+  border: 0.0625rem solid var(--modal-borde);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.panelLadoCab {
+  margin: 0;
+  padding: 0.8rem 0.95rem;
+  font-size: var(--fs-md);
+  font-weight: 800;
+  background: var(--modal-superficie-3);
+  border-bottom: 0.0625rem solid var(--modal-borde);
+}
+
+.panelLadoCuerpo {
+  padding: 1rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.monto {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: var(--fs-md);
+}
+
+.monto span:first-child {
+  color: var(--modal-texto-2);
+  overflow-wrap: anywhere;
+}
+
+.montoPendiente span {
+  color: var(--modal-alerta);
+  font-weight: 700;
+}
+
+.subtitulo {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  margin: 0.2rem 0 0.5rem;
+}
+
+.pendientes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pendiente {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--modal-alerta-suave);
+  border: 0.0625rem solid var(--modal-alerta);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  font-size: var(--fs-base);
+}
+
+.pendiente b {
+  margin-left: auto;
+  white-space: nowrap;
+  font-weight: 800;
+}
+
+.botonBloque,
+.botonBloqueSecundario {
+  width: 100%;
+  font: inherit;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  min-height: var(--tap-min);
+  border-radius: 0.75rem;
+  border: 0.125rem solid var(--modal-acento);
+}
+
+.botonBloque:focus-visible,
+.botonBloqueSecundario:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+.botonBloque {
+  background: var(--modal-acento);
+  color: #ffffff;
+}
+
+.botonBloque:hover {
+  background: var(--modal-acento-2);
+  border-color: var(--modal-acento-2);
+}
+
+:global([data-theme="dark"]) .botonBloque {
+  color: #04131b;
+}
+
+.botonBloqueSecundario {
+  background: var(--modal-superficie);
+  color: var(--modal-acento);
+}
+
+.botonBloqueSecundario:hover {
+  background: var(--modal-acento-suave);
+}

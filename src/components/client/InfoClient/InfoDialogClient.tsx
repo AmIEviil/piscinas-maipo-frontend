@@ -25,10 +25,14 @@ import {
 import ClientFields from "./clientInfoFields/ClientInfoFields";
 import { Modal } from "react-bootstrap";
 import Button from "../../ui/button/Button";
-import { useUploadComprobantePago } from "../../../hooks/ComprobantePagosHooks";
+import {
+  useUploadComprobantePago,
+  useDeleteComprobantePago,
+} from "../../../hooks/ComprobantePagosHooks";
 import { formatName } from "../../../utils/formatTextUtils";
 import type { IComprobantePago } from "../../../service/ComprobantePagos.interface";
-import ComprobantesContainer from "./comprobantesContainer/ComprobantesContainer";
+import PaymentsPanel from "./payments/PaymentsPanel";
+import MediaVisualizer from "../../ui/modal/mediaVisualizer/MediaVisualizer";
 import LoadingSpinner from "../../ui/loading/Loading";
 import { useClientResumenMonthStore } from "../../../store/ClientStore";
 import MaintenanceTimeline from "./maintenances/MaintenanceTimeline";
@@ -97,6 +101,7 @@ const InfoClientDialog = ({
   const deleteMaintenance = useDeleteMaintenance();
 
   const uploadComprobanteMutation = useUploadComprobantePago();
+  const deleteComprobanteMutation = useDeleteComprobantePago();
   const setResumenMonthStore = useClientResumenMonthStore(
     (state) => state.setResumenMonth,
   );
@@ -169,18 +174,6 @@ const InfoClientDialog = ({
     };
   }, []);
 
-  // Defensa por si isSuperAdmin cambiara con el dialogo ya abierto en
-  // "cobros" (p. ej. una demora de hidratacion del rol): ClientTabs deja de
-  // renderizar esa pestana para el no-superadmin, y sin este efecto
-  // ninguna pestana quedaria con tabIndex 0 (activa == "cobros" no calza
-  // con ningun boton montado), ademas de dejar al usuario sin forma de
-  // volver a activar una pestana desde la UI.
-  useEffect(() => {
-    if (!isSuperAdmin && pestanaActiva === "cobros") {
-      setPestanaActiva("mantenciones");
-    }
-  }, [isSuperAdmin, pestanaActiva]);
-
   const mantencionesDelMes = useMemo(() => {
     if (!mesActivo) return [];
     const lista = maintenancesClient?.[mesActivo];
@@ -198,6 +191,24 @@ const InfoClientDialog = ({
       String(a.fecha_emision).localeCompare(String(b.fecha_emision)),
     );
   }, [mesActivo, comprobantesClient]);
+
+  // Total cobrable del mes para el panel lateral de la pestana Cobros: el
+  // mismo calculo que MonthStatusPanel.calcularResumen (mantenciones
+  // realizadas * valor de mantencion, mas productos), pero independiente de
+  // si ese panel esta montado -vive solo dentro de la pestana Mantenciones y
+  // se desmonta si el usuario colapsa "Ver Mantenciones"- para que el total
+  // de Cobros no quede pegado a un mes viejo cuando el otro panel no lo
+  // recalculo.
+  const totalMesCobros = useMemo(() => {
+    const valorMantencion = clientInfo?.valor_mantencion?.value ?? 0;
+    return mantencionesDelMes.reduce((suma, mantencion) => {
+      const totalProductos = mantencion.productos.reduce(
+        (subtotal, p) => subtotal + p.product.valor_unitario * p.cantidad,
+        0,
+      );
+      return suma + (mantencion.realizada ? valorMantencion : 0) + totalProductos;
+    }, 0);
+  }, [mantencionesDelMes, clientInfo]);
 
   // Opciones de la hoja de pago para "que visitas cubre este pago": las
   // visitas del mes que aun no tienen pago, salvo la recien fijada (esa ya
@@ -532,6 +543,83 @@ const InfoClientDialog = ({
     setHojaMantencionAbierta(true);
   };
 
+  /**
+   * Que media mostrar en la vista previa de un comprobante: imagen embebida
+   * por su fileId de Drive, o iframe (PDF / video) apuntando a `viewUrl`.
+   * Portado sin cambios de `ComprobantesContainer.tsx` (`mapComprobante`).
+   */
+  const mapComprobantePago = (comprobante: IComprobantePago) => {
+    const mimeType = comprobante.fileInfo?.mimeType ?? "";
+    const isImage = mimeType.startsWith("image/");
+    const isPdf = mimeType === "application/pdf";
+    const isVideo = mimeType.startsWith("video/");
+
+    let resourceUrl = "";
+    let kind = "other";
+
+    if (isImage) {
+      kind = "img";
+      resourceUrl = `https://lh3.googleusercontent.com/d/${comprobante.fileId}`;
+    } else if (isPdf || isVideo) {
+      kind = "iframe";
+      resourceUrl = comprobante.viewUrl;
+    }
+
+    return {
+      _kind: kind,
+      url: resourceUrl,
+      name: comprobante.nombre,
+    };
+  };
+
+  const handleVerComprobante = (comprobante: IComprobantePago) => {
+    setOpenModal({
+      header: (
+        <b className="text-header-modal">
+          Visualizando: {comprobante.nombre}
+        </b>
+      ),
+      content: (
+        <div className="w-full h-full flex justify-center items-center">
+          <MediaVisualizer
+            currentMedia={mapComprobantePago(comprobante)}
+            fullScreenImage={true}
+          />
+        </div>
+      ),
+    });
+  };
+
+  const handleEliminarComprobanteConfirmado = async (id: string) => {
+    try {
+      await deleteComprobanteMutation.mutateAsync(id);
+      handleCloseModal();
+    } catch (error) {
+      console.error("Error al eliminar el comprobante:", error);
+    }
+  };
+
+  const handleEliminarComprobante = (id: string) => {
+    setOpenModal({
+      dialogClassName: "max-w-md! max-h-md!",
+      header: <b className="text-header-modal">Confirmar eliminación</b>,
+      content: (
+        <div className="flex flex-col gap-4">
+          <span>¿Estás seguro de que deseas eliminar este comprobante?</span>
+        </div>
+      ),
+      footer: (
+        <>
+          <Button label="Cancelar" onClick={handleCloseModal} />
+          <Button
+            label="Confirmar"
+            onClick={() => handleEliminarComprobanteConfirmado(id)}
+          />
+        </>
+      ),
+    });
+  };
+
   const abrirReparaciones = () => {
     setOpenModal({
       dialogClassName: "h-[40dvh]!",
@@ -577,17 +665,11 @@ const InfoClientDialog = ({
             onCambiar={setPestanaActiva}
             conteos={{
               mantenciones: mantencionesDelMes.length,
-              // El conteo tambien queda gateado por las dudas (p. ej. si
-              // algun consumidor futuro pasa ocultarCobros=false), pero con
-              // la pestana oculta ClientTabs nunca llega a leer este valor.
-              cobros: isSuperAdmin ? comprobantesDelMes.length : 0,
+              // La pestana Cobros es visible para todos los roles (ver
+              // PaymentsPanel): el conteo refleja los comprobantes reales del
+              // mes sin gatear por isSuperAdmin.
+              cobros: comprobantesDelMes.length,
             }}
-            // Reproduce el comportamiento previo al rediseno: el no-superadmin
-            // no veia la seccion de comprobantes en absoluto. Una pestana
-            // deshabilitada-pero-visible no bastaba (sin `disabled`/
-            // `aria-disabled`, el foco de flecha igual podia aterrizar ahi),
-            // asi que se oculta por completo en vez de solo bloquear el click.
-            ocultarCobros={!isSuperAdmin}
           />
 
           {pestanaActiva !== "ficha" && (
@@ -716,14 +798,16 @@ const InfoClientDialog = ({
             id="panel-cobros"
             aria-labelledby="pestana-cobros"
           >
-            {maintenancesClient &&
-              isSuperAdmin &&
-              Object.keys(maintenancesClient).length > 0 && (
-                <ComprobantesContainer
-                  comprobantesData={comprobantesDelMes}
-                  onApprove={handleSubmitComprobante}
-                />
-              )}
+            <PaymentsPanel
+              comprobantes={comprobantesDelMes}
+              totalMes={totalMesCobros}
+              visitasSinPago={visitasSinPago}
+              puedeEscribir={isSuperAdmin}
+              onVer={handleVerComprobante}
+              onEliminar={handleEliminarComprobante}
+              onGenerarBoleta={abrirBoleta}
+              onRegistrarPago={abrirHojaPagoDirecta}
+            />
           </div>
 
           <div
