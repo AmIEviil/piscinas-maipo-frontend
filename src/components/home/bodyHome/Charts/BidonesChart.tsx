@@ -18,10 +18,19 @@ const BidonesChart = ({
 }: ProductsChart) => {
   const navigate = useNavigate();
 
-  const { openModal, setTypeProduct } = useSolicitudProductosStore();
+  const { openModal, setTypeProduct, setProductosSolicitables } =
+    useSolicitudProductosStore();
+
+  // El render ya se protege con `productData &&`, asi que aca tampoco se
+  // asume que venga cargado.
+  const totalHistorico =
+    (productData?.disponibles ?? 0) + (productData?.usados ?? 0);
 
   const handleOpenModal = () => {
     setTypeProduct(productData.tipo);
+    // La tarjeta ya define que producto se solicita: sin lista, el modal no
+    // muestra el selector que si usa la alerta de stock bajo del Home.
+    setProductosSolicitables([]);
     openModal();
   };
 
@@ -49,13 +58,33 @@ const BidonesChart = ({
             </button>
           </div>
           <div>
+            {/*
+              La metrica trae `disponibles` como lo que queda en bodega y
+              `usados` como consumo historico acumulado: son dos escalas
+              distintas y compararlas entre si no dice nada (un producto con 93
+              usados y 85 disponibles mostraba "93 de 85", con la aguja pasada
+              del tope, y parecia agotado teniendo 85 unidades).
+
+              La tarjeta muestra ahora el stock que queda sobre el total
+              historico, que es el mismo denominador que usa
+              porcentaje_utilizado en el backend. La aguja baja a medida que se
+              consume: gauge vacio significa que hay que comprar.
+            */}
             <GaugeChart
               minValue={0}
-              maxValue={productData.disponibles}
+              maxValue={showPercentage ? 100 : totalHistorico}
               actualValue={
                 showPercentage
                   ? productData.porcentaje_utilizado
-                  : productData.usados
+                  : productData.disponibles
+              }
+              actualValueLabel={
+                showPercentage ? "Porcentaje utilizado" : "Stock disponible"
+              }
+              maxValueLabel={
+                showPercentage
+                  ? "100%"
+                  : "Total histórico (disponible + utilizado)"
               }
               title={productData.tipo}
             />

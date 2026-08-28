@@ -18,14 +18,25 @@ export const useClientStore = create<ClientStore>((set) => ({
 
 export interface ClientFilterSlice {
   dayFilter: string;
+  /**
+   * Pide a BodyClients que marque todos los clientes del listado apenas
+   * termine de cargar. Lo enciende la alerta de mantenciones pendientes del
+   * Home ("Ir a registrar") y BodyClients lo apaga en cuanto lo consume, para
+   * que no vuelva a seleccionar solo en la siguiente visita.
+   */
+  selectAllOnLoad: boolean;
   setDayFilter: (day: string) => void;
+  setSelectAllOnLoad: (selectAll: boolean) => void;
 }
 
 export const createClientFilterSlice: StateCreator<ClientFilterSlice> = (
   set,
 ) => ({
   dayFilter: "",
+  selectAllOnLoad: false,
   setDayFilter: (day: string) => set({ dayFilter: day }),
+  setSelectAllOnLoad: (selectAll: boolean) =>
+    set({ selectAllOnLoad: selectAll }),
 });
 
 interface ClientResumenMonthSlice {

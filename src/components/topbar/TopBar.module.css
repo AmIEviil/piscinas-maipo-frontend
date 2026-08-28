@@ -16,6 +16,27 @@
   padding: var(--sp-2) var(--sp-5);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   z-index: 1000;
+  /* La barra se esconde al bajar. Se anima solo transform: es la propiedad
+     que el compositor puede mover sin recalcular layout ni repintar, asi el
+     desplazamiento se mantiene fluido incluso sobre listas largas. */
+  transform: translate3d(0, 0, 0);
+  transition: transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 260ms ease;
+  will-change: transform;
+}
+
+.isHidden {
+  transform: translate3d(0, -100%, 0);
+  /* Sin la sombra no queda una franja oscura flotando sobre el contenido
+     mientras la barra termina de salir. */
+  box-shadow: none;
+}
+
+/* Quien pide menos movimiento recibe el mismo comportamiento, sin deslizamiento. */
+@media (prefers-reduced-motion: reduce) {
+  .topBarContainer {
+    transition: none;
+  }
 }
 
 .headerModuleContainer {

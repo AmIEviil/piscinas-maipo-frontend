@@ -64,3 +64,65 @@
   background-color: var(--color-detalle-claro);
   cursor: not-allowed;
 }
+
+/* ---- Stepper (type="number" + showButtons) ---- */
+
+.input-wrapper.with-stepper {
+  gap: 6px;
+  /* stretch para que la columna de botones mida exactamente lo que el input. */
+  align-items: stretch;
+}
+
+/* Los dos botones van apilados a la derecha del input: + arriba, - abajo.
+   Cada uno ocupa la mitad de la altura del input, gap incluido. */
+.stepper-buttons {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepper-button {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  font-size: 14px;
+  border: 1px solid var(--color-detalle-claro);
+  border-radius: 8px;
+  background-color: var(--color-fondo-suave);
+  color: var(--color-primario);
+  cursor: pointer;
+  line-height: 0;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+.stepper-button:hover:not(:disabled) {
+  border-color: var(--color-secundario);
+  background-color: #fff;
+}
+
+.stepper-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.input-field.stepper-input {
+  text-align: center;
+  padding-left: 8px;
+  padding-right: 8px;
+  min-width: 0;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Oculta los spinners nativos: los reemplazan los botones + y - */
+.input-field.stepper-input::-webkit-outer-spin-button,
+.input-field.stepper-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

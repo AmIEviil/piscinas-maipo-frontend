@@ -101,6 +101,8 @@ const BodyClients = () => {
 
   const selectedDayHome = useBoundStore((state) => state.dayFilter);
   const setDayFilterStore = useBoundStore((state) => state.setDayFilter);
+  const selectAllOnLoad = useBoundStore((state) => state.selectAllOnLoad);
+  const setSelectAllOnLoad = useBoundStore((state) => state.setSelectAllOnLoad);
 
   const [openPopUp, setOpenPopUp] = useState(false);
 
@@ -176,6 +178,18 @@ const BodyClients = () => {
       setFilterQuery((prev) => ({ ...prev, dia: selectedDayHome }));
     }
   }, [selectedDayHome]);
+
+  // El Home puede pedir llegar con todo seleccionado para empezar a registrar
+  // mantenciones de inmediato. Hay que esperar a que termine el fetch: antes de
+  // eso `clients` todavia trae el resultado del filtro anterior (o nada).
+  useEffect(() => {
+    if (!selectAllOnLoad || loadingTable || clients === undefined) return;
+    const todosLosClientes = Object.values(clients).flat();
+    if (todosLosClientes.length > 0) {
+      setSelectedClients(todosLosClientes);
+    }
+    setSelectAllOnLoad(false);
+  }, [selectAllOnLoad, loadingTable, clients, setSelectAllOnLoad]);
 
   const handleFilterName = useMemo(
     () =>

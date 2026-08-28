@@ -53,6 +53,10 @@ const MaintenanceFieldsMobile = ({
       label: `${product.nombre} (${product.cant_disponible} disp.)`,
     }));
 
+  const stockDisponible = productosList.find(
+    (p) => String(p.id) === String(selectedProduct),
+  )?.cant_disponible;
+
   const handleAddProduct = () => {
     if (!selectedProduct) {
       setError("Selecciona un producto");
@@ -168,6 +172,8 @@ const MaintenanceFieldsMobile = ({
                         label=""
                         options={productOptions}
                         value={selectedProduct}
+                        searchable
+                        searchPlaceholder="Buscar producto..."
                         onChange={(event) =>
                           setSelectedProduct(String(event.target.value))
                         }
@@ -178,7 +184,10 @@ const MaintenanceFieldsMobile = ({
                         title="Cant."
                         type="number"
                         value={cantidad}
-                        customClass="w-24!"
+                        customClass="w-20!"
+                        showButtons
+                        min={0}
+                        max={stockDisponible}
                         onChange={(value) => setCantidad(Number(value))}
                       />
                       <Button

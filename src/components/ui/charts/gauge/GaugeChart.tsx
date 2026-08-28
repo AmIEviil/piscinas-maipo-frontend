@@ -12,6 +12,14 @@ interface CustomGaugeChartProps {
   minValue: number;
   maxValue: number;
   actualValue: number;
+  /**
+   * Que representa el numero del centro. El gauge se usa para cosas distintas
+   * (stock que queda, mantenciones realizadas), asi que el tooltip fijo
+   * "Utilizado" mentia en la mitad de los casos.
+   */
+  actualValueLabel?: string;
+  minValueLabel?: string;
+  maxValueLabel?: string;
 }
 
 function GaugePointer() {
@@ -42,7 +50,14 @@ const GaugeChart = ({
   minValue = 0,
   maxValue = 100,
   actualValue = 20,
+  actualValueLabel = "Utilizado",
+  minValueLabel = "Valor mínimo",
+  maxValueLabel = "Valor máximo",
 }: CustomGaugeChartProps) => {
+  // Con maxValue igual a minValue el angulo de la aguja queda indefinido y el
+  // grafico se rompe: pasa con un producto recien creado, sin stock ni uso.
+  const safeMaxValue = maxValue > minValue ? maxValue : minValue + 1;
+
   return (
     <div className={style.gaugeContainer}>
       <div className={style.titleGaugeContainer}>
@@ -55,7 +70,7 @@ const GaugeChart = ({
         endAngle={110}
         value={actualValue}
         valueMin={minValue}
-        valueMax={maxValue}
+        valueMax={safeMaxValue}
         innerRadius="70%"
         outerRadius="100%"
       >
@@ -64,13 +79,13 @@ const GaugeChart = ({
         <GaugeReferenceArc />
       </GaugeContainer>
       <div className={style.spanGaugeContainer}>
-        <Tooltip title="Valor mínimo" arrow leaveDelay={0}>
+        <Tooltip title={minValueLabel} arrow leaveDelay={0}>
           <p className={style.minRange}>{minValue}</p>
         </Tooltip>
-        <Tooltip title="Utilizado" arrow leaveDelay={0}>
+        <Tooltip title={actualValueLabel} arrow leaveDelay={0}>
           <span className={style.actualValue}>{actualValue}</span>
         </Tooltip>
-        <Tooltip title="Valor máximo" arrow leaveDelay={0}>
+        <Tooltip title={maxValueLabel} arrow leaveDelay={0}>
           <p className={style.maxRange}>{maxValue}</p>
         </Tooltip>
       </div>

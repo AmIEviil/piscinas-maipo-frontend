@@ -92,6 +92,10 @@ const MaintenanceFields = ({
       label: `${product.nombre} (${product.cant_disponible} disp.)`,
     }));
 
+  const stockDisponible = productosList.find(
+    (p) => String(p.id) === String(selectedProduct),
+  )?.cant_disponible;
+
   const handleAddProduct = () => {
     if (!selectedProduct) {
       setError("Selecciona un producto");
@@ -222,16 +226,21 @@ const MaintenanceFields = ({
                       label=""
                       options={productOptions}
                       value={selectedProduct}
+                      searchable
+                      searchPlaceholder="Buscar producto..."
                       onChange={(event) =>
                         setSelectedProduct(String(event.target.value))
                       }
                     />
                   </div>
-                  <div className="w-24">
+                  <div className="w-32">
                     <CustomInputText
                       title="Cant."
                       type="number"
                       value={cantidad}
+                      showButtons
+                      min={0}
+                      max={stockDisponible}
                       onChange={(value) => setCantidad(Number(value))}
                     />
                   </div>

@@ -60,6 +60,8 @@ const ChartDiario = ({
                     ? productData.realizadas
                     : productData.realizadas
                 }
+                actualValueLabel="Mantenciones realizadas"
+                maxValueLabel="Mantenciones programadas"
                 title={productData.dia}
               />
             )}

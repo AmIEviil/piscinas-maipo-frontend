@@ -131,3 +131,41 @@ export const useLowStockProducts = () => {
     },
   });
 };
+
+export interface IIngresoStock {
+  productId: string;
+  /** Total que debe quedar en cant_disponible (actual + lo recibido). */
+  cantDisponible: number;
+}
+
+/**
+ * Actualiza el stock de varios productos de una sola vez (modal "Ya hay
+ * stock"). No se reutiliza useUpdateProduct porque esa mutation muestra un
+ * snackbar por producto y aca se ingresan varios juntos.
+ */
+export const useUpdateProductsStock = () => {
+  const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
+  const { showSnackbar } = useSnackbar();
+  return useMutation({
+    mutationFn: (ingresos: IIngresoStock[]) =>
+      Promise.all(
+        ingresos.map((ingreso) =>
+          productsService.updateProduct(ingreso.productId, {
+            cant_disponible: ingreso.cantDisponible,
+          })
+        )
+      ),
+    onSuccess: (_data, ingresos) => {
+      setShouldRefetch(true);
+      showSnackbar(
+        ingresos.length === 1
+          ? "Stock actualizado correctamente"
+          : `Stock actualizado en ${ingresos.length} productos`,
+        "success"
+      );
+    },
+    onError: () => {
+      showSnackbar("Error al actualizar el stock", "error");
+    },
+  });
+};
