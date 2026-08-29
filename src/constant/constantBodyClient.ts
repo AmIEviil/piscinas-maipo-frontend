@@ -81,16 +81,16 @@ export const titlesTable = [
   { label: "Nombre", key: "nombre", showOrder: true },
   { label: "Dirección", key: "direccion", showOrder: true },
   { label: "Comuna", key: "comuna", showOrder: true },
-  { label: "Telefono", key: "telefono", showOrder: true },
+  { label: "Teléfono", key: "telefono", showOrder: true },
   { label: "Email", key: "email", showOrder: true },
-  { label: "Dia de Mantención", key: "dia_mantencion", showOrder: true },
+  { label: "Día de mantención", key: "dia_mantencion", showOrder: true },
   {
     label: "Periodicidad",
     key: "frecuencia_mantencion",
     showOrder: true,
   },
   { label: "Ruta", key: "ruta", showOrder: true },
-  { label: "Valor Mantención", key: "valor_mantencion", showOrder: true },
+  { label: "Valor mantención", key: "valor_mantencion", showOrder: true },
   { label: "Acciones", key: "actions", showOrder: false },
 ];
 

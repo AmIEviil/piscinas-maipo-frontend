@@ -101,6 +101,28 @@ export const useUpdateClientField = () => {
   return updateClientFieldMutation;
 };
 
+/**
+ * Cambio masivo de dia, ruta o periodicidad para los clientes seleccionados.
+ *
+ * No muestra snackbar de exito: el resumen del cambio (cuantos clientes y si
+ * hubo mantenciones reprogramadas) lo arma quien la llama, que es el unico que
+ * sabe que campo se toco y con que etiquetas mostrarlo.
+ */
+export const useBulkUpdateClients = () => {
+  const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
+  const { showSnackbar } = useSnackbar();
+
+  return useMutation({
+    mutationFn: clientService.bulkUpdateClients,
+    onError: () => {
+      showSnackbar("No se pudo aplicar el cambio a los clientes", "error");
+    },
+    onSuccess: () => {
+      setShouldRefetch(true);
+    },
+  });
+};
+
 export const useDeleteClient = () => {
   const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
   const { showSnackbar } = useSnackbar();

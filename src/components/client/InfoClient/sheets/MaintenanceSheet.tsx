@@ -216,7 +216,7 @@ const MaintenanceSheet = ({
   return (
     <SlideSheet
       abierta={abierta}
-      titulo={mantencionAEditar ? "Editar mantencion" : "Registrar mantencion"}
+      titulo={mantencionAEditar ? "Editar mantención" : "Registrar mantención"}
       subtitulo={subtitulo}
       paso={encadena ? "Paso 1 de 2" : undefined}
       onCerrar={onCerrar}
@@ -225,7 +225,7 @@ const MaintenanceSheet = ({
           <Button label="Cancelar" variant="tertiary" onClick={onCerrar} />
           <Button
             label={
-              encadena ? "Guardar y registrar el pago" : "Guardar mantencion"
+              encadena ? "Guardar y registrar el pago" : "Guardar mantención"
             }
             variant="primary"
             onClick={() => onGuardar(maintenance, encadena)}
@@ -253,7 +253,7 @@ const MaintenanceSheet = ({
       </div>
 
       <fieldset className={style.grupo}>
-        <legend className={style.rotulo}>La mantencion, ¿se realizo?</legend>
+        <legend className={style.rotulo}>La mantención, ¿se realizó?</legend>
         <div className={style.opciones}>
           <label className={style.opcion}>
             <input
@@ -264,7 +264,7 @@ const MaintenanceSheet = ({
                 setMaintenance((p) => ({ ...p, realizada: true }))
               }
             />
-            <span>✓ Si, se hizo</span>
+            <span>✓ Sí, se hizo</span>
           </label>
           <label className={`${style.opcion} ${style.opcionNo}`}>
             <input
@@ -281,7 +281,7 @@ const MaintenanceSheet = ({
       </fieldset>
 
       <fieldset className={style.grupo}>
-        <legend className={style.rotulo}>¿El cliente pago esta visita?</legend>
+        <legend className={style.rotulo}>¿El cliente pagó esta visita?</legend>
         <div className={style.opciones}>
           <label className={style.opcion}>
             <input
@@ -292,7 +292,7 @@ const MaintenanceSheet = ({
                 setMaintenance((p) => ({ ...p, recibioPago: true }))
               }
             />
-            <span>✓ Si, pago</span>
+            <span>✓ Sí, pagó</span>
           </label>
           <label className={`${style.opcion} ${style.opcionNo}`}>
             <input
@@ -303,12 +303,12 @@ const MaintenanceSheet = ({
                 setMaintenance((p) => ({ ...p, recibioPago: false }))
               }
             />
-            <span>✕ Aun no</span>
+            <span>✕ Aún no</span>
           </label>
         </div>
         {encadena && (
           <p className={style.avisoEncadena}>
-            Al guardar se abrira el registro del pago para elegir que visitas
+            Al guardar se abrirá el registro del pago para elegir qué visitas
             cubre y adjuntar el comprobante.
           </p>
         )}

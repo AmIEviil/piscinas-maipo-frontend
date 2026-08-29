@@ -6,4 +6,5 @@ export const CLIENT_API = {
   createClient: "api/clients/create",
   updateClient: "api/clients/update/:id",
   deleteClient: "api/clients/delete/:id",
+  bulkUpdateClients: "api/clients/bulk-update",
 };

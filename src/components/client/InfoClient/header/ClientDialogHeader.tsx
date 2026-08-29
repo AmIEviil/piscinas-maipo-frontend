@@ -70,7 +70,7 @@ const ClientDialogHeader = ({
       <div className={style.chips}>
         {dia && (
           <span className={style.chip}>
-            Mantencion los <b>{String(dia).toLowerCase()}</b>
+            Mantención los <b>{String(dia).toLowerCase()}</b>
           </span>
         )}
         {valor != null && (
@@ -100,7 +100,7 @@ const ClientDialogHeader = ({
           target="_blank"
           rel="noreferrer"
         >
-          Como llegar
+          Cómo llegar
         </a>
         {puedeGenerarBoleta && (
           <button

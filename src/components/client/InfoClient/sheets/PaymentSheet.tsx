@@ -142,13 +142,13 @@ const PaymentSheet = ({
     >
       {encadenada && (
         <p className={style.confirmacion}>
-          <span aria-hidden="true">✓</span> La mantencion quedo guardada.
+          <span aria-hidden="true">✓</span> La mantención quedó guardada.
         </p>
       )}
 
       {opciones.length > 0 && (
         <fieldset className={style.grupo}>
-          <legend className={style.rotulo}>¿Que visitas cubre este pago?</legend>
+          <legend className={style.rotulo}>¿Qué visitas cubre este pago?</legend>
           <div className={style.cubre}>
             {opciones.map((opcion) => {
               const fijada = opcion.id === visitaFijada?.id;
@@ -163,7 +163,7 @@ const PaymentSheet = ({
                   <span>
                     <span className={style.caja} aria-hidden="true">✓</span>
                     {opcion.etiqueta}
-                    {fijada && <span className={style.nueva}>recien creada</span>}
+                    {fijada && <span className={style.nueva}>recién creada</span>}
                     <span className={style.montoOpcion}>
                       {formatCLP(opcion.monto)}
                     </span>
@@ -173,7 +173,7 @@ const PaymentSheet = ({
             })}
           </div>
           <p className={style.pista}>
-            Solo aparecen las visitas del mes que aun no tienen pago.
+            Solo aparecen las visitas del mes que aún no tienen pago.
           </p>
         </fieldset>
       )}

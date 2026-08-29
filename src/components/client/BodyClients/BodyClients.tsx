@@ -8,7 +8,12 @@ import {
   useDeleteClient,
   useFrecuenciasMantencion,
 } from "../../../hooks/ClientHooks";
-import type { Client, IClientForm } from "../../../service/client.interface";
+import type {
+  BulkUpdateClientsResponse,
+  CampoBulkCliente,
+  Client,
+  IClientForm,
+} from "../../../service/client.interface";
 import { useMaintenancesByClient } from "../../../hooks/MaintenanceHooks";
 import { type IMaintenance } from "../../../service/maintenance.interface";
 import style from "./BodyClients.module.css";
@@ -36,7 +41,10 @@ import { getWindowWidth } from "../../../utils/WindowUtils";
 import TrashIcon from "../../ui/Icons/TrashIcon";
 import { useBoundStore } from "../../../store/BoundedStore";
 import CollapsableTable from "../../ui/collapsable-table/CollapsableTable";
-import { formatNoResultsText } from "../../../utils/FiltersUtils";
+import {
+  formatNoResultsFromFilters,
+  type FiltroAplicado,
+} from "../../../utils/FiltersUtils";
 import { useRefetchStore } from "../../../store/refetchStore";
 import CustomModal from "../../ui/modal/CustomModal";
 import { usePermits } from "../../../utils/roleUtils";
@@ -49,6 +57,9 @@ import {
 import AdvancedFiltersSheet from "../../common/FiltersContainer/AdvancedFiltersSheet";
 import type { FilterValue } from "../../../service/employee.interface";
 import { BREAKPOINTS } from "../../../constant/breakpoints";
+import BulkActionsMenu from "../BulkActions/BulkActionsMenu";
+import BulkEditClientsDialog from "../BulkActions/BulkEditClientsDialog";
+import { useSnackbar } from "../../../utils/snackBarHooks";
 
 interface IfilterQuery {
   nombre?: string;
@@ -113,9 +124,12 @@ const BodyClients = () => {
   const setSelectAllOnLoad = useBoundStore((state) => state.setSelectAllOnLoad);
 
   const [openPopUp, setOpenPopUp] = useState(false);
+  // Campo elegido en el menu de acciones en bloque. `null` = modal cerrado.
+  const [campoBulk, setCampoBulk] = useState<CampoBulkCliente | null>(null);
   const [openBusquedaAvanzada, setOpenBusquedaAvanzada] = useState(false);
 
   const { data: frecuencias = [] } = useFrecuenciasMantencion();
+  const { showSnackbar } = useSnackbar();
 
   const handleClosePopUp = () => {
     setOpenPopUp(false);
@@ -325,22 +339,60 @@ const BodyClients = () => {
     }
   };
 
+  /**
+   * Mensaje de tabla vacia.
+   *
+   * Nombra TODOS los filtros aplicados, no solo el primero: con la busqueda
+   * avanzada la mitad de ellos no se ve en la barra, y un listado vacio por un
+   * filtro escondido (periodicidad, comuna, "inactivos") se leia como si no
+   * hubiera clientes. La periodicidad se traduce de id a nombre porque en el
+   * filtro viaja como uuid.
+   */
   const handleTextNoResults = () => {
-    if (
-      filterQuery.nombre ||
-      filterQuery.direccion ||
-      filterQuery.comuna ||
-      filterQuery.dia
-    ) {
-      return formatNoResultsText(
-        "clients",
-        filterQuery.nombre ||
-          filterQuery.direccion ||
-          filterQuery.comuna ||
-          filterQuery.dia ||
-          "",
-      );
-    }
+    const nombreFrecuencia = frecuencias.find(
+      (frecuencia) => frecuencia.id === filterQuery.frecuencia,
+    )?.nombre;
+
+    const filtrosAplicados: FiltroAplicado[] = [
+      { etiqueta: "Nombre", valor: filterQuery.nombre ?? "" },
+      { etiqueta: "Teléfono", valor: filterQuery.telefono ?? "" },
+      { etiqueta: "Dirección", valor: filterQuery.direccion ?? "" },
+      { etiqueta: "Comuna", valor: filterQuery.comuna ?? "" },
+      { etiqueta: "Día de mantención", valor: filterQuery.dia ?? "" },
+      { etiqueta: "Ruta", valor: filterQuery.ruta ?? "" },
+      {
+        etiqueta: "Periodicidad",
+        valor: filterQuery.frecuencia ? (nombreFrecuencia ?? "") : "",
+      },
+      // El estado solo se nombra cuando se pidieron los inactivos: la vista
+      // arranca en "activos" y mencionarlo siempre seria ruido.
+      {
+        etiqueta: "Estado",
+        valor: filterQuery.isActive === false ? "Inactivos" : "",
+      },
+    ].filter((filtro) => filtro.valor !== "");
+
+    return formatNoResultsFromFilters("clientes", filtrosAplicados);
+  };
+
+  /**
+   * Cierra el modal de cambio masivo, avisa que paso y vacia la seleccion.
+   *
+   * La seleccion se limpia a proposito: despues del cambio los clientes ya no
+   * tienen el valor con el que se los eligio (el filtro por dia o por
+   * periodicidad ya no los incluye), asi que dejarlos marcados invita a
+   * aplicarles una segunda accion sobre un listado que ya cambio.
+   */
+  const handleBulkAplicado = (resumen: BulkUpdateClientsResponse) => {
+    setCampoBulk(null);
+    setSelectedClients([]);
+    const reprogramadas = resumen.mantencionesReprogramadas
+      ? ` y se reprogramaron ${resumen.mantencionesReprogramadas} mantención(es) futura(s)`
+      : "";
+    showSnackbar(
+      `Se actualizaron ${resumen.clientesActualizados} cliente(s)${reprogramadas}.`,
+      "success",
+    );
   };
 
   const handleOpenDeletePopUp = (client: Client) => {
@@ -623,13 +675,19 @@ const BodyClients = () => {
         onLimpiar={handleClearFilter}
       />
       {windowWidth < BREAKPOINTS.tablet && selectedClients.length > 0 && (
-        <div className="flex flex-row w-full items-center justify-center pt-4">
+        <div className="flex flex-row w-full items-center justify-center gap-2 pt-4">
           <button
             onClick={() => handleSeeMultiSelectClients(currentClientIndex)}
             className={style.addButton}
           >
             Ver detalles de {selectedClients.length} cliente(s).
           </button>
+          {/* En celular la snackbar esta oculta por CSS, asi que el menu de
+              acciones en bloque acompana a este boton. */}
+          <BulkActionsMenu
+            cantidad={selectedClients.length}
+            onSelectCampo={setCampoBulk}
+          />
         </div>
       )}
       <div className={style.tableContainer}>
@@ -753,6 +811,19 @@ const BodyClients = () => {
       />
       <CustomSnackBar
         onClick={() => handleSeeMultiSelectClients(currentClientIndex)}
+        trailing={
+          <BulkActionsMenu
+            cantidad={selectedClients.length}
+            onSelectCampo={setCampoBulk}
+          />
+        }
+      />
+      <BulkEditClientsDialog
+        campo={campoBulk}
+        clientes={selectedClients}
+        frecuencias={frecuencias}
+        onClose={() => setCampoBulk(null)}
+        onAplicado={handleBulkAplicado}
       />
     </div>
   );

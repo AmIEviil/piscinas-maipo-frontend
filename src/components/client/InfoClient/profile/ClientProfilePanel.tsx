@@ -42,7 +42,7 @@ const CAMPOS = [
  */
 const ROTULOS: Record<string, string> = {
   frecuencia_mantencion: "Periodicidad de visitas",
-  dia_mantencion: "Dia de mantencion",
+  dia_mantencion: "Día de mantención",
   isActive: "Estado",
 };
 

@@ -1,5 +1,7 @@
  
 import type {
+  BulkUpdateClientsPayload,
+  BulkUpdateClientsResponse,
   Client,
   ClientFilters,
   IClientForm,
@@ -53,6 +55,16 @@ export const clientService = {
   deleteClient: async (id: string): Promise<{ message: string }> => {
     const url = CLIENT_API.deleteClient.replace(":id", id.toString());
     const response = await apiClient.delete(url);
+    return response.data;
+  },
+
+  bulkUpdateClients: async (
+    payload: BulkUpdateClientsPayload
+  ): Promise<BulkUpdateClientsResponse> => {
+    const response = await apiClient.put<BulkUpdateClientsResponse>(
+      CLIENT_API.bulkUpdateClients,
+      payload
+    );
     return response.data;
   },
 

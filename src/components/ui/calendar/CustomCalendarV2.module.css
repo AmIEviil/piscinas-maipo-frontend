@@ -101,11 +101,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
-  max-width: 20rem;
+  /* El ancho lo fija el componente (en rem, medidos en JS) para poder acotar
+     tambien la posicion horizontal; aca solo queda el techo por viewport, que
+     evita que en una ventana angosta el popup se salga de pantalla. */
+  max-width: calc(100vw - 1rem);
   padding: 0.75rem;
   position: fixed;
-  width: 100%;
-  min-width: 15.625rem;
+  overflow: hidden;
   /* Por encima del modal de react-bootstrap (1055) y de los popovers de MUI. */
   z-index: 100000000;
 }
@@ -167,7 +169,12 @@
   font-size: var(--fs-base);
   font-weight: 700;
   gap: 0.375rem;
-  grid-template-columns: repeat(7, 1fr);
+  /* minmax(0, 1fr) y no 1fr: el minimo automatico de una columna de grilla es
+     su contenido, asi que con `1fr` a secas cualquier celda mas ancha que su
+     septima parte -- una letra grande, un area tactil minima heredada de una
+     regla global -- empuja las columnas de la derecha fuera de la caja en vez
+     de encogerlas. Es lo que dejaba sabado y domingo pintados fuera del popup. */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   padding-top: 0.75rem;
   text-align: center;
 }
@@ -175,7 +182,7 @@
 .dayGrid {
   display: grid;
   gap: 0.5rem 0.375rem;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .dayButton,
@@ -185,6 +192,10 @@
   font-size: var(--fs-base);
   font-weight: 600;
   min-height: 2rem;
+  /* La celda manda sobre su contenido: sin esto el ancho minimo del boton
+     (texto + cualquier min-width global) volveria a decidir el de la columna. */
+  min-width: 0;
+  padding: 0;
   justify-content: center;
 }
 

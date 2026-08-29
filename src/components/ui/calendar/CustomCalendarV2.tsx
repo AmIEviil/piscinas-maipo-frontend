@@ -260,24 +260,49 @@ export const CustomCalendarV2 = ({
     };
   }, [isOpen, savedDate]);
 
+  /**
+   * Ancho y posicion del popup, en rem convertidos a px.
+   *
+   * Las medidas se derivan del font-size de <html> a proposito: el control de
+   * tamano de letra del TopBar lo cambia y TODO el contenido del calendario
+   * esta en rem, asi que un ancho fijo en px encoge la caja respecto de lo que
+   * lleva adentro justo cuando el usuario pidio letra mas grande. Mismo motivo
+   * para el alto: se mide el popup real cuando ya esta montado y solo se cae a
+   * una estimacion en rem en el primer calculo.
+   */
   const updatePopupPosition = () => {
     if (!wrapperRef.current) return;
 
+    const rem =
+      parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const margen = 0.5 * rem;
+
     const rect = wrapperRef.current.getBoundingClientRect();
-    const popupWidth = Math.max(Math.min(rect.width, 320), 250);
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    let left = rect.left;
-    let top = rect.bottom + 8;
+    // El popup mide exactamente lo que el campo que lo abre: dentro de la hoja
+    // de registrar mantencion el campo ocupa todo el ancho disponible y un
+    // techo propio lo dejaba angosto y desalineado bajo un campo mucho mas
+    // ancho. Solo quedan dos limites: un piso para que la grilla de siete dias
+    // siga siendo legible en un campo diminuto, y el ancho de la ventana.
+    const anchoMinimo = 15.625 * rem;
+    const anchoMaximo = viewportWidth - 2 * margen;
+    const popupWidth = Math.min(
+      Math.max(rect.width, anchoMinimo),
+      anchoMaximo,
+    );
 
-    if (left + popupWidth > viewportWidth - 8) {
-      left = Math.max(8, viewportWidth - popupWidth - 8);
+    let left = rect.left;
+    let top = rect.bottom + margen;
+
+    if (left + popupWidth > viewportWidth - margen) {
+      left = Math.max(margen, viewportWidth - popupWidth - margen);
     }
 
-    const estimatedHeight = 360;
-    if (top + estimatedHeight > viewportHeight - 8) {
-      top = Math.max(8, rect.top - estimatedHeight - 8);
+    const alto = popupRef.current?.offsetHeight || 24 * rem;
+    if (top + alto > viewportHeight - margen) {
+      top = Math.max(margen, rect.top - alto - margen);
     }
 
     setPopupPosition({
@@ -312,6 +337,10 @@ export const CustomCalendarV2 = ({
   useEffect(() => {
     if (!isOpen) return;
     popupRef.current?.focus();
+    // Segunda pasada con el popup ya en el DOM: la primera se calculo con el
+    // alto estimado y aca ya se puede medir el real, que es lo que decide si
+    // el calendario se abre hacia abajo o hacia arriba.
+    updatePopupPosition();
   }, [isOpen]);
 
   const monthDays = useMemo<MonthCell[]>(() => {

@@ -518,7 +518,7 @@ const InfoClientDialog = ({
 
   const handleDeleteMaintenance = (maintenance: IMaintenance) => {
     setOpenModal({
-      header: <strong>Eliminando mantencion</strong>,
+      header: <strong>Eliminando mantención</strong>,
       content: (
         <div>
           {" "}
@@ -727,7 +727,7 @@ const InfoClientDialog = ({
               mesActivo={mesActivo}
               onCambiarMes={setMesActivo}
               etiquetaAccion={
-                pestanaActiva === "cobros" ? "Registrar pago" : "Registrar mantencion"
+                pestanaActiva === "cobros" ? "Registrar pago" : "Registrar mantención"
               }
               mostrarAccion={pestanaActiva === "mantenciones" || isSuperAdmin}
               onAccion={() =>

@@ -25,6 +25,32 @@ export interface Client {
   frecuencia_mantencion_id?: string;
 }
 
+/**
+ * Campos que admiten cambio masivo desde el listado.
+ *
+ * La lista la impone el backend (`CAMPOS_BULK`): la edicion en bloque existe
+ * para el cambio de temporada y para rearmar rutas, no para editar la ficha
+ * completa de varios clientes a la vez.
+ */
+export type CampoBulkCliente =
+  | "dia_mantencion"
+  | "ruta"
+  | "frecuencia_mantencion_id";
+
+export interface BulkUpdateClientsPayload {
+  ids: string[];
+  campo: CampoBulkCliente;
+  /** Siempre texto: el uuid de la periodicidad tambien viaja como cadena. */
+  valor: string;
+}
+
+export interface BulkUpdateClientsResponse {
+  clientesActualizados: number;
+  campo: CampoBulkCliente;
+  valor: string | null;
+  mantencionesReprogramadas: number;
+}
+
 export interface ClientFilters {
   nombre?: string;
   direccion?: string;
