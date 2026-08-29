@@ -5,11 +5,7 @@ import {
   type IMaintenanceUpdate,
 } from "../../../service/maintenance.interface";
 import style from "./InfoDialogClient.module.css";
-import { getWindowWidth } from "../../../utils/WindowUtils";
 
-//Icons
-import AddIcon from "@mui/icons-material/Add";
-import CaretIcon from "../../ui/Icons/CaretIcon";
 import MaintenanceSheet from "./sheets/MaintenanceSheet";
 import PaymentSheet from "./sheets/PaymentSheet";
 import {
@@ -40,7 +36,7 @@ import MonthStatusPanel from "./maintenances/MonthStatusPanel";
 import { useModalStore } from "../../../store/ModalStore";
 import FieldGroup from "../../ui/labelField/FieldGroup";
 import { usePermits } from "../../../utils/roleUtils";
-import { BREAKPOINTS } from "../../../constant/breakpoints";
+import { useSnackbar } from "../../../utils/snackBarHooks";
 import type { IClientForm } from "./types";
 import ClientDialogHeader from "./header/ClientDialogHeader";
 import ClientTabs, { type PestanaId } from "./tabs/ClientTabs";
@@ -95,6 +91,7 @@ const InfoClientDialog = ({
   currentIndex,
 }: InfoClientDialogProps) => {
   const { isSuperAdmin } = usePermits();
+  const { showSnackbar } = useSnackbar();
 
   const createMaintenance = useCreateMaintenance();
   const updateMaintenance = useUpdateMaintenance();
@@ -108,12 +105,15 @@ const InfoClientDialog = ({
   const setClientInfo = useClientResumenMonthStore(
     (state) => state.setClientInfo,
   );
+  // Se lee el resumen ademas de escribirlo: es lo que habilita los puntos de
+  // entrada a la boleta (ver `puedeGenerarBoleta`).
+  const resumenMonthStore = useClientResumenMonthStore(
+    (state) => state.resumenMonth,
+  );
   const abrirBoleta = useClientResumenMonthStore((state) => state.openModal);
   const setOpenModal = useModalStore((state) => state.openModal);
   const handleCloseModal = useModalStore((state) => state.closeModal);
 
-  const [windowWidth, setWindowWidth] = useState(getWindowWidth());
-  const [showMaintenances, setShowMaintenances] = useState(windowWidth > BREAKPOINTS.tablet);
   const { products, fetchProducts } = useProductStore();
 
   const [maintenanceToEdit, setMaintenanceToEdit] =
@@ -190,11 +190,9 @@ const InfoClientDialog = ({
 
   // Total cobrable del mes para el panel lateral de la pestana Cobros: el
   // mismo calculo que MonthStatusPanel.calcularResumen (mantenciones
-  // realizadas * valor de mantencion, mas productos), pero independiente de
-  // si ese panel esta montado -vive solo dentro de la pestana Mantenciones y
-  // se desmonta si el usuario colapsa "Ver Mantenciones"- para que el total
-  // de Cobros no quede pegado a un mes viejo cuando el otro panel no lo
-  // recalculo.
+  // realizadas * valor de mantencion, mas productos), pero calculado aca para
+  // que la pestana Cobros no dependa de que el panel de la pestana
+  // Mantenciones este montado ni de cuando ese panel recalculo.
   const totalMesCobros = useMemo(() => {
     const valorMantencion = clientInfo?.valor_mantencion?.value ?? 0;
     return mantencionesDelMes.reduce((suma, mantencion) => {
@@ -245,18 +243,22 @@ const InfoClientDialog = ({
     }
   }, [products.length, fetchProducts]);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    // Limpieza al desmontar
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  /**
+   * Puntos de entrada a la boleta (cabecera, panel del mes y panel de
+   * cobros).
+   *
+   * No basta con `mantencionesDelMes.length > 0`: `BoletaModalContainer` lee
+   * el resumen desde `useClientResumenMonthStore` y devuelve `null` si no hay
+   * ninguno, asi que un boton habilitado sin resumen en el store no hace
+   * absolutamente nada y el usuario no recibe ninguna senal. Se exige aqui
+   * que el resumen exista Y que corresponda al mes activo, de modo que el
+   * boton no pueda estar vivo contra datos que no estan.
+   */
+  const puedeGenerarBoleta =
+    isSuperAdmin &&
+    mantencionesDelMes.length > 0 &&
+    resumenMonthStore != null &&
+    resumenMonthStore.mes === mesActivo;
 
   const handleClose = () => {
     // Si el dialogo entero se cierra a mitad del encadenado (dentro de la
@@ -278,7 +280,10 @@ const InfoClientDialog = ({
   };
 
   useEffect(() => {
-    if (!mesActivo && !clientInfo) return;
+    // `||`, no `&&`: con && bastaba que existiera el mes para escribir
+    // `undefined` en el store cuando el cliente todavia no habia llegado, y
+    // BoletaModalContainer se queda en `null` sin clientInfo.
+    if (!mesActivo || !clientInfo) return;
     setClientInfo(clientInfo as IClientForm);
   }, [mesActivo, clientInfo, setClientInfo]);
 
@@ -308,6 +313,10 @@ const InfoClientDialog = ({
 
       return resultado;
     } catch (err) {
+      // `useCreateMaintenance` / `useUpdateMaintenance` ya muestran el
+      // snackbar de error en su `onError`. Lo que aporta este catch es
+      // devolver `undefined` para que quien llama sepa que NO hay que
+      // avanzar el flujo (ver guardarMantencion).
       console.error("Error al guardar mantención:", err);
       return undefined;
     }
@@ -321,19 +330,24 @@ const InfoClientDialog = ({
     registrarPago: boolean,
   ) => {
     const creada = await handleAcceptMaintenance(datos);
+
+    // El guardado fallo: la hoja se queda abierta con lo que el usuario
+    // escribio, y no se encadena nada. Antes se cerraba igual y, si venia
+    // marcado "Si, pago", se encadenaba la hoja de pago con visitaFijada en
+    // null, de modo que el usuario veia un flujo exitoso sobre un guardado
+    // que nunca ocurrio. El mensaje de error lo pone el `onError` del hook
+    // de la mutacion.
+    if (!creada) return;
+
     setHojaMantencionAbierta(false);
 
     if (!registrarPago) return;
 
-    setVisitaFijada(
-      creada
-        ? {
-            id: creada.id,
-            etiqueta: formatDateToDDMMYYYY(creada.fechaMantencion),
-            monto: clientInfo?.valor_mantencion?.value ?? 0,
-          }
-        : null,
-    );
+    setVisitaFijada({
+      id: creada.id,
+      etiqueta: formatDateToDDMMYYYY(creada.fechaMantencion),
+      monto: clientInfo?.valor_mantencion?.value ?? 0,
+    });
     setPagoEncadenado(true);
 
     // Puente de velo: sube ya, en el mismo tick en que empieza a cerrar la
@@ -370,8 +384,16 @@ const InfoClientDialog = ({
     fecha_pago: string;
     comprobante?: File;
     mantencionIds?: string[];
-  }) => {
-    if (!data || !clientInfo || !mesActivo) return;
+  }): Promise<boolean> => {
+    if (!data || !clientInfo || !mesActivo) {
+      // Antes esto era un `return` mudo y la hoja se cerraba igual: el pago
+      // se perdia sin que nada lo dijera.
+      showSnackbar(
+        "No se pudo registrar el pago: falta el cliente o el mes.",
+        "error",
+      );
+      return false;
+    }
     try {
       const formData = new FormData();
       if (data.comprobante) {
@@ -399,8 +421,13 @@ const InfoClientDialog = ({
       if (onComprobanteChanged) {
         onComprobanteChanged();
       }
+      return true;
     } catch (error) {
+      // `useUploadComprobantePago` ya muestra el snackbar de error. Aca solo
+      // se informa el fallo para que la hoja de pago no se cierre y no se
+      // pierda el archivo que el usuario ya habia adjuntado.
       console.error("Error al subir el comprobante:", error);
+      return false;
     }
   };
 
@@ -410,7 +437,13 @@ const InfoClientDialog = ({
     comprobante?: File;
     mantencionIds: string[];
   }) => {
-    await handleSubmitComprobante(datos);
+    const guardado = await handleSubmitComprobante(datos);
+
+    // Si la subida fallo, la hoja se queda abierta con el monto, la fecha,
+    // las visitas marcadas y el comprobante ya adjunto, para reintentar sin
+    // volver a llenarla.
+    if (!guardado) return;
+
     // Defensivo: para cuando esto corre, los timers del encadenado ya
     // deberian haber disparado solos (la hoja de pago solo es interactuable
     // una vez abierta). Se limpian igual por si el usuario alcanzo a
@@ -446,12 +479,12 @@ const InfoClientDialog = ({
     setHojaPagoAbierta(true);
   };
 
+  // Solo abre la hoja. No dispara `onMaintenanceCreated` (un refetch): abrir
+  // el formulario de edicion no cambia ningun dato, y el refetch de verdad ya
+  // ocurre al guardar, dentro de handleAcceptMaintenance.
   const handleEditMaintenance = (maintenance: IMaintenance) => {
     setMaintenanceToEdit(maintenance);
     setHojaMantencionAbierta(true);
-    if (onMaintenanceCreated) {
-      onMaintenanceCreated();
-    }
   };
 
   const onDeleteMaintenance = async (maintenanceId: string) => {
@@ -501,11 +534,6 @@ const InfoClientDialog = ({
       ),
       dialogClassName: "max-w-md! max-h-md!",
     });
-  };
-
-  const onAddingMaintenance = () => {
-    if (!showMaintenances) setShowMaintenances(true);
-    setHojaMantencionAbierta(true);
   };
 
   /**
@@ -560,6 +588,10 @@ const InfoClientDialog = ({
       await deleteComprobanteMutation.mutateAsync(id);
       handleCloseModal();
     } catch (error) {
+      // `useDeleteComprobantePago` ya muestra el snackbar de error. El
+      // dialogo de confirmacion se deja abierto a proposito -handleCloseModal
+      // solo corre en la rama exitosa- para que el usuario pueda reintentar
+      // en vez de quedarse creyendo que el comprobante se elimino.
       console.error("Error al eliminar el comprobante:", error);
     }
   };
@@ -621,7 +653,7 @@ const InfoClientDialog = ({
               onCerrar={handleClose}
               onGenerarBoleta={abrirBoleta}
               onVerReparaciones={abrirReparaciones}
-              puedeGenerarBoleta={isSuperAdmin && mantencionesDelMes.length > 0}
+              puedeGenerarBoleta={puedeGenerarBoleta}
             />
           )}
 
@@ -654,78 +686,43 @@ const InfoClientDialog = ({
             />
           )}
 
+          {/* tabIndex={0}: el panel scrollea, asi que tiene que poder recibir
+              foco para que se pueda desplazar solo con teclado, sin depender
+              de aterrizar antes en algun control de adentro (spec, §10). */}
           <div
             className={style.panel}
             data-activo={pestanaActiva === "mantenciones" ? "si" : "no"}
             role="tabpanel"
             id="panel-mantenciones"
             aria-labelledby="pestana-mantenciones"
+            tabIndex={0}
           >
-            <div className="flex flex-row justify-between items-center pb-1">
-              <button
-                onClick={() => setShowMaintenances(!showMaintenances)}
-                disabled={
-                  !maintenancesClient ||
-                  Object.keys(maintenancesClient).length === 0
-                }
-                className="cursor-pointer flex items-center gap-1 font-medium w-fit normal p-2! hover:text-white!"
-              >
-                {Object.keys(maintenancesClient ?? {}).length
-                  ? "Ver Mantenciones"
-                  : "Sin Mantenciones"}
-                {Object.keys(maintenancesClient ?? {}).length ? (
-                  <CaretIcon direction={`${showMaintenances ? "down" : "up"}`} />
-                ) : null}
-              </button>
-              <div>
-                <button
-                  className="flex items-center gap-1 p-1!"
-                  onClick={onAddingMaintenance}
-                >
-                  Agregar nueva mantención
-                  <AddIcon />
-                </button>
+            {Object.keys(maintenancesClient ?? {}).length ? (
+              <div className={style.dosColumnas}>
+                <MaintenanceTimeline
+                  mantenciones={mantencionesDelMes}
+                  proximaVisita={proximaVisita}
+                  onEditar={handleEditMaintenance}
+                  onEliminar={handleDeleteMaintenance}
+                  onRegistrarProxima={() => setHojaMantencionAbierta(true)}
+                  puedeEliminar={isSuperAdmin}
+                />
+                <aside className={style.columnaLado}>
+                  <MonthStatusPanel
+                    mesActivo={mesActivo}
+                    valorMantencion={clientInfo?.valor_mantencion?.value ?? 0}
+                    mantencionesDelMes={mantencionesDelMes}
+                    montoPagado={comprobantesDelMes.reduce(
+                      (suma, c) => suma + (c.monto ?? 0),
+                      0,
+                    )}
+                    onGenerarBoleta={abrirBoleta}
+                    puedeGenerarBoleta={puedeGenerarBoleta}
+                  />
+                </aside>
               </div>
-            </div>
-
-            {showMaintenances && (
-              <>
-                {Object.keys(maintenancesClient ?? {}).length ? (
-                  <div className="flex flex-col gap-3">
-                    <div className={style.dosColumnas}>
-                      <MaintenanceTimeline
-                        mantenciones={mantencionesDelMes}
-                        proximaVisita={proximaVisita}
-                        onEditar={handleEditMaintenance}
-                        onEliminar={handleDeleteMaintenance}
-                        onRegistrarProxima={() => setHojaMantencionAbierta(true)}
-                        puedeEliminar={isSuperAdmin}
-                      />
-                      <aside className={style.columnaLado}>
-                        <MonthStatusPanel
-                          mesActivo={mesActivo}
-                          valorMantencion={clientInfo?.valor_mantencion?.value ?? 0}
-                          mantencionesDelMes={mantencionesDelMes}
-                          montoPagado={comprobantesDelMes.reduce(
-                            (suma, c) => suma + (c.monto ?? 0),
-                            0,
-                          )}
-                          onGenerarBoleta={abrirBoleta}
-                          puedeGenerarBoleta={
-                            isSuperAdmin && mantencionesDelMes.length > 0
-                          }
-                        />
-                      </aside>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-3 ">
-                    <p className="text-gray-500">
-                      No hay mantenciones para mostrar
-                    </p>
-                  </div>
-                )}
-              </>
+            ) : (
+              <p className={style.vacio}>No hay mantenciones para mostrar.</p>
             )}
           </div>
 
@@ -762,12 +759,14 @@ const InfoClientDialog = ({
             role="tabpanel"
             id="panel-cobros"
             aria-labelledby="pestana-cobros"
+            tabIndex={0}
           >
             <PaymentsPanel
               comprobantes={comprobantesDelMes}
               totalMes={totalMesCobros}
               visitasSinPago={visitasSinPago}
               puedeEscribir={isSuperAdmin}
+              puedeGenerarBoleta={puedeGenerarBoleta}
               onVer={handleVerComprobante}
               onEliminar={handleEliminarComprobante}
               onGenerarBoleta={abrirBoleta}
@@ -781,6 +780,7 @@ const InfoClientDialog = ({
             role="tabpanel"
             id="panel-ficha"
             aria-labelledby="pestana-ficha"
+            tabIndex={0}
           >
             {clientInfo && (
               <ClientProfilePanel

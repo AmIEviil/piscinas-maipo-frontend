@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { DateTime } from "luxon";
 import type { IClientForm } from "../types";
 import { useChangeFieldValue } from "../../../../utils/formUtils";
-import { toUpperCaseFirstLetter, formatMoneyNumber } from "../../../../utils/formatTextUtils";
+import { toUpperCaseFirstLetter, formatCLP } from "../../../../utils/formatTextUtils";
 import { formatDateToDDMMYYYY } from "../../../../utils/DateUtils";
 import Button from "../../../ui/button/Button";
 import style from "./ClientProfilePanel.module.css";
@@ -32,7 +32,7 @@ const CAMPOS = [
 const mostrar = (clave: string, valor: unknown) => {
   if (valor === null || valor === undefined || valor === "") return "—";
   if (clave === "isActive") return valor ? "Activo" : "Inactivo";
-  if (clave.includes("valor")) return formatMoneyNumber(valor as number);
+  if (clave.includes("valor")) return formatCLP(valor as number);
   if (clave.includes("fecha")) return formatDateToDDMMYYYY(valor as string);
   return String(valor);
 };

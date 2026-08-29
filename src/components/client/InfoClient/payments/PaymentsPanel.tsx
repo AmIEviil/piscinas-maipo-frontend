@@ -1,5 +1,6 @@
 import type { IComprobantePago } from "../../../../service/ComprobantePagos.interface";
 import PaymentCard from "./PaymentCard";
+import { formatCLP } from "../../../../utils/formatTextUtils";
 import style from "./PaymentsPanel.module.css";
 
 interface PaymentsPanelProps {
@@ -7,6 +8,13 @@ interface PaymentsPanelProps {
   totalMes: number;
   visitasSinPago: { id: string; etiqueta: string; monto: number }[];
   puedeEscribir: boolean;
+  /**
+   * Separado de `puedeEscribir`: la boleta se arma con el resumen del mes que
+   * vive en `useClientResumenMonthStore`, y sin ese resumen el modal de boleta
+   * no renderiza nada. El orquestador decide (ver `puedeGenerarBoleta` en
+   * InfoDialogClient) para que el boton no exista contra datos ausentes.
+   */
+  puedeGenerarBoleta: boolean;
   onVer: (c: IComprobantePago) => void;
   onEliminar: (id: string) => void;
   onGenerarBoleta: () => void;
@@ -27,6 +35,7 @@ const PaymentsPanel = ({
   totalMes,
   visitasSinPago,
   puedeEscribir,
+  puedeGenerarBoleta,
   onVer,
   onEliminar,
   onGenerarBoleta,
@@ -34,7 +43,6 @@ const PaymentsPanel = ({
 }: PaymentsPanelProps) => {
   const pagado = comprobantes.reduce((suma, c) => suma + (c.monto ?? 0), 0);
   const pendiente = Math.max(0, totalMes - pagado);
-  const pesos = (v: number) => `$${v.toLocaleString("es-CL")}`;
 
   return (
     <>
@@ -70,15 +78,15 @@ const PaymentsPanel = ({
             <div className={style.panelLadoCuerpo}>
               <div className={style.monto}>
                 <span>Total del mes</span>
-                <span>{pesos(totalMes)}</span>
+                <span>{formatCLP(totalMes)}</span>
               </div>
               <div className={style.monto}>
                 <span>Ya pagado</span>
-                <span>{pesos(pagado)}</span>
+                <span>{formatCLP(pagado)}</span>
               </div>
               <div className={`${style.monto} ${style.montoPendiente}`}>
                 <span>Pendiente</span>
-                <span>{pesos(pendiente)}</span>
+                <span>{formatCLP(pendiente)}</span>
               </div>
 
               {visitasSinPago.length > 0 && (
@@ -87,7 +95,7 @@ const PaymentsPanel = ({
                   <div className={style.pendientes}>
                     {visitasSinPago.map((v) => (
                       <div key={v.id} className={style.pendiente}>
-                        {v.etiqueta} <b>{pesos(v.monto)}</b>
+                        {v.etiqueta} <b>{formatCLP(v.monto)}</b>
                       </div>
                     ))}
                   </div>
@@ -95,18 +103,18 @@ const PaymentsPanel = ({
               )}
 
               {puedeEscribir && (
-                <>
-                  <button type="button" className={style.botonBloque} onClick={onRegistrarPago}>
-                    Registrar un pago
-                  </button>
-                  <button
-                    type="button"
-                    className={style.botonBloqueSecundario}
-                    onClick={onGenerarBoleta}
-                  >
-                    Generar boleta del mes
-                  </button>
-                </>
+                <button type="button" className={style.botonBloque} onClick={onRegistrarPago}>
+                  Registrar un pago
+                </button>
+              )}
+              {puedeGenerarBoleta && (
+                <button
+                  type="button"
+                  className={style.botonBloqueSecundario}
+                  onClick={onGenerarBoleta}
+                >
+                  Generar boleta del mes
+                </button>
               )}
             </div>
           </section>

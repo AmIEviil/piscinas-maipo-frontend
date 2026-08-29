@@ -9,6 +9,12 @@
  * Todo en rem, igual que el resto del modal: el corte de layout entre
  * escritorio y celular se hace con @container sobre `.modal`, nunca con
  * @media sobre la ventana.
+ *
+ * OJO: las duraciones de `.hoja` (transform, 0.26s) y `.velo` (opacity,
+ * 0.2s) estan replicadas como TRANSICION_HOJA_MS y TRANSICION_VELO_MS en
+ * InfoDialogClient.tsx, que las necesita para el puente de velo del
+ * encadenado mantencion -> pago. Si se cambia alguna aca, hay que
+ * actualizarla alla en el mismo commit.
  */
 
 .velo {

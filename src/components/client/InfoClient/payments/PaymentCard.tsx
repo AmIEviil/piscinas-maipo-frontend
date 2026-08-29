@@ -1,5 +1,8 @@
 import type { IComprobantePago } from "../../../../service/ComprobantePagos.interface";
-import { toUpperCaseFirstLetter } from "../../../../utils/formatTextUtils";
+import {
+  formatCLP,
+  toUpperCaseFirstLetter,
+} from "../../../../utils/formatTextUtils";
 import { formatDateToDDMMYYYY } from "../../../../utils/DateUtils";
 import style from "./PaymentsPanel.module.css";
 
@@ -36,11 +39,7 @@ const PaymentCard = ({
         </div>
       </div>
       <div className={style.comprobanteMonto}>
-        {new Intl.NumberFormat("es-CL", {
-          style: "currency",
-          currency: "CLP",
-          minimumFractionDigits: 0,
-        }).format(comprobante.monto ?? 0)}
+        {formatCLP(comprobante.monto)}
       </div>
     </div>
 

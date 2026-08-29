@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import type { IMaintenance } from "../../../../service/maintenance.interface";
 import type { ResumenMonth } from "../types";
 import { useClientResumenMonthStore } from "../../../../store/ClientStore";
+import { formatCLP } from "../../../../utils/formatTextUtils";
 import style from "./MonthStatusPanel.module.css";
 
 interface MonthStatusPanelProps {
@@ -13,8 +14,6 @@ interface MonthStatusPanelProps {
   onGenerarBoleta: () => void;
   puedeGenerarBoleta: boolean;
 }
-
-const pesos = (valor: number) => `$${valor.toLocaleString("es-CL")}`;
 
 /**
  * Calculo del resumen del mes.
@@ -120,23 +119,23 @@ const MonthStatusPanel = ({
         <div className={style.montos}>
           <div className={style.monto}>
             <span>Mantenciones ({realizadas})</span>
-            <span>{pesos(resumen.totalMantencion)}</span>
+            <span>{formatCLP(resumen.totalMantencion)}</span>
           </div>
           <div className={style.monto}>
             <span>Productos</span>
-            <span>{pesos(resumen.totalProductos)}</span>
+            <span>{formatCLP(resumen.totalProductos)}</span>
           </div>
           <div className={`${style.monto} ${style.montoTotal}`}>
             <span>Total del mes</span>
-            <span>{pesos(resumen.granTotal)}</span>
+            <span>{formatCLP(resumen.granTotal)}</span>
           </div>
           <div className={style.monto}>
             <span>Ya pagado</span>
-            <span>{pesos(montoPagado)}</span>
+            <span>{formatCLP(montoPagado)}</span>
           </div>
           <div className={`${style.monto} ${style.montoPendiente}`}>
             <span>Pendiente</span>
-            <span>{pesos(pendiente)}</span>
+            <span>{formatCLP(pendiente)}</span>
           </div>
         </div>
 
@@ -147,9 +146,9 @@ const MonthStatusPanel = ({
               {Object.entries(resumen.resumenMateriales).map(([nombre, data]) => (
                 <div key={nombre} className={style.monto}>
                   <span>
-                    {nombre} — {pesos(data.valorUnitario)} × {data.cantidad}
+                    {nombre} — {formatCLP(data.valorUnitario)} × {data.cantidad}
                   </span>
-                  <span>{pesos(data.total)}</span>
+                  <span>{formatCLP(data.total)}</span>
                 </div>
               ))}
             </div>

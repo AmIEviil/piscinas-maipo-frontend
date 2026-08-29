@@ -7,15 +7,6 @@ interface ClientTabsProps {
   activa: PestanaId;
   onCambiar: (id: PestanaId) => void;
   conteos: { mantenciones: number; cobros: number };
-  /**
-   * Oculta la pestana Cobros por completo (no solo su contenido). Pensada
-   * para el no-superadmin: antes del rediseno esa seccion directamente no
-   * se renderizaba, y una pestana presente-pero-inerte (sin `disabled`, sin
-   * `aria-disabled`, foco de teclado aterrizando ahi igual) no reproducia
-   * eso para mouse, teclado ni lector de pantalla. Opcional: quien no lo
-   * pase (p. ej. Task 16 todavia) sigue viendo las tres pestanas de siempre.
-   */
-  ocultarCobros?: boolean;
 }
 
 const PESTANAS: { id: PestanaId; etiqueta: string }[] = [
@@ -32,19 +23,15 @@ const PESTANAS: { id: PestanaId; etiqueta: string }[] = [
  * moverse, Inicio y Fin para los extremos, y solo la pestana activa participa
  * del orden de tabulacion.
  *
- * Con `ocultarCobros`, esa pestana se excluye de la lista que se renderiza Y
- * de la lista sobre la que viaja el teclado: no basta con esconderla
- * visualmente, porque `alPresionar` movia el foco real del DOM a cualquier
- * boton de `PESTANAS` sin mirar si estaba montado. Al filtrar antes de
- * calcular indices, la aritmetica de ArrowRight/ArrowLeft/Home/End queda
- * automaticamente correcta para las pestanas que sí existen.
+ * Las tres pestanas se ven siempre, para todos los roles: quien no es
+ * superadmin ve Cobros en modo lectura (decision de producto 6 del diseno).
+ * Una pestana escondida hace sospechar que falta informacion; una pestana
+ * visible y honesta, no.
  */
-const ClientTabs = ({ activa, onCambiar, conteos, ocultarCobros = false }: ClientTabsProps) => {
+const ClientTabs = ({ activa, onCambiar, conteos }: ClientTabsProps) => {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const pestanas = ocultarCobros
-    ? PESTANAS.filter((pestana) => pestana.id !== "cobros")
-    : PESTANAS;
+  const pestanas = PESTANAS;
 
   const alPresionar = (evento: React.KeyboardEvent, indice: number) => {
     const ultimo = pestanas.length - 1;

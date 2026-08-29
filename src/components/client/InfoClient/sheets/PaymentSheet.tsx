@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import SlideSheet from "./SlideSheet";
 import Button from "../../../ui/button/Button";
+import { formatDateToLocalString } from "../../../../utils/DateUtils";
+import { formatCLP } from "../../../../utils/formatTextUtils";
 import style from "./PaymentSheet.module.css";
 
 interface VisitaCubrible {
@@ -23,7 +25,15 @@ interface PaymentSheetProps {
   }) => void;
 }
 
-const hoyISO = () => new Date().toISOString().split("T")[0];
+/**
+ * Fecha de hoy en `yyyy-MM-dd`, en hora local.
+ *
+ * Con `toISOString()` -que es lo que habia- la fecha se convierte a UTC
+ * antes de recortarla: en Chile (UTC-3/-4) toda la tarde a partir de las
+ * ~20:00 locales prefijaba el pago con la fecha de manana. Se usa el mismo
+ * helper que ya emplea MaintenanceSheet para la fecha de la visita.
+ */
+const hoyISO = () => formatDateToLocalString(new Date());
 
 /**
  * Registro de un pago.
@@ -44,6 +54,9 @@ const PaymentSheet = ({
   const [fechaPago, setFechaPago] = useState(hoyISO());
   const [monto, setMonto] = useState(0);
   const [comprobante, setComprobante] = useState<File | null>(null);
+  // El usuario ya escribio un monto a mano: desde ese momento el monto
+  // sugerido deja de pisarlo. Ver el efecto de mas abajo.
+  const [montoEditado, setMontoEditado] = useState(false);
 
   // Al abrir se parte de cero, con la visita fijada ya marcada.
   useEffect(() => {
@@ -52,6 +65,7 @@ const PaymentSheet = ({
     setFechaPago(hoyISO());
     setMonto(visitaFijada?.monto ?? 0);
     setComprobante(null);
+    setMontoEditado(false);
   }, [abierta, visitaFijada]);
 
   const opciones = useMemo(
@@ -64,13 +78,22 @@ const PaymentSheet = ({
       previas.includes(id) ? previas.filter((x) => x !== id) : [...previas, id],
     );
 
-  // El monto sugerido acompana a lo seleccionado, pero se puede sobrescribir.
+  // El monto sugerido acompana a lo seleccionado, pero solo mientras el
+  // usuario no lo haya escrito el mismo.
+  //
+  // `opciones` deriva del memo `visitasSinPago` del padre, que devuelve un
+  // arreglo nuevo en cada refetch: sin la guarda, este efecto se disparaba
+  // tambien con cada refresco de datos del modal y borraba en silencio el
+  // monto tipeado a mano -que es justo lo que se envia en el POST-. Con la
+  // guarda, marcar y desmarcar visitas sigue actualizando un monto que
+  // nadie toco, y un monto escrito a mano sobrevive.
   useEffect(() => {
+    if (montoEditado) return;
     const sugerido = opciones
       .filter((o) => seleccionadas.includes(o.id))
       .reduce((suma, o) => suma + o.monto, 0);
     setMonto(sugerido);
-  }, [seleccionadas, opciones]);
+  }, [seleccionadas, opciones, montoEditado]);
 
   return (
     <SlideSheet
@@ -126,7 +149,7 @@ const PaymentSheet = ({
                     {opcion.etiqueta}
                     {fijada && <span className={style.nueva}>recien creada</span>}
                     <span className={style.montoOpcion}>
-                      ${opcion.monto.toLocaleString("es-CL")}
+                      {formatCLP(opcion.monto)}
                     </span>
                   </span>
                 </label>
@@ -157,8 +180,11 @@ const PaymentSheet = ({
           id="pago-monto"
           type="text"
           inputMode="numeric"
-          value={monto ? `$${monto.toLocaleString("es-CL")}` : ""}
-          onChange={(e) => setMonto(Number(e.target.value.replace(/[^\d]/g, "")))}
+          value={monto ? formatCLP(monto) : ""}
+          onChange={(e) => {
+            setMontoEditado(true);
+            setMonto(Number(e.target.value.replace(/[^\d]/g, "")));
+          }}
         />
       </div>
 

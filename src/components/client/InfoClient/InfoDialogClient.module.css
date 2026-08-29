@@ -115,10 +115,6 @@
   border-bottom: 0.0625rem solid var(--modal-borde);
 }
 
-.barraMes[hidden] {
-  display: none;
-}
-
 .panel {
   flex: 1 1 auto;
   overflow: auto;
@@ -130,6 +126,23 @@
 
 .panel[data-activo="si"] {
   display: flex;
+}
+
+/* El panel lleva tabIndex={0} para poder desplazarse solo con teclado, asi
+   que necesita foco visible como cualquier otro elemento enfocable. */
+.panel:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: -0.1875rem;
+}
+
+/* Estado vacio del panel, mismo patron que `.vacio` de
+   MaintenanceTimeline.module.css y PaymentsPanel.module.css: usa los tokens
+   del modal, asi que responde al tema oscuro. */
+.vacio {
+  margin: 0;
+  padding: 1rem 0;
+  font-size: var(--fs-base);
+  color: var(--modal-texto-2);
 }
 
 /* Dos columnas dentro de un panel, decidido por el ancho del modal. */

@@ -1,6 +1,6 @@
 import type { IClientForm } from "../types";
 import style from "./ClientDialogHeader.module.css";
-import { formatMoneyNumber } from "../../../../utils/formatTextUtils";
+import { formatCLP } from "../../../../utils/formatTextUtils";
 
 interface ClientDialogHeaderProps {
   clientInfo: IClientForm;
@@ -75,7 +75,7 @@ const ClientDialogHeader = ({
         )}
         {valor != null && (
           <span className={style.chip}>
-            <b>{formatMoneyNumber(valor)}</b> por visita
+            <b>{formatCLP(valor)}</b> por visita
           </span>
         )}
         {ruta && (

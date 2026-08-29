@@ -10,6 +10,7 @@ import type {
 } from "../../../../service/maintenance.interface";
 import type { IProducto } from "../../../../service/products.interface";
 import { formatDateToLocalString } from "../../../../utils/DateUtils";
+import { formatCLP } from "../../../../utils/formatTextUtils";
 
 interface MaintenanceSheetProps {
   abierta: boolean;
@@ -25,11 +26,6 @@ interface MaintenanceSheetProps {
     registrarPago: boolean,
   ) => void;
 }
-
-const formatoCLP = new Intl.NumberFormat("es-CL", {
-  style: "currency",
-  currency: "CLP",
-});
 
 const construirInicial = (
   clientId: string,
@@ -404,7 +400,7 @@ const MaintenanceSheet = ({
 
       <div className={style.totalHoja}>
         <span>Total de esta visita</span>
-        <b>{formatoCLP.format(totalVisita)}</b>
+        <b>{formatCLP(totalVisita)}</b>
       </div>
     </SlideSheet>
   );
