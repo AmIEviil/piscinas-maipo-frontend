@@ -6,6 +6,7 @@ import {
   useClientsByFilters,
   useClientsById,
   useDeleteClient,
+  useFrecuenciasMantencion,
 } from "../../../hooks/ClientHooks";
 import type { Client, IClientForm } from "../../../service/client.interface";
 import { useMaintenancesByClient } from "../../../hooks/MaintenanceHooks";
@@ -19,6 +20,7 @@ import { Checkbox } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import AddIcon from "@mui/icons-material/Add";
+import TuneIcon from "@mui/icons-material/Tune";
 import Tooltip from "@mui/material/Tooltip";
 
 import {
@@ -44,15 +46,19 @@ import {
   FiltersContainer,
   type FilterItem,
 } from "../../common/FiltersContainer/FiltersContainer";
+import AdvancedFiltersSheet from "../../common/FiltersContainer/AdvancedFiltersSheet";
 import type { FilterValue } from "../../../service/employee.interface";
 import { BREAKPOINTS } from "../../../constant/breakpoints";
 
 interface IfilterQuery {
   nombre?: string;
   direccion?: string;
+  telefono?: string;
   dia?: string;
   comuna?: string;
   ruta?: string;
+  /** Id de la periodicidad de visitas, no su nombre. */
+  frecuencia?: string;
   isActive?: boolean;
   orderBy?: string;
   orderDirection?: "ASC" | "DESC";
@@ -61,9 +67,11 @@ interface IfilterQuery {
 const initial_filters: IfilterQuery = {
   nombre: "",
   direccion: "",
+  telefono: "",
   dia: "",
   comuna: "",
   ruta: "",
+  frecuencia: "",
   isActive: true,
   orderBy: "nombre",
   orderDirection: "ASC",
@@ -105,6 +113,9 @@ const BodyClients = () => {
   const setSelectAllOnLoad = useBoundStore((state) => state.setSelectAllOnLoad);
 
   const [openPopUp, setOpenPopUp] = useState(false);
+  const [openBusquedaAvanzada, setOpenBusquedaAvanzada] = useState(false);
+
+  const { data: frecuencias = [] } = useFrecuenciasMantencion();
 
   const handleClosePopUp = () => {
     setOpenPopUp(false);
@@ -225,6 +236,23 @@ const BodyClients = () => {
     [],
   );
 
+  const handleFilterTelefono = useMemo(
+    () =>
+      debounce((value: string) => {
+        setFilterQuery((prev) => {
+          if (value.length >= 3) {
+            return { ...prev, telefono: value };
+          } else if (value.length === 0) {
+            const updated = { ...prev };
+            delete updated.telefono;
+            return updated;
+          }
+          return prev ?? {};
+        });
+      }, 500),
+    [],
+  );
+
   const handleChangeComuna = (value: string) => {
     setFilterQuery((prev) => ({ ...prev, comuna: value }));
   };
@@ -235,6 +263,10 @@ const BodyClients = () => {
 
   const handleChangeRuta = (value: string) => {
     setFilterQuery((prev) => ({ ...prev, ruta: value }));
+  };
+
+  const handleChangeFrecuencia = (value: string) => {
+    setFilterQuery((prev) => ({ ...prev, frecuencia: value }));
   };
 
   const handleChangeActive = (value: boolean) => {
@@ -385,80 +417,159 @@ const BodyClients = () => {
     }
   };
 
-  const filters: FilterItem[] = [
-    {
-      title: "Buscar por Nombre",
-      placeholder: "Nombre",
-      type: "text",
-      value: filterQuery.nombre || "",
-      onChange: (value: FilterValue) => {
-        handleFilterName(String(value));
-      },
+  /**
+   * Catalogo unico de filtros.
+   *
+   * Se declara una sola vez y despues se reparte: la barra muestra un
+   * subconjunto y la hoja de busqueda avanzada los muestra todos, agrupados.
+   * Antes eran dos listas paralelas, y cualquier filtro nuevo habia que
+   * acordarse de agregarlo en ambas.
+   */
+  const filtroNombre: FilterItem = {
+    title: "Nombre",
+    placeholder: "Nombre del cliente",
+    type: "text",
+    value: filterQuery.nombre || "",
+    onChange: (value: FilterValue) => {
+      handleFilterName(String(value));
     },
-    {
-      title: "Buscar por Dirección",
-      placeholder: "Dirección",
-      type: "text",
-      value: filterQuery.direccion || "",
-      onChange: (value: FilterValue) => {
-        handleFilterDireccion(String(value));
-      },
+  };
+
+  const filtroTelefono: FilterItem = {
+    title: "Teléfono",
+    placeholder: "Teléfono",
+    type: "text",
+    value: filterQuery.telefono || "",
+    onChange: (value: FilterValue) => {
+      handleFilterTelefono(String(value));
     },
-    {
-      title: "Buscar por Comuna",
-      placeholder: "Comuna",
-      type: "select",
-      options: comunas,
-      value: filterQuery.comuna || "",
-      onChange: (value: FilterValue) => {
-        handleChangeComuna(String(value));
-      },
+  };
+
+  const filtroDireccion: FilterItem = {
+    title: "Dirección",
+    placeholder: "Dirección",
+    type: "text",
+    value: filterQuery.direccion || "",
+    onChange: (value: FilterValue) => {
+      handleFilterDireccion(String(value));
     },
-    {
-      title: "Buscar por Día Mantención",
-      placeholder: "Día Mantención",
-      type: "select",
-      options: dias,
-      value: filterQuery.dia || "",
-      onChange: (value: FilterValue) => {
-        handleChangeDiaMantencion(String(value));
-      },
+  };
+
+  const filtroComuna: FilterItem = {
+    title: "Comuna",
+    placeholder: "Todas las comunas",
+    type: "select",
+    options: comunas,
+    value: filterQuery.comuna || "",
+    onChange: (value: FilterValue) => {
+      handleChangeComuna(String(value));
     },
-    {
-      title: "Buscar por Ruta",
-      placeholder: "Ruta",
-      type: "select",
-      options: rutas,
-      value: filterQuery.ruta || "",
-      onChange: (value: FilterValue) => {
-        handleChangeRuta(String(value));
-      },
+  };
+
+  const filtroDia: FilterItem = {
+    title: "Día de mantención",
+    placeholder: "Todos los días",
+    type: "select",
+    options: dias,
+    value: filterQuery.dia || "",
+    onChange: (value: FilterValue) => {
+      handleChangeDiaMantencion(String(value));
     },
-    ...(isSuperAdmin
-      ? [
-          {
-            title: "Buscar por Activo",
-            placeholder: "Activo",
-            type: "select" as const,
-            options: [
-              { label: "Sí", value: "true" },
-              { label: "No", value: "false" },
-            ],
-            value: filterQuery.isActive?.toString() || "",
-            onChange: (value: FilterValue) => {
-              handleChangeActive(value === "true");
-            },
+  };
+
+  const filtroFrecuencia: FilterItem = {
+    title: "Periodicidad",
+    placeholder: "Todas",
+    type: "select",
+    // El valor que viaja al API es el id de la frecuencia; la opcion vacia es
+    // la que permite volver a "todas".
+    options: [
+      { label: "Todas", value: "" },
+      ...frecuencias.map((frecuencia) => ({
+        label: frecuencia.nombre,
+        value: frecuencia.id,
+      })),
+    ],
+    value: filterQuery.frecuencia || "",
+    onChange: (value: FilterValue) => {
+      handleChangeFrecuencia(String(value));
+    },
+  };
+
+  const filtroRuta: FilterItem = {
+    title: "Ruta",
+    placeholder: "Todas las rutas",
+    type: "select",
+    options: rutas,
+    value: filterQuery.ruta || "",
+    onChange: (value: FilterValue) => {
+      handleChangeRuta(String(value));
+    },
+  };
+
+  const filtroActivo: FilterItem[] = isSuperAdmin
+    ? [
+        {
+          title: "Estado",
+          placeholder: "Activo",
+          type: "select",
+          options: [
+            { label: "Activos", value: "true" },
+            { label: "Inactivos", value: "false" },
+          ],
+          value: filterQuery.isActive?.toString() || "",
+          onChange: (value: FilterValue) => {
+            handleChangeActive(value === "true");
           },
-        ]
-      : []),
+        },
+      ]
+    : [];
+
+  /**
+   * Filtros de la barra: los tres que se usan para armar la ruta del dia.
+   *
+   * El resto vive en la hoja de busqueda avanzada. Con los ocho a la vista la
+   * barra ocupaba dos filas completas antes de que apareciera un solo cliente.
+   */
+  const filtrosBasicos: FilterItem[] = [filtroNombre, filtroDia, filtroRuta];
+
+  const gruposAvanzados = [
+    { titulo: "Identificación", filtros: [filtroNombre, filtroTelefono] },
+    { titulo: "Ubicación", filtros: [filtroDireccion, filtroComuna] },
+    { titulo: "Servicio", filtros: [filtroDia, filtroFrecuencia] },
+    { titulo: "Ruta y estado", filtros: [filtroRuta, ...filtroActivo] },
   ];
 
-  const hasFilters =
+  // Se cuentan los filtros que la barra no muestra: el badge existe para
+  // avisar de lo que esta aplicado y no se ve. isActive se cuenta solo cuando
+  // vale false, porque la vista arranca en "activos" y contarlo dejaria el
+  // badge en 1 desde el primer render.
+  const filtrosAvanzadosActivos = [
+    filterQuery.telefono,
+    filterQuery.direccion,
+    filterQuery.comuna,
+    filterQuery.frecuencia,
+    filterQuery.isActive === false ? "inactivos" : "",
+  ].filter(Boolean).length;
+
+  // Dos contadores distintos a proposito. El badge del boton solo cuenta lo
+  // que esta aplicado y NO se ve en la barra, que es de lo que avisa. El
+  // subtitulo y el "Limpiar" de la hoja cuentan todo, porque la hoja muestra
+  // todos los filtros y limpiar solo la mitad de lo que se ve seria mentira.
+  const totalFiltrosActivos =
+    filtrosAvanzadosActivos +
+    [filterQuery.nombre, filterQuery.dia, filterQuery.ruta].filter(Boolean)
+      .length;
+
+  const hasFilters = Boolean(
     filterQuery.nombre ||
-    filterQuery.direccion ||
-    filterQuery.comuna ||
-    filterQuery.dia ||
-    filterQuery.ruta;
+      filterQuery.telefono ||
+      filterQuery.direccion ||
+      filterQuery.comuna ||
+      filterQuery.dia ||
+      filterQuery.ruta ||
+      filterQuery.frecuencia,
+  );
 
   const actionsButtons = [
     {
@@ -479,8 +590,38 @@ const BodyClients = () => {
   return (
     <div className="pt-4 ">
       <div className={style.filtersWrapper}>
-        <FiltersContainer filters={filters} actionButtons={actionsButtons} />
+        <FiltersContainer
+          filters={filtrosBasicos}
+          actionButtons={actionsButtons}
+          extraControls={
+            <button
+              type="button"
+              className={style.advancedButton}
+              onClick={() => setOpenBusquedaAvanzada(true)}
+              aria-haspopup="dialog"
+              aria-expanded={openBusquedaAvanzada}
+            >
+              <TuneIcon fontSize="small" />
+              Búsqueda avanzada
+              {/* El contador es la unica senal de que hay filtros ocultos
+                  activos: sin el, una busqueda vacia por un filtro guardado en
+                  la hoja se lee como "no hay clientes". */}
+              {filtrosAvanzadosActivos > 0 && (
+                <span className={style.advancedBadge}>
+                  {filtrosAvanzadosActivos}
+                </span>
+              )}
+            </button>
+          }
+        />
       </div>
+      <AdvancedFiltersSheet
+        abierta={openBusquedaAvanzada}
+        grupos={gruposAvanzados}
+        activos={totalFiltrosActivos}
+        onCerrar={() => setOpenBusquedaAvanzada(false)}
+        onLimpiar={handleClearFilter}
+      />
       {windowWidth < BREAKPOINTS.tablet && selectedClients.length > 0 && (
         <div className="flex flex-row w-full items-center justify-center pt-4">
           <button
@@ -523,6 +664,7 @@ const BodyClients = () => {
               <td>{client.telefono}</td>
               <td>{client.email ? client.email : "No tiene email asociado"}</td>
               <td>{client.dia_mantencion}</td>
+              <td>{client.frecuencia_mantencion?.nombre ?? "—"}</td>
               <td>{client.ruta}</td>
               <td>{formatMoneyNumber(client.valor_mantencion)}</td>
               <td className="flex flex-row flex-wrap gap-2 items-center justify-center">

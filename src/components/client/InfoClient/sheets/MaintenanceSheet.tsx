@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import SlideSheet from "./SlideSheet";
+import SlideSheet from "../../../ui/sheet/SlideSheet";
 import style from "./MaintenanceSheet.module.css";
+import campos from "../camposModal.module.css";
 import Button from "../../../ui/button/Button";
+import CustomInputText from "../../../ui/InputText/CustomInputText";
+import CustomCalendarV2 from "../../../ui/calendar/CustomCalendarV2";
 import type {
   IMaintenance,
   IMaintenanceCreate,
@@ -18,6 +21,12 @@ interface MaintenanceSheetProps {
   valorMantencion: number;
   productosList: IProducto[];
   mantencionAEditar: IMaintenance | null;
+  /**
+   * Fecha "YYYY-MM-DD" con la que se abre una mantencion nueva. La pone la
+   * linea de tiempo cuando se entra desde una visita proyectada; en null, la
+   * hoja parte en el dia de hoy como siempre.
+   */
+  fechaSugerida?: string | null;
   /** true cuando el usuario puede encadenar el registro del pago. */
   puedeRegistrarPago: boolean;
   onCerrar: () => void;
@@ -30,8 +39,9 @@ interface MaintenanceSheetProps {
 const construirInicial = (
   clientId: string,
   valorMantencion: number,
+  fechaSugerida?: string | null,
 ): IMaintenanceCreate => ({
-  fechaMantencion: formatDateToLocalString(new Date()),
+  fechaMantencion: fechaSugerida ?? formatDateToLocalString(new Date()),
   realizada: false,
   recibioPago: false,
   valorMantencion,
@@ -53,12 +63,13 @@ const MaintenanceSheet = ({
   valorMantencion,
   productosList,
   mantencionAEditar,
+  fechaSugerida,
   puedeRegistrarPago,
   onCerrar,
   onGuardar,
 }: MaintenanceSheetProps) => {
   const [maintenance, setMaintenance] = useState<IMaintenanceCreate>(() =>
-    construirInicial(clientId, valorMantencion),
+    construirInicial(clientId, valorMantencion, fechaSugerida),
   );
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [cantidad, setCantidad] = useState<number>(0);
@@ -92,13 +103,13 @@ const MaintenanceSheet = ({
         observaciones: mantencionAEditar.observaciones || "",
       });
     } else {
-      setMaintenance(construirInicial(clientId, valorMantencion));
+      setMaintenance(construirInicial(clientId, valorMantencion, fechaSugerida));
     }
 
     setSelectedProduct("");
     setCantidad(0);
     setError("");
-  }, [abierta, mantencionAEditar, clientId, valorMantencion]);
+  }, [abierta, mantencionAEditar, clientId, valorMantencion, fechaSugerida]);
 
   const productOptions = productosList
     .filter(
@@ -174,17 +185,31 @@ const MaintenanceSheet = ({
     return (maintenance.realizada ? valorMantencion : 0) + productos;
   }, [maintenance, productosList, valorMantencion]);
 
+  /**
+   * `fechaMantencion` se guarda como "YYYY-MM-DD" (es lo que espera el API),
+   * pero CustomCalendarV2 trabaja con `Date`. La conversion agrega
+   * "T00:00:00" a proposito: sin esa parte horaria, `new Date("2026-08-28")`
+   * se interpreta como medianoche UTC y en Chile (UTC-3/-4) el calendario
+   * marcaria el dia anterior.
+   *
+   * Se memoiza porque alimenta un prop que el calendario usa para derivar su
+   * estado interno; un `Date` nuevo en cada render lo haria recalcular de mas.
+   */
+  const fechaVisita = useMemo(() => {
+    if (!maintenance.fechaMantencion) return undefined;
+    const fecha = new Date(`${maintenance.fechaMantencion}T00:00:00`);
+    return Number.isNaN(fecha.getTime()) ? undefined : fecha;
+  }, [maintenance.fechaMantencion]);
+
   // No hay nombre/direccion del cliente en las props de esta hoja: el
   // subtitulo se limita a la fecha de la visita en curso.
   const subtitulo = useMemo(() => {
-    if (!maintenance.fechaMantencion) return undefined;
-    const fecha = new Date(`${maintenance.fechaMantencion}T00:00:00`);
-    if (Number.isNaN(fecha.getTime())) return undefined;
-    return fecha.toLocaleDateString("es-CL", {
+    if (!fechaVisita) return undefined;
+    return fechaVisita.toLocaleDateString("es-CL", {
       day: "numeric",
       month: "long",
     });
-  }, [maintenance.fechaMantencion]);
+  }, [fechaVisita]);
 
   const encadena = maintenance.recibioPago && puedeRegistrarPago;
 
@@ -213,16 +238,15 @@ const MaintenanceSheet = ({
       }
     >
       <div className={style.campo}>
-        <label htmlFor="mant-fecha">Fecha de la visita</label>
-        <input
-          className={style.control}
-          id="mant-fecha"
-          type="date"
-          value={maintenance.fechaMantencion}
-          onChange={(e) =>
+        <CustomCalendarV2
+          label="Fecha de la visita"
+          placeholder="Elegir fecha..."
+          initialDate={fechaVisita}
+          customClassName={campos.calendario}
+          onSave={(fecha) =>
             setMaintenance((prev) => ({
               ...prev,
-              fechaMantencion: e.target.value,
+              fechaMantencion: fecha ? formatDateToLocalString(fecha) : "",
             }))
           }
         />
@@ -313,37 +337,16 @@ const MaintenanceSheet = ({
               ))}
             </select>
           </div>
-          <div className={style.campo}>
-            <label htmlFor="mant-cantidad" className={style.pista}>
-              Cantidad
-            </label>
-            <div className={style.stepper}>
-              <button
-                type="button"
-                onClick={() => setCantidad((c) => Math.max(0, c - 1))}
-                aria-label="Restar uno"
-              >
-                −
-              </button>
-              <input
-                className={style.control}
-                type="number"
-                id="mant-cantidad"
-                min={0}
-                max={stockDisponible}
-                value={cantidad}
-                onChange={(e) => setCantidad(Number(e.target.value))}
-                aria-label="Cantidad"
-              />
-              <button
-                type="button"
-                onClick={() => setCantidad((c) => c + 1)}
-                aria-label="Sumar uno"
-              >
-                +
-              </button>
-            </div>
-          </div>
+          <CustomInputText
+            title="Cantidad"
+            type="number"
+            showButtons
+            min={0}
+            max={stockDisponible}
+            value={cantidad}
+            onChange={(valor) => setCantidad(Number(valor))}
+            customClassContainer={`${campos.entrada} ${campos.rotuloSuave}`}
+          />
           <button
             type="button"
             className={style.agregarBtn}

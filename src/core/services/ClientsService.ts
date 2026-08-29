@@ -3,6 +3,7 @@ import type {
   Client,
   ClientFilters,
   IClientForm,
+  IFrecuenciaMantencion,
 } from "../../service/client.interface";
 import type { IFieldPayload } from "../../utils/formUtils";
 import { CLIENT_API } from "../api/clients/api";
@@ -19,6 +20,13 @@ export const clientService = {
     const response = await apiClient.get("/api/clients/filter", {
       params: filters,
     });
+    return response.data;
+  },
+
+  getFrecuencias: async (): Promise<IFrecuenciaMantencion[]> => {
+    const response = await apiClient.get<IFrecuenciaMantencion[]>(
+      CLIENT_API.frecuencias
+    );
     return response.data;
   },
 

@@ -1,10 +1,11 @@
 /*
- * Hoja deslizante generica sobre el modal de ficha del cliente.
+ * Hoja deslizante generica.
  *
- * Se posiciona en absoluto dentro de `.modal` (Task 6), que ya declara
- * position:relative, overflow:hidden y container-type:inline-size. Por eso
- * este archivo no vuelve a declarar superficies propias: consume los
- * `--modal-*` de InfoDialogClient.module.css.
+ * Se posiciona en absoluto dentro de un ancestro que declare
+ * position:relative (o fixed) y container-type:inline-size: dentro de la
+ * ficha del cliente eso lo da `.modal` (Task 6); fuera, la capa de
+ * AdvancedFiltersSheet. Por eso este archivo no declara superficies propias:
+ * consume los tokens `--modal-*`, que son globales (styles/tokens.css).
  *
  * Todo en rem, igual que el resto del modal: el corte de layout entre
  * escritorio y celular se hace con @container sobre `.modal`, nunca con

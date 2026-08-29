@@ -16,8 +16,13 @@ import {
 import { useProductStore } from "../../../store/ProductStore";
 import {
   formatDateToDDMMYYYY,
+  formatDateToLocalString,
   formatMonthTitle,
 } from "../../../utils/DateUtils";
+import {
+  anclaDelCiclo,
+  proyectarVisitasDelMes,
+} from "../../../utils/visitasProyectadas";
 import ClientProfilePanel from "./profile/ClientProfilePanel";
 import { Modal } from "react-bootstrap";
 import Button from "../../ui/button/Button";
@@ -122,6 +127,13 @@ const InfoClientDialog = ({
   const [pestanaActiva, setPestanaActiva] = useState<PestanaId>("mantenciones");
   const { meses, mesActivo, setMesActivo } = useMonthNavigation(maintenancesClient);
   const [hojaMantencionAbierta, setHojaMantencionAbierta] = useState(false);
+  /**
+   * Fecha con la que se abre la hoja de registro cuando se entra desde una
+   * visita proyectada. Sin esto la hoja se abre siempre en el dia de hoy, y
+   * registrar la visita del 18 desde el nodo del 18 igual guardaba la fecha
+   * de hoy: el usuario tenia que corregirla a mano cada vez.
+   */
+  const [fechaSugerida, setFechaSugerida] = useState<string | null>(null);
   const [hojaPagoAbierta, setHojaPagoAbierta] = useState(false);
   // Visita recien creada/editada que encadeno el registro del pago: viene
   // marcada y bloqueada en la hoja de pago. null cuando la hoja de pago se
@@ -220,22 +232,30 @@ const InfoClientDialog = ({
     [mantencionesDelMes, clientInfo, visitaFijada],
   );
 
-  /** Proximo dia de la semana que coincide con el dia de mantencion. */
-  const proximaVisita = useMemo(() => {
-    const dias = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
-    const dia = String(clientInfo?.dia_mantencion?.value ?? "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "");
-    const objetivo = dias.indexOf(dia);
-    if (objetivo < 0) return null;
+  /**
+   * Visitas que el cliente deberia recibir durante el mes activo y que aun no
+   * tienen mantencion registrada.
+   *
+   * El ancla del ciclo es la ultima mantencion registrada (de cualquier mes),
+   * no solo las del mes que se esta mirando: si fuera solo del mes, al abrir
+   * un mes vacio el ciclo quincenal se recalcularia desde cero y las fechas
+   * bailarian de un mes a otro.
+   */
+  const visitasProyectadas = useMemo(() => {
+    if (!mesActivo) return [];
 
-    const hoy = new Date();
-    const delta = (objetivo - hoy.getDay() + 7) % 7 || 7;
-    const proxima = new Date(hoy);
-    proxima.setDate(hoy.getDate() + delta);
-    return proxima;
-  }, [clientInfo]);
+    const todasLasFechas = Object.values(maintenancesClient ?? {})
+      .flat()
+      .map((m) => m.fechaMantencion);
+
+    return proyectarVisitasDelMes({
+      diaMantencion: String(clientInfo?.dia_mantencion?.value ?? ""),
+      frecuencia: String(clientInfo?.frecuencia_mantencion?.value ?? ""),
+      ancla: anclaDelCiclo(todasLasFechas, clientInfo?.fecha_ingreso?.value),
+      mes: mesActivo,
+      registradas: mantencionesDelMes.map((m) => m.fechaMantencion),
+    });
+  }, [mesActivo, maintenancesClient, mantencionesDelMes, clientInfo]);
 
   useEffect(() => {
     if (products.length === 0) {
@@ -270,6 +290,7 @@ const InfoClientDialog = ({
     setPuenteVeloVisible(false);
     setHojaMantencionAbierta(false);
     setMaintenanceToEdit(null);
+    setFechaSugerida(null);
     setHojaPagoAbierta(false);
     setPagoEncadenado(false);
     setVisitaFijada(null);
@@ -640,6 +661,37 @@ const InfoClientDialog = ({
       contentClassName={style.modal}
       dialogClassName="max-h-[90dvh]"
       enforceFocus={false}
+      /*
+       * animation={false} no es cosmetico: sin el, el modal se queda montado
+       * e invisible tapando toda la pagina.
+       *
+       * react-bootstrap decide que el modal termino de cerrarse escuchando el
+       * `transitionend` del fade de salida, y para cubrir el caso en que ese
+       * evento no llegue arma un temporizador de respaldo en
+       * dom-helpers/transitionEnd.js. El problema es como lo desarma:
+       *
+       *   listen(element, 'transitionend', () => { called = true }, {once:true})
+       *
+       * ese listener no comprueba `e.target`, asi que CUALQUIER transitionend
+       * que burbujee desde un descendiente cancela el respaldo -- mientras que
+       * el handler real de react-bootstrap si filtra por `e.target === element`
+       * y lo descarta. Si ademas el fade propio del modal no se ejecuta (bajo
+       * `prefers-reduced-motion: reduce`, Bootstrap anula `.fade`), no queda
+       * ningun camino para que dispare `onExited`: `exited` se queda en false,
+       * el contenedor sigue en el DOM con `display:block; opacity:0;
+       * pointer-events:auto; inset:0` y se come todos los clics de la pagina.
+       *
+       * Este modal es el unico de la aplicacion que tiene descendientes con
+       * transiciones propias (los velos y las hojas de SlideSheet), por eso era
+       * el unico que lo gatillaba, y solo despues de abrir una hoja.
+       *
+       * Sin animacion, react-bootstrap no monta la transicion: marca `exited`
+       * en cuanto `show` pasa a false y desmonta de forma deterministica. Es
+       * ademas lo que ya hacen el resto de los modales del proyecto
+       * (MigrationModal, InfoDialogProduct, ModalMediaVisualizer,
+       * ModalPdfViewer).
+       */
+      animation={false}
     >
       {loading ? (
         <div className="flex justify-center items-center p-10 min-h-80">
@@ -697,14 +749,21 @@ const InfoClientDialog = ({
             aria-labelledby="pestana-mantenciones"
             tabIndex={0}
           >
-            {Object.keys(maintenancesClient ?? {}).length ? (
+            {/* Antes se exigia que `maintenancesClient` trajera algo: un
+                cliente sin ninguna mantencion registrada veia "No hay
+                mantenciones para mostrar" y ni siquiera sus visitas
+                proyectadas. Ahora basta con tener un mes donde pararse. */}
+            {mesActivo ? (
               <div className={style.dosColumnas}>
                 <MaintenanceTimeline
                   mantenciones={mantencionesDelMes}
-                  proximaVisita={proximaVisita}
+                  visitasProyectadas={visitasProyectadas}
                   onEditar={handleEditMaintenance}
                   onEliminar={handleDeleteMaintenance}
-                  onRegistrarProxima={() => setHojaMantencionAbierta(true)}
+                  onRegistrarVisita={(fecha) => {
+                    setFechaSugerida(formatDateToLocalString(fecha));
+                    setHojaMantencionAbierta(true);
+                  }}
                   puedeEliminar={isSuperAdmin}
                 />
                 <aside className={style.columnaLado}>
@@ -736,10 +795,12 @@ const InfoClientDialog = ({
             valorMantencion={clientInfo?.valor_mantencion?.value ?? 0}
             productosList={products}
             mantencionAEditar={maintenanceToEdit}
+            fechaSugerida={fechaSugerida}
             puedeRegistrarPago={isSuperAdmin}
             onCerrar={() => {
               setHojaMantencionAbierta(false);
               setMaintenanceToEdit(null);
+              setFechaSugerida(null);
             }}
             onGuardar={guardarMantencion}
           />

@@ -1,0 +1,281 @@
+/*
+ * Calendario CustomCalendarV2.
+ *
+ * El diseno es el que venia del proyecto de origen (campo con icono, popup
+ * con cabecera de navegacion, grilla de dias y pie Cancelar/Guardar); lo que
+ * cambia aca es de donde salen los colores: los hex fijos del original
+ * (#1a59f9, #27323a, #d8dde3...) pasaron a los tokens `--modal-*`, que
+ * `styles/tokens.css` declara en `:root` y redefine bajo
+ * `[data-theme="dark"]`. Con eso el calendario se integra a la paleta del
+ * modal de ficha del cliente y ademas responde al tema oscuro, cosa que la
+ * version original no hacia.
+ *
+ * Los tokens se leen con fallback (`var(--modal-superficie, #ffffff)`) para
+ * que el componente siga sirviendo si algun dia se monta en una pantalla que
+ * no cargue esos tokens.
+ *
+ * `.calendarPopup` se porta a document.body con createPortal, asi que no
+ * hereda nada del arbol donde vive el campo: por eso los tokens tienen que
+ * estar en :root y no en la clase del modal.
+ *
+ * Todo en rem, como el resto del proyecto: el control de tamano de letra del
+ * TopBar cambia el font-size de <html> y esto tiene que escalar con el.
+ */
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 20rem;
+  position: relative;
+  width: 100%;
+  user-select: none;
+  gap: 0.25rem;
+}
+
+.label {
+  display: flex;
+  flex-direction: row;
+  color: var(--modal-texto, #27323a);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  line-height: 1.375rem;
+  gap: 0.25rem;
+}
+
+.labelDisabled {
+  color: var(--modal-texto-2, #cfd8de);
+}
+
+.required {
+  color: var(--modal-peligro, #9c1f19);
+}
+
+.inputField {
+  align-items: center;
+  background: var(--modal-superficie, #ffffff);
+  border: 0.125rem solid var(--modal-borde-fuerte, #3a4651);
+  border-radius: var(--radius-md);
+  color: var(--modal-texto, #27323a);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: var(--fs-base);
+  font-weight: 500;
+  gap: 0.5rem;
+  justify-content: space-between;
+  min-height: var(--tap-min);
+  padding: 0.7rem 0.8rem;
+  text-align: left;
+  width: 100%;
+}
+
+.inputOpen {
+  border-color: var(--modal-acento, #1a59f9);
+  box-shadow: 0 0 0 0.125rem var(--modal-acento-suave, rgba(26, 89, 249, 0.18));
+}
+
+.inputDisabled {
+  background: var(--modal-superficie-2, #f1f4f7);
+  border-color: var(--modal-borde, #c7d0d9);
+  color: var(--modal-texto-2, #5e6a77);
+  cursor: not-allowed;
+}
+
+.placeholder {
+  color: var(--modal-texto-2, #6d7782);
+  font-weight: 400;
+}
+
+.inputIcon {
+  flex: 0 0 auto;
+  color: var(--modal-acento, #4f5b67);
+}
+
+.calendarPopup {
+  background: var(--modal-superficie, #ffffff);
+  border: 0.0625rem solid var(--modal-borde, #d8dde3);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(4, 16, 24, 0.28);
+  box-sizing: border-box;
+  color: var(--modal-texto, #27323a);
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  max-width: 20rem;
+  padding: 0.75rem;
+  position: fixed;
+  width: 100%;
+  min-width: 15.625rem;
+  /* Por encima del modal de react-bootstrap (1055) y de los popovers de MUI. */
+  z-index: 100000000;
+}
+
+.calendarPopup:focus {
+  outline: none;
+}
+
+.header {
+  align-items: center;
+  display: grid;
+  gap: 0.625rem;
+  grid-template-columns: 2.875rem 1fr 2.875rem;
+}
+
+.navButton {
+  align-items: center;
+  background: var(--modal-superficie-2, #ffffff);
+  border: 0.0625rem solid var(--modal-borde, #d0d7de);
+  border-radius: var(--radius-md);
+  color: var(--modal-acento, #0f172a);
+  cursor: pointer;
+  display: flex;
+  font-size: var(--fs-lg);
+  justify-content: center;
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  padding: 0;
+}
+
+.navButton:hover:not(:disabled) {
+  background: var(--modal-acento-suave, #eaf0ff);
+  border-color: var(--modal-acento, #1a59f9);
+}
+
+.navButton:disabled {
+  color: var(--modal-texto-2, #b6c0cb);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.monthLabel {
+  align-items: center;
+  border: 0.0625rem solid var(--modal-borde, #d0d7de);
+  border-radius: 0.625rem;
+  color: var(--modal-texto, #27323a);
+  display: flex;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  min-height: var(--tap-min);
+  justify-content: center;
+  line-height: 1;
+}
+
+.weekDays {
+  border-top: 0.0625rem solid var(--modal-borde, #e7ebef);
+  color: var(--modal-texto, #0f1830);
+  display: grid;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  gap: 0.375rem;
+  grid-template-columns: repeat(7, 1fr);
+  padding-top: 0.75rem;
+  text-align: center;
+}
+
+.dayGrid {
+  display: grid;
+  gap: 0.5rem 0.375rem;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.dayButton,
+.emptyCell {
+  align-items: center;
+  display: flex;
+  font-size: var(--fs-base);
+  font-weight: 600;
+  min-height: 2rem;
+  justify-content: center;
+}
+
+.emptyCell {
+  pointer-events: none;
+}
+
+.dayButton {
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--modal-texto, #2b3640);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.dayButton:hover:not(:disabled) {
+  background: var(--modal-acento-suave, #eaf0ff);
+}
+
+.disabledDay,
+.dayButton:disabled {
+  background: transparent;
+  color: var(--modal-texto-2, #b6c0cb);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.dayButton:disabled:hover {
+  background: transparent;
+}
+
+/* El dia elegido no se distingue solo por color: gana ademas peso y un
+   borde propio, para que sobreviva a una lectura en escala de grises. */
+.selectedDay {
+  background: var(--modal-acento, #1a59f9);
+  border: 0.125rem solid var(--modal-acento-2, #1a59f9);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+:global([data-theme="dark"]) .selectedDay {
+  color: #04131b;
+}
+
+.footer {
+  border-top: 0.0625rem solid var(--modal-borde, #e7ebef);
+  display: grid;
+  gap: 0.625rem;
+  grid-template-columns: 1fr 1fr;
+  padding-top: 0.875rem;
+}
+
+.actionButton {
+  align-items: center;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  justify-content: center;
+  min-height: var(--tap-min);
+  width: 100%;
+}
+
+.actionSecondary {
+  background: var(--modal-superficie, #ffffff);
+  border: 0.125rem solid var(--modal-borde-fuerte, #d0d7de);
+  color: var(--modal-texto, #27323a);
+}
+
+.actionSecondary:hover {
+  background: var(--modal-superficie-2, #f1f4f7);
+}
+
+.actionPrimary {
+  background: var(--modal-acento, #1a59f9);
+  border: 0.125rem solid var(--modal-acento, #1a59f9);
+  color: #ffffff;
+}
+
+.actionPrimary:hover {
+  background: var(--modal-acento-2, #0f43c9);
+  border-color: var(--modal-acento-2, #0f43c9);
+}
+
+:global([data-theme="dark"]) .actionPrimary {
+  color: #04131b;
+}

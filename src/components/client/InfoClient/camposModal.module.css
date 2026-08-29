@@ -1,0 +1,111 @@
+/*
+ * Adaptacion de los componentes reusables de `components/ui` a la paleta del
+ * modal de ficha del cliente.
+ *
+ * El problema: CustomInputText trae su propio CSS global (InputText.css), que
+ * usa los tokens de la aplicacion (--color-primario, --color-fondo-suave,
+ * radio de 16px) y no los --modal-* de este modal. Metido tal cual dentro de
+ * una hoja, se ve de otra familia que los `.control` de al lado.
+ *
+ * La solucion: una sola clase compartida -- `.entrada` -- que las tres
+ * pantallas que usan estos componentes (MaintenanceSheet, PaymentSheet,
+ * ClientProfilePanel) pasan por `customClassContainer`. Las reglas usan
+ * :global porque los selectores de InputText.css son clases globales, no de
+ * modulo; van ancladas dentro de `.entrada` para que el efecto quede acotado
+ * al modal y ninguna otra pantalla que use CustomInputText se vea afectada.
+ *
+ * Vive en la raiz de InfoClient/ y no dentro de sheets/ porque
+ * ClientProfilePanel (profile/) tambien la consume: es de las tres, no de la
+ * hoja.
+ *
+ * CustomCalendarV2 no necesita nada de esto -- ya lee los --modal-* de
+ * :root en su propio modulo --, solo el ajuste de ancho de `.calendario`,
+ * porque su `.wrapper` viene con max-width de 20rem y en las hojas los
+ * campos ocupan todo el ancho disponible.
+ */
+
+.entrada {
+  width: 100%;
+}
+
+/* Rotulo: mismo tamano y peso que los <label> de `.campo` en las hojas. */
+.entrada :global(.input-title) {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--modal-texto);
+}
+
+.entrada :global(.required) {
+  color: var(--modal-peligro);
+}
+
+/* Campo: replica `.control` de MaintenanceSheet.module.css (borde de
+   0.125rem, radio --radius-md, area tactil minima) en vez del radio de 16px
+   y el borde de 1px que trae InputText.css. */
+.entrada :global(.input-field) {
+  font: inherit;
+  font-size: var(--fs-base);
+  padding: 0.7rem 0.8rem;
+  min-height: var(--tap-min);
+  background: var(--modal-superficie);
+  color: var(--modal-texto);
+  border: 0.125rem solid var(--modal-borde-fuerte);
+  border-radius: var(--radius-md);
+}
+
+/* CustomInputText mete un padding-left de 38px pensado para el icono
+   opcional; sin icono queda un hueco que descuadra el campo respecto de los
+   `.control` vecinos. */
+.entrada :global(.input-field:not(.with-icon)) {
+  padding-left: 0.8rem;
+}
+
+.entrada :global(.input-field:focus) {
+  background: var(--modal-superficie);
+  border-color: var(--modal-acento);
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+.entrada :global(.input-field.disabled) {
+  background: var(--modal-superficie-2);
+  color: var(--modal-texto-2);
+  border-color: var(--modal-borde);
+}
+
+.entrada :global(.input-icon),
+.entrada :global(.input-icon-password) {
+  color: var(--modal-acento);
+}
+
+/* Botones + / - del stepper. */
+.entrada :global(.stepper-button) {
+  background: var(--modal-superficie-2);
+  color: var(--modal-acento);
+  border: 0.125rem solid var(--modal-borde-fuerte);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-md);
+}
+
+.entrada :global(.stepper-button:hover:not(:disabled)) {
+  background: var(--modal-acento-suave);
+  border-color: var(--modal-acento);
+}
+
+/*
+ * Rotulo en tono de metadato, para los campos que van bajo otro rotulo mas
+ * fuerte (p. ej. "Cantidad" dentro del bloque "Productos utilizados"). Iguala
+ * a `.pista` de MaintenanceSheet.module.css, que es lo que llevaban esos
+ * <label> antes de pasar a CustomInputText.
+ */
+.rotuloSuave :global(.input-title) {
+  font-size: var(--fs-sm);
+  font-weight: 400;
+  color: var(--modal-texto-2);
+}
+
+/* El campo del calendario y el de texto se estiran a todo el ancho de la
+   hoja; `.wrapper` de CustomCalendarV2 los limita a 20rem por defecto. */
+.calendario {
+  max-width: none;
+}

@@ -84,6 +84,11 @@ export const titlesTable = [
   { label: "Telefono", key: "telefono", showOrder: true },
   { label: "Email", key: "email", showOrder: true },
   { label: "Dia de Mantención", key: "dia_mantencion", showOrder: true },
+  {
+    label: "Periodicidad",
+    key: "frecuencia_mantencion",
+    showOrder: true,
+  },
   { label: "Ruta", key: "ruta", showOrder: true },
   { label: "Valor Mantención", key: "valor_mantencion", showOrder: true },
   { label: "Acciones", key: "actions", showOrder: false },

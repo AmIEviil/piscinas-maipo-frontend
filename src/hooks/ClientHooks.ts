@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { clientService } from "../core/services/ClientsService";
 import type { Client } from "../service/client.interface";
 import { useSnackbar } from "../utils/snackBarHooks";
@@ -11,6 +11,21 @@ export const useClient = () => {
   });
   return clientMutation;
 };
+
+/**
+ * Periodicidades de mantencion (Semanal / Quincenal / Mensual).
+ *
+ * `useQuery` y no `useMutation` como el resto del archivo: es un catalogo de
+ * tres filas que no cambia entre sesiones y lo consumen a la vez el selector
+ * de crear/editar, la ficha y el filtro avanzado. Con una mutacion cada uno
+ * dispararia su propia peticion.
+ */
+export const useFrecuenciasMantencion = () =>
+  useQuery({
+    queryKey: ["frecuencias-mantencion"],
+    queryFn: clientService.getFrecuencias,
+    staleTime: Infinity,
+  });
 
 export const useClientsById = () => {
   return useMutation({

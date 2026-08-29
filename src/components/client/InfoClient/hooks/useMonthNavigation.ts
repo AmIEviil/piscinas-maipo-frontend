@@ -22,9 +22,7 @@ export function useMonthNavigation(
   maintenancesClient?: Record<string, IMaintenance[]>,
 ) {
   const meses = useMemo<MesDisponible[]>(() => {
-    if (!maintenancesClient) return [];
-
-    return Object.entries(maintenancesClient)
+    const listado = Object.entries(maintenancesClient ?? {})
       .filter(([, lista]) => Array.isArray(lista) && lista.length > 0)
       // Descarta claves que no vengan como "anio-mes" (p. ej. "2026" sin
       // guion, o vacias): sin esto, el destructure de mas abajo revienta el
@@ -41,6 +39,26 @@ export function useMonthNavigation(
         };
       })
       .sort((a, b) => a.clave.localeCompare(b.clave));
+
+    // El mes en curso siempre esta disponible aunque no tenga ninguna
+    // mantencion registrada: la linea de tiempo proyecta las visitas que
+    // tocan segun la periodicidad del cliente, y sin este mes un cliente
+    // nuevo -o uno al que aun no le registran nada este mes- no tendria
+    // donde verlas.
+    const hoy = new Date();
+    const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
+
+    if (!listado.some((mes) => mes.clave === mesActual)) {
+      listado.push({
+        clave: mesActual,
+        etiqueta: formatMonthTitle(mesActual),
+        totalVisitas: 0,
+        realizadas: 0,
+      });
+      listado.sort((a, b) => a.clave.localeCompare(b.clave));
+    }
+
+    return listado;
   }, [maintenancesClient]);
 
   const [mesActivo, setMesActivo] = useState<string | null>(null);

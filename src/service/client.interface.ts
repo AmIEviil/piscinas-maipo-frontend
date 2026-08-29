@@ -1,5 +1,11 @@
 import type { Field } from "../utils/formUtils";
 
+/** Periodicidad de visitas: fila de `maintenance_temporality`. */
+export interface IFrecuenciaMantencion {
+  id: string;
+  nombre: string;
+}
+
 export interface Client {
   id?: string;
   nombre: string;
@@ -14,6 +20,9 @@ export interface Client {
   observacion?: string;
   isActive: boolean;
   ruta?: string;
+  /** Solo lectura: viene del join del listado. Para escribir se usa el id. */
+  frecuencia_mantencion?: IFrecuenciaMantencion;
+  frecuencia_mantencion_id?: string;
 }
 
 export interface ClientFilters {
@@ -21,6 +30,12 @@ export interface ClientFilters {
   direccion?: string;
   comuna?: string;
   dia?: string;
+  ruta?: string;
+  /** Id de la periodicidad, no su nombre. */
+  frecuencia?: string;
+  isActive?: boolean;
+  orderBy?: string;
+  orderDirection?: "ASC" | "DESC";
 }
 
 export interface IClientForm {
@@ -35,14 +50,13 @@ export interface IClientForm {
   dia_mantencion: Field<string>;
   ruta: Field<string>;
   valor_mantencion: Field<number>;
-  frecuencia_mantencion: {
-    key: string;
-    value: {
-      id: string;
-      nombre: string;
-    };
-    type: string;
-  };
+  /**
+   * Nombre de la periodicidad ("Semanal"), no la relacion completa: el
+   * backend la aplana en `findOne` porque los campos de la ficha se pintan
+   * con String() y un objeto quedaba como "[object Object]".
+   */
+  frecuencia_mantencion: Field<string>;
+  frecuencia_mantencion_id: Field<string>;
   isActive: Field<boolean>;
   observacion: Field<string>;
 }

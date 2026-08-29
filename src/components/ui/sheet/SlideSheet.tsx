@@ -26,11 +26,22 @@ const SELECTOR_POPOVER_MUI =
   '[class*="MuiPopover-root"], [class*="MuiModal-root"], [class*="MuiPopper-root"]';
 
 /**
- * True si el elemento pertenece a un popover de MUI actualmente abierto: o
- * esta dentro de una de esas raices portadas a document.body (el menu de un
- * Select, el listado de un Autocomplete, el calendario de un DatePicker), o
- * es el <input> de un Autocomplete de MUI, que mantiene el foco real en si
- * mismo y solo marca aria-expanded="true" mientras su lista esta desplegada
+ * Capas propias del proyecto que tambien se portan a document.body con
+ * createPortal: hoy solo el popup de CustomCalendarV2, que marca su raiz con
+ * `data-portal-popup="calendario"`. Se busca por atributo de datos y no por
+ * clase de modulo CSS a proposito: los nombres de clase de los modulos se
+ * ofuscan al compilar, asi que un selector por clase funcionaria en dev y
+ * fallaria en produccion.
+ */
+const SELECTOR_PORTAL_PROPIO = "[data-portal-popup]";
+
+/**
+ * True si el elemento pertenece a una capa portada fuera del arbol de la
+ * hoja y actualmente abierta: o esta dentro de una raiz portada a
+ * document.body -sea de MUI (el menu de un Select, el listado de un
+ * Autocomplete, el calendario de un DatePicker) o propia del proyecto (el
+ * popup de CustomCalendarV2)-, o es el <input> de un Autocomplete de MUI,
+ * que mantiene el foco real en si mismo y solo marca aria-expanded="true" mientras su lista esta desplegada
  * (no mueve el foco al popover, asi que la primera condicion no lo agarra).
  *
  * La segunda rama exige ademas `.MuiAutocomplete-root` a proposito:
@@ -51,19 +62,27 @@ const SELECTOR_POPOVER_MUI =
  * clase distingue el Autocomplete real de cualquier otro control expandible
  * que tambien use aria-expanded.
  */
-const enPopoverMui = (el: Element | null): boolean =>
+const enCapaPortada = (el: Element | null): boolean =>
   !!el &&
   (!!el.closest(SELECTOR_POPOVER_MUI) ||
+    !!el.closest(SELECTOR_PORTAL_PROPIO) ||
     (el.getAttribute("aria-expanded") === "true" &&
       !!el.closest(".MuiAutocomplete-root")));
 
 /**
- * Hoja deslizante sobre el modal de ficha del cliente.
+ * Hoja deslizante generica.
  *
- * Entra por el costado derecho en escritorio y desde abajo en celular. Es un
- * dialogo dentro de otro dialogo, asi que se hace cargo de las tres cosas que
- * el modal padre no puede hacer por ella: atrapar el Tab, cerrar con Escape y
- * devolver el foco al elemento que la abrio.
+ * Entra por el costado derecho en escritorio y desde abajo en celular. Se
+ * hace cargo de las tres cosas de las que nadie mas puede hacerse cargo por
+ * ella: atrapar el Tab, cerrar con Escape y devolver el foco al elemento que
+ * la abrio -- necesarias tanto cuando es un dialogo dentro de otro (las hojas
+ * de mantencion y de pago dentro de la ficha del cliente) como cuando se abre
+ * sola sobre una vista (la busqueda avanzada de clientes).
+ *
+ * Se posiciona en absoluto y su corte a celular es un `@container`, asi que
+ * quien la monta debe darle un ancestro con `position: relative` (o `fixed`) y
+ * `container-type: inline-size`: dentro de la ficha lo pone `.modal`; fuera,
+ * la capa de AdvancedFiltersSheet.
  */
 const SlideSheet = ({
   abierta,
@@ -105,13 +124,14 @@ const SlideSheet = ({
 
     const alPresionar = (evento: KeyboardEvent) => {
       if (evento.key === "Escape") {
-        if (enPopoverMui(document.activeElement)) {
-          // El Escape le pertenece al popover de MUI que esta abierto (el
+        if (enCapaPortada(document.activeElement)) {
+          // El Escape le pertenece a la capa portada que esta abierta (el
           // menu de un Select, el listado de un Autocomplete, el calendario
-          // de un DatePicker): que lo cierre el, no nosotros. Si lo
-          // intercepta el listener de la hoja, la hoja entera se cierra en
-          // vez del popover, porque este listener es de captura y llega
-          // primero que el propio manejador del popover.
+          // de un DatePicker de MUI, el popup de CustomCalendarV2): que lo
+          // cierre ella, no nosotros. Si lo intercepta el listener de la
+          // hoja, la hoja entera se cierra en vez de la capa, porque este
+          // listener es de captura y llega primero que el manejador propio
+          // de la capa.
           return;
         }
         evento.stopPropagation();
@@ -137,11 +157,12 @@ const SlideSheet = ({
       } else if (!evento.shiftKey && activo === ultimo) {
         evento.preventDefault();
         primero.focus();
-      } else if (!hojaRef.current?.contains(activo) && !enPopoverMui(activo)) {
-        // Foco fuera de la hoja y fuera de un popover de MUI abierto desde
+      } else if (!hojaRef.current?.contains(activo) && !enCapaPortada(activo)) {
+        // Foco fuera de la hoja y fuera de una capa portada abierta desde
         // adentro: recien ahi es una fuga de verdad. Si el foco esta en un
-        // Select/Menu/Autocomplete/DatePicker portado a document.body, no
-        // hay que tocarlo - es el propio popover manejando su navegacion.
+        // Select/Menu/Autocomplete/DatePicker de MUI o en el popup de
+        // CustomCalendarV2, portados a document.body, no hay que tocarlo:
+        // es la propia capa manejando su navegacion.
         evento.preventDefault();
         primero.focus();
       }

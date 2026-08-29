@@ -51,6 +51,66 @@
   --color-texto-secundario: #5a5a5a;
 }
 
+/*
+ * Paleta del modal de ficha del cliente (InfoDialogClient y sus hojas).
+ *
+ * Vive en :root -- no en `.modal` -- porque hay superficies del modal que se
+ * portan a document.body y quedan fuera de su subarbol: el popup de
+ * CustomCalendarV2 (createPortal) es el caso concreto. Definida aca, esa
+ * superficie portada hereda la misma paleta y el mismo tema oscuro que el
+ * resto del modal. `.modal` solo consume estos tokens; ya no los declara.
+ */
+:root {
+  --modal-lienzo: #f0f5fa;
+  --modal-superficie: #ffffff;
+  --modal-superficie-2: #e9f1f8;
+  --modal-superficie-3: #d9e7f2;
+  --modal-borde: #c3d5e3;
+  --modal-borde-fuerte: #96b2c7;
+  --modal-texto: #0c1e2a;
+  --modal-texto-2: #425c6c;
+  --modal-acento: #0a6f99;
+  --modal-acento-2: #084f6e;
+  --modal-acento-suave: #ddeef8;
+  --modal-ok: #12693a;
+  --modal-ok-suave: #d4efde;
+  --modal-alerta: #8a5100;
+  --modal-alerta-suave: #fbebcd;
+  --modal-peligro: #9c1f19;
+  --modal-peligro-suave: #f9dbd8;
+  --modal-cab-bg: #0b3d55;
+  --modal-cab-bg-2: #0f5673;
+  --modal-cab-texto: #ffffff;
+  --modal-cab-texto-2: #b8d5e4;
+  --modal-cab-borde: #1c6285;
+  --modal-hoja-w: 27rem;
+}
+
+[data-theme="dark"] {
+  --modal-lienzo: #0a1520;
+  --modal-superficie: #13212d;
+  --modal-superficie-2: #1b2d3b;
+  --modal-superficie-3: #223846;
+  --modal-borde: #2c4557;
+  --modal-borde-fuerte: #436073;
+  --modal-texto: #e9f2f8;
+  --modal-texto-2: #a2b9c8;
+  --modal-acento: #4dc2f2;
+  --modal-acento-2: #8bd9f9;
+  --modal-acento-suave: #0e3040;
+  --modal-ok: #67e397;
+  --modal-ok-suave: #0f311e;
+  --modal-alerta: #f3bf5e;
+  --modal-alerta-suave: #382a0d;
+  --modal-peligro: #ff968e;
+  --modal-peligro-suave: #3b1613;
+  --modal-cab-bg: #061c28;
+  --modal-cab-bg-2: #0a2c3d;
+  --modal-cab-texto: #eaf4fa;
+  --modal-cab-texto-2: #8fb3c6;
+  --modal-cab-borde: #17435c;
+}
+
 /* El nivel de fuente lo aplica useFontScale sobre <html>. */
 html {
   font-size: 100%;

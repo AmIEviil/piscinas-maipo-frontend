@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import SlideSheet from "./SlideSheet";
+import SlideSheet from "../../../ui/sheet/SlideSheet";
 import Button from "../../../ui/button/Button";
+import CustomInputText from "../../../ui/InputText/CustomInputText";
+import CustomCalendarV2 from "../../../ui/calendar/CustomCalendarV2";
 import { formatDateToLocalString } from "../../../../utils/DateUtils";
 import { formatCLP } from "../../../../utils/formatTextUtils";
 import style from "./PaymentSheet.module.css";
+import campos from "../camposModal.module.css";
 
 interface VisitaCubrible {
   id: string;
@@ -67,6 +70,19 @@ const PaymentSheet = ({
     setComprobante(null);
     setMontoEditado(false);
   }, [abierta, visitaFijada]);
+
+  /**
+   * `fechaPago` vive como "YYYY-MM-DD" (es lo que se envia al API) y
+   * CustomCalendarV2 trabaja con `Date`. Se agrega "T00:00:00" para forzar la
+   * lectura en hora local: sin eso, `new Date("2026-08-28")` es medianoche
+   * UTC y en Chile el calendario marcaria el dia anterior. Es el mismo
+   * desplazamiento que `hoyISO` ya evita al escribir.
+   */
+  const fechaPagoDate = useMemo(() => {
+    if (!fechaPago) return undefined;
+    const fecha = new Date(`${fechaPago}T00:00:00`);
+    return Number.isNaN(fecha.getTime()) ? undefined : fecha;
+  }, [fechaPago]);
 
   const opciones = useMemo(
     () => (visitaFijada ? [visitaFijada, ...visitasSinPago] : visitasSinPago),
@@ -163,30 +179,27 @@ const PaymentSheet = ({
       )}
 
       <div className={style.campo}>
-        <label htmlFor="pago-fecha">Fecha del pago</label>
-        <input
-          className={style.control}
-          id="pago-fecha"
-          type="date"
-          value={fechaPago}
-          onChange={(e) => setFechaPago(e.target.value)}
+        <CustomCalendarV2
+          label="Fecha del pago"
+          placeholder="Elegir fecha..."
+          initialDate={fechaPagoDate}
+          customClassName={campos.calendario}
+          onSave={(fecha) =>
+            setFechaPago(fecha ? formatDateToLocalString(fecha) : "")
+          }
         />
       </div>
 
-      <div className={style.campo}>
-        <label htmlFor="pago-monto">Monto recibido</label>
-        <input
-          className={style.control}
-          id="pago-monto"
-          type="text"
-          inputMode="numeric"
-          value={monto ? formatCLP(monto) : ""}
-          onChange={(e) => {
-            setMontoEditado(true);
-            setMonto(Number(e.target.value.replace(/[^\d]/g, "")));
-          }}
-        />
-      </div>
+      <CustomInputText
+        title="Monto recibido"
+        type="text"
+        value={monto ? formatCLP(monto) : ""}
+        onChange={(valor) => {
+          setMontoEditado(true);
+          setMonto(Number(valor.replace(/[^\d]/g, "")));
+        }}
+        customClassContainer={campos.entrada}
+      />
 
       <div className={style.campo}>
         <label htmlFor="pago-archivo">

@@ -12,7 +12,13 @@
  * Todo en rem: nada de px, ni en el idioma de radio-pildora (999rem) ni en
  * los bordes de 2px del mockup (0.125rem). Los cortes de layout, si los
  * hubiera, irian por @container sobre .modal -- esta hoja no define ninguno
- * porque la pista ya resuelve el desborde con scroll horizontal.
+ * porque la pista resuelve el desborde por su cuenta.
+ *
+ * El desborde se resuelve con scroll horizontal mas dos botones de flecha
+ * (`.flecha`) que el componente monta solo cuando la pista efectivamente no
+ * cabe. La barra de scroll nativa se oculta a proposito: con las flechas
+ * presentes ya no es la affordance, y en escritorio se comia el borde
+ * inferior de las pildoras.
  *
  * El mes activo no se distingue solo por color: ademas del fondo/borde de
  * acento gana peso (700 a 800), un borde mas grueso (0.125rem a 0.1875rem, un
@@ -24,13 +30,64 @@
   composes: barraMes from "../InfoDialogClient.module.css";
 }
 
+/* Envoltura de las flechas mas la pista: es la que se estira dentro de la
+   barra, para que el boton de accion siga anclado a la derecha. */
+.carrusel {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
 .pista {
   display: flex;
   gap: 0.5rem;
   overflow-x: auto;
   padding: 0.15rem;
-  flex: 1 1 14rem;
+  flex: 1 1 auto;
   min-width: 0;
+  scroll-behavior: smooth;
+  /* La affordance ahora son las flechas; la barra nativa solo restaba alto. */
+  scrollbar-width: none;
+}
+
+.pista::-webkit-scrollbar {
+  display: none;
+}
+
+.flecha {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: var(--fs-lg);
+  cursor: pointer;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-md);
+  background: var(--modal-superficie-2);
+  color: var(--modal-acento);
+  border: 0.125rem solid var(--modal-borde);
+}
+
+.flecha:hover:not(:disabled) {
+  background: var(--modal-acento-suave);
+  border-color: var(--modal-acento);
+}
+
+/* La flecha del tope se deja en el DOM, deshabilitada, en vez de quitarla:
+   si desapareciera, la pista cambiaria de ancho en cada extremo del scroll y
+   las pildoras darian un salto lateral. */
+.flecha:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.flecha:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
 }
 
 .pildora {
