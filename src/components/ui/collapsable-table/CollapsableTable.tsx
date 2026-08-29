@@ -41,6 +41,12 @@ interface CollapsableTableProps {
     selected: boolean
   ) => void;
   onSelectAllInGroup?: (groupKey: string, groupItems: Client[]) => void;
+  /**
+   * Deja la ultima columna pegada al borde derecho cuando la tabla desborda a
+   * lo ancho. Es opcional porque solo tiene sentido si esa columna son
+   * acciones; en una tabla que termina en un dato, fijarla no aporta nada.
+   */
+  stickyLastColumn?: boolean;
 }
 
 const CollapsableTable: React.FC<CollapsableTableProps> = ({
@@ -57,6 +63,7 @@ const CollapsableTable: React.FC<CollapsableTableProps> = ({
   selectedItems,
   onItemSelection,
   onSelectAllInGroup,
+  stickyLastColumn = false,
 }) => {
   const [collapsedGroups, setCollapsedGroups] = useState<
     Record<string, boolean>
@@ -217,7 +224,9 @@ const CollapsableTable: React.FC<CollapsableTableProps> = ({
 
   return (
     <div
-      className={`${style.collapsableTable_container} ${className} custom-scrollbar`}
+      className={`${style.collapsableTable_container} ${
+        stickyLastColumn ? style.collapsableTable_stickyActions : ""
+      } ${className} custom-scrollbar`}
     >
       {hasData && !loading ? (
         <table className={style.collapsableTable_element}>

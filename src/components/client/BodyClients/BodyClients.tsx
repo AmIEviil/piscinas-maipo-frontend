@@ -108,6 +108,16 @@ const BodyClients = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
   const [currentClientIndex, setCurrentClientIndex] = useState(0);
+  /**
+   * Distingue con que puerta se abrio el detalle.
+   *
+   * Con clientes seleccionados se puede llegar al detalle por dos caminos: el
+   * aviso de "Ver detalles de N cliente(s)", que recorre la seleccion, o el
+   * ojo de una fila, que muestra ese cliente y nada mas. Sin esta bandera el
+   * segundo camino heredaba la navegacion del primero y el modal anunciaba
+   * "Cliente 1 de N" sobre un cliente que ni siquiera estaba seleccionado.
+   */
+  const [isMultiClientView, setIsMultiClientView] = useState(false);
 
   const [mantenciones, setMantenciones] =
     useState<Record<string, IMaintenance[]>>();
@@ -136,6 +146,7 @@ const BodyClients = () => {
   };
 
   const handleOpenDialog = async (client: Client) => {
+    setIsMultiClientView(false);
     setSelectedClient(client);
     handleSeeDetailsClient(client);
     setOpenDialog(true);
@@ -146,7 +157,6 @@ const BodyClients = () => {
     setIsEditMode(false);
     setCurrentClientIndex(0);
     setMantenciones(undefined);
-    setSnackBar(false, "");
   };
 
   const fetchData = async () => {
@@ -174,8 +184,15 @@ const BodyClients = () => {
     }
   }, [filterQuery, shouldRefetch]);
 
+  /**
+   * Unico lugar que decide si se ve el aviso de la seleccion.
+   *
+   * Depende tambien de los modales: con uno abierto el aviso quedaba encima
+   * ofreciendo "Ver detalles de N cliente(s)" sobre el detalle que ya se esta
+   * mirando. Antes cada camino lo apagaba a mano y el del ojo se olvidaba.
+   */
   useEffect(() => {
-    if (selectedClients.length > 0) {
+    if (selectedClients.length > 0 && !openDialog && !openCreateDialog) {
       setSnackBar(
         true,
         `Ver detalles de ${selectedClients.length} cliente(s).`,
@@ -183,7 +200,7 @@ const BodyClients = () => {
     } else {
       setSnackBar(false, "");
     }
-  }, [selectedClients, setSnackBar]);
+  }, [selectedClients, openDialog, openCreateDialog, setSnackBar]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -290,20 +307,19 @@ const BodyClients = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setOpenCreateDialog(false);
+    setIsMultiClientView(false);
     if (selectedClients.length > 0) {
-      setSnackBar(
-        true,
-        `Ver detalles de ${selectedClients.length} cliente(s).`,
-      );
       setCurrentClientIndex(0);
     }
   };
 
   const handleSeeDetailsClient = async (client: Client) => {
+    // El corte por id va antes de encender el cargando: adentro del try dejaba
+    // el modal girando para siempre.
+    if (!client.id) return;
     setLoadingClientInfo(true);
     setSelectedClient(client);
     try {
-      if (!client.id) return;
       const clientInfo = await clientByIdMutation.mutateAsync(client.id);
       setClientInfo(clientInfo);
       setOpenDialog(true);
@@ -433,11 +449,12 @@ const BodyClients = () => {
   };
 
   const handleSeeMultiSelectClients = async (index: number) => {
-    setLoadingClientInfo(true);
     if (selectedClients.length === 0) return;
+    const client = selectedClients[index];
+    if (!client?.id) return;
+    setIsMultiClientView(true);
+    setLoadingClientInfo(true);
     try {
-      const client = selectedClients[index];
-      if (!client.id) return;
       const clientInfo = await clientByIdMutation.mutateAsync(client.id);
       setClientInfo(clientInfo);
       const mantenciones = await maintenanceByClient.mutateAsync(client.id);
@@ -447,11 +464,15 @@ const BodyClients = () => {
       setSelectedClient(client);
       setCurrentClientIndex(index);
       setOpenDialog(true);
-      setSnackBar(false, "");
       setLoadingClientInfo(false);
     } catch (error) {
-      setSnackBar(true, "Error cargando mantenciones");
+      // El error va al toast y no al aviso de la seleccion: ese aviso es el
+      // que ofrece abrir el detalle, y dejarlo con un texto de error lo
+      // convertia en un boton que decia una cosa y hacia otra.
+      showSnackbar("Error cargando la información del cliente.", "error");
       console.error("Error cargando mantenciones:", error);
+      setIsMultiClientView(false);
+      setLoadingClientInfo(false);
     }
   };
 
@@ -674,26 +695,32 @@ const BodyClients = () => {
         onCerrar={() => setOpenBusquedaAvanzada(false)}
         onLimpiar={handleClearFilter}
       />
-      {windowWidth < BREAKPOINTS.tablet && selectedClients.length > 0 && (
-        <div className="flex flex-row w-full items-center justify-center gap-2 pt-4">
-          <button
-            onClick={() => handleSeeMultiSelectClients(currentClientIndex)}
-            className={style.addButton}
-          >
-            Ver detalles de {selectedClients.length} cliente(s).
-          </button>
-          {/* En celular la snackbar esta oculta por CSS, asi que el menu de
-              acciones en bloque acompana a este boton. */}
-          <BulkActionsMenu
-            cantidad={selectedClients.length}
-            onSelectCampo={setCampoBulk}
-          />
-        </div>
-      )}
+      {windowWidth < BREAKPOINTS.tablet &&
+        selectedClients.length > 0 &&
+        !openDialog &&
+        !openCreateDialog && (
+          <div className="flex flex-row w-full items-center justify-center gap-2 pt-4">
+            <button
+              onClick={() => handleSeeMultiSelectClients(currentClientIndex)}
+              className={style.addButton}
+            >
+              Ver detalles de {selectedClients.length} cliente(s).
+            </button>
+            {/* En celular la snackbar esta oculta por CSS, asi que el menu de
+                acciones en bloque acompana a este boton. */}
+            <BulkActionsMenu
+              cantidad={selectedClients.length}
+              onSelectCampo={setCampoBulk}
+            />
+          </div>
+        )}
       <div className={style.tableContainer}>
         <CollapsableTable
           titlesTable={titlesTable}
           showCheckBoxes
+          // Con tipografia grande estas diez columnas desbordan a lo ancho y
+          // "Acciones" quedaba al final del desplazamiento.
+          stickyLastColumn
           data={clients ?? {}}
           emptyMessage={handleTextNoResults()}
           loading={loadingTable}
@@ -784,8 +811,11 @@ const BodyClients = () => {
         }}
         onNextClient={handleNextClient}
         onPreviousClient={handlePreviousClient}
-        totalRecords={selectedClients.length}
-        currentIndex={currentClientIndex}
+        // Solo el recorrido de la seleccion muestra "Cliente N de M"; abierto
+        // desde el ojo de una fila es un cliente suelto, aunque haya otros
+        // marcados.
+        totalRecords={isMultiClientView ? selectedClients.length : 1}
+        currentIndex={isMultiClientView ? currentClientIndex : 0}
       />
       <CreateClientDialog
         open={openCreateDialog}
