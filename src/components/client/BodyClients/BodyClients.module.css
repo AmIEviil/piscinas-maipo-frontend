@@ -171,3 +171,56 @@
     margin-top: var(--sp-3);
   }
 }
+
+/*
+ * Boton de busqueda avanzada. Vive dentro de la fila de filtros de
+ * FiltersContainer, asi que se alinea al borde inferior como los campos y no
+ * al centro: al lado de un select con etiqueta, centrarlo lo deja flotando.
+ */
+.advancedButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  align-self: flex-end;
+  min-height: var(--tap-min);
+  padding: var(--sp-2) var(--sp-4);
+  border: 2px solid var(--color-secundario);
+  border-radius: var(--radius-md);
+  background-color: var(--color-fondo);
+  color: var(--color-primario);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.advancedButton:hover {
+  background-color: var(--color-secundario);
+  color: #ffffff;
+}
+
+.advancedBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 var(--sp-1);
+  border-radius: 999px;
+  background-color: var(--color-secundario);
+  color: #ffffff;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+
+.advancedButton:hover .advancedBadge {
+  background-color: var(--color-fondo);
+  color: var(--color-primario);
+}
+
+@media screen and (max-width: 768px) {
+  .advancedButton {
+    width: 100%;
+  }
+}

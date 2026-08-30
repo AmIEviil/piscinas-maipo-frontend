@@ -4,6 +4,23 @@
   width: 100%;
 }
 
+/* Mismo rotulo que usan los inputs de texto, para que un filtro select y uno
+   de texto queden alineados en la misma fila. */
+.dropdownTitle {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-gris-oscuro);
+  margin-bottom: 0.25rem;
+}
+
+/* El label de la opcion elegida no debe empujar al icono fuera del boton
+   cuando es largo ("Pedro Aguirre Cerda"). */
+.toggleLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .customDropdownToggle {
   display: flex;
   width: 100%;

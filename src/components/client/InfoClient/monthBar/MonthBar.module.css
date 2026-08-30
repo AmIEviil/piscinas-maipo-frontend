@@ -1,0 +1,178 @@
+/*
+ * Carrusel de meses del modal de ficha del cliente.
+ *
+ * El contenedor -- fondo, borde inferior, flex-wrap -- ya lo define
+ * `.barraMes` en InfoDialogClient.module.css (Task 6), portado ahi de la
+ * regla `.barra-mes` del mockup D. Esta hoja compone esa clase en vez de
+ * repetirla, igual que hizo Task 9 con `.pestanas`, y solo agrega la pista de
+ * pildoras, la pildora en si y el boton de accion, portados literalmente de
+ * `.meses__pista` / `.mes-pill` / `.barra-mes__accion` / `.btn.btn--primario`
+ * del mockup.
+ *
+ * Todo en rem: nada de px, ni en el idioma de radio-pildora (999rem) ni en
+ * los bordes de 2px del mockup (0.125rem). Los cortes de layout, si los
+ * hubiera, irian por @container sobre .modal -- esta hoja no define ninguno
+ * porque la pista resuelve el desborde por su cuenta.
+ *
+ * El desborde se resuelve con scroll horizontal mas dos botones de flecha
+ * (`.flecha`) que el componente monta solo cuando la pista efectivamente no
+ * cabe. La barra de scroll nativa se oculta a proposito: con las flechas
+ * presentes ya no es la affordance, y en escritorio se comia el borde
+ * inferior de las pildoras.
+ *
+ * El mes activo no se distingue solo por color: ademas del fondo/borde de
+ * acento gana peso (700 a 800), un borde mas grueso (0.125rem a 0.1875rem, un
+ * cambio de forma, no solo de tono) y una marca de verificacion antepuesta
+ * via ::before, que sobrevive a una lectura en escala de grises.
+ */
+
+.barra {
+  composes: barraMes from "../InfoDialogClient.module.css";
+}
+
+/* Envoltura de las flechas mas la pista: es la que se estira dentro de la
+   barra, para que el boton de accion siga anclado a la derecha. */
+.carrusel {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.pista {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.15rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  scroll-behavior: smooth;
+  /* La affordance ahora son las flechas; la barra nativa solo restaba alto. */
+  scrollbar-width: none;
+}
+
+.pista::-webkit-scrollbar {
+  display: none;
+}
+
+.flecha {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: var(--fs-lg);
+  cursor: pointer;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-md);
+  background: var(--modal-superficie-2);
+  color: var(--modal-acento);
+  border: 0.125rem solid var(--modal-borde);
+}
+
+.flecha:hover:not(:disabled) {
+  background: var(--modal-acento-suave);
+  border-color: var(--modal-acento);
+}
+
+/* La flecha del tope se deja en el DOM, deshabilitada, en vez de quitarla:
+   si desapareciera, la pista cambiaria de ancho en cada extremo del scroll y
+   las pildoras darian un salto lateral. */
+.flecha:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.flecha:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+.pildora {
+  font: inherit;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  min-height: 2.9rem;
+  border-radius: 999rem;
+  background: var(--modal-superficie-2);
+  color: var(--modal-texto-2);
+  border: 0.125rem solid var(--modal-borde);
+}
+
+.pildora:hover {
+  border-color: var(--modal-borde-fuerte);
+  color: var(--modal-texto);
+}
+
+.pildora:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+.pildora[aria-current="true"] {
+  background: var(--modal-acento);
+  color: #ffffff;
+  border-color: var(--modal-acento);
+  border-width: 0.1875rem;
+  font-weight: 800;
+}
+
+.pildora[aria-current="true"]::before {
+  content: "\2713 ";
+}
+
+:global([data-theme="dark"]) .pildora[aria-current="true"] {
+  color: #04131b;
+}
+
+/* Conteo de visitas del mes. Es metadato de navegacion -- el dato de negocio
+   vive en la tabla del panel --, igual que `.conteo` en ClientTabs.module.css:
+   el mockup usa .8125rem, fuera de la escala de dos niveles del proyecto, y
+   aca se redondea al escalon de metadato mas cercano hacia arriba. */
+.pildora small {
+  display: block;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.accion {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.botonAccion {
+  font: inherit;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  min-height: 3rem;
+  border-radius: 0.75rem;
+  border: 0.125rem solid var(--modal-acento);
+  background: var(--modal-acento);
+  color: #ffffff;
+}
+
+.botonAccion:hover {
+  background: var(--modal-acento-2);
+  border-color: var(--modal-acento-2);
+}
+
+.botonAccion:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+:global([data-theme="dark"]) .botonAccion {
+  color: #04131b;
+}

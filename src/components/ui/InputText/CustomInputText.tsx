@@ -6,6 +6,14 @@ import RemoveIcon from "@mui/icons-material/Remove";
 
 interface InputTextProps {
   title?: string;
+  /**
+   * Id del <input>. Por defecto se deriva del titulo, que alcanza mientras el
+   * campo sea unico en la pagina; hace falta darlo a mano cuando el mismo
+   * campo se dibuja dos veces (los filtros viven a la vez en la barra y en la
+   * hoja de busqueda avanzada, y dos elementos con el mismo id dejan a las dos
+   * etiquetas apuntando al primero).
+   */
+  inputId?: string;
   caption?: string;
   value?: string | number;
   disabled?: boolean;
@@ -28,6 +36,7 @@ interface InputTextProps {
 
 const CustomInputText = ({
   title = "",
+  inputId,
   value = "",
   disabled = false,
   type = "text",
@@ -78,10 +87,10 @@ const CustomInputText = ({
   const incrementDisabled =
     disabled || (max !== undefined && currentValue >= max);
 
+  const idCampo = inputId ?? `input-field-${title}`;
+
   const handleSeePassword = () => {
-    const inputField = document.getElementById(
-      `input-field-${title}`,
-    ) as HTMLInputElement;
+    const inputField = document.getElementById(idCampo) as HTMLInputElement;
     if (isPasswordType && inputField.type === "password") {
       inputField.type = "text";
     } else {
@@ -103,7 +112,7 @@ const CustomInputText = ({
     >
       {title && (
         <div className={`title-container ${customClassTitle}`}>
-          <label className="input-title" htmlFor={`input-field-${title}`}>
+          <label className="input-title" htmlFor={idCampo}>
             {title} {require && <span className="required">*</span>}
           </label>
         </div>
@@ -117,7 +126,7 @@ const CustomInputText = ({
             withStepper ? "stepper-input" : ""
           }`}
           type={type}
-          id={`input-field-${title}`}
+          id={idCampo}
           value={value}
           onChange={handleChange}
           disabled={disabled}

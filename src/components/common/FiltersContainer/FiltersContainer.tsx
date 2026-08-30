@@ -1,22 +1,11 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import React, { useState } from "react";
 import style from "./FitlersContainer.module.css";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import InputText from "../../ui/InputText/InputText";
-import CustomSelect, { type IOptionsSelect } from "../../ui/Select/Select";
 import Tooltip from "@mui/material/Tooltip";
-import Calendar from "../../ui/datepicker/DatePicker";
+import FilterField, { type FilterItem } from "./FilterField";
 
-export interface FilterItem {
-  title: string;
-  placeholder?: string;
-  type: "text" | "select" | "date" | "boolean";
-  typeCalendar?: "day" | "range";
-  options?: { label: string; value: string | boolean }[];
-  value: string | boolean | null | number | (Date | null)[];
-  onChange: (value: string | boolean | null) => void;
-}
+export type { FilterItem };
 
 interface ActionButton {
   titleTooltip: string;
@@ -28,10 +17,18 @@ interface ActionButton {
 export interface FiltersContainerProps {
   filters: FilterItem[];
   actionButtons?: ActionButton[];
+  /**
+   * Controles extra al final de la fila de filtros, con el mismo alineado que
+   * los campos. Lo usa BodyClients para el boton de busqueda avanzada, que
+   * necesita texto y no cabe en `actionButtons` (solo iconos).
+   */
+  extraControls?: React.ReactNode;
 }
+
 export const FiltersContainer: React.FC<FiltersContainerProps> = ({
   filters,
   actionButtons = [],
+  extraControls,
 }) => {
   /**
    * En celular los filtros ocupan casi toda la pantalla y empujan la tabla
@@ -56,76 +53,15 @@ export const FiltersContainer: React.FC<FiltersContainerProps> = ({
       <div
         className={`${style.filters} ${filtersOpen ? style.filtersOpen : ""}`}
       >
-        {filters.map((filter, index) => {
-          switch (filter.type) {
-            case "text":
-              return (
-                <InputText
-                  key={filter.title + index}
-                  title={filter.title}
-                  placeholder={filter.placeholder}
-                  value={typeof filter.value === "string" ? filter.value : ""}
-                  onChange={(value: string) => filter.onChange(value)}
-                />
-              );
-            case "select":
-              return (
-                <CustomSelect
-                  label={filter.title}
-                  options={(filter.options as IOptionsSelect[]) || []}
-                  onChange={(event) =>
-                    filter.onChange(String(event.target.value))
-                  }
-                  value={filter.value as string | number | undefined}
-                />
-              );
-            case "date":
-              if (filter.typeCalendar === "range") {
-                return (
-                  <Calendar
-                    title={filter.title}
-                    mode="range"
-                    label={filter.placeholder}
-                    initialValue={
-                      filter.value && Array.isArray(filter.value)
-                        ? [
-                            filter.value[0] instanceof Date
-                              ? new Date(filter.value[0])
-                              : new Date(),
-                            filter.value[1] instanceof Date
-                              ? new Date(filter.value[1])
-                              : new Date(),
-                          ]
-                        : undefined
-                    }
-                    onChange={({ start, end }) =>
-                      filter.onChange([start, end] as unknown as string | null)
-                    }
-                  />
-                );
-              }
-              return (
-                <Calendar
-                  title={filter.title}
-                  label={filter.placeholder}
-                  mode="day"
-                  initialValue={
-                    filter.value && Array.isArray(filter.value)
-                      ? (filter.value[0] as Date)
-                      : // @ts-ignore
-                        filter.value && filter.value instanceof Date
-                        ? new Date(filter.value as Date)
-                        : new Date()
-                  }
-                  onChange={({ start }) =>
-                    filter.onChange(start as unknown as string | null)
-                  }
-                />
-              );
-            default:
-              return null;
-          }
-        })}
+        {filters.map((filter, index) => (
+          <FilterField
+            key={filter.title + index}
+            filter={filter}
+            containerClassName="input-text-block"
+            scope="barra"
+          />
+        ))}
+        {extraControls}
       </div>
       <div className={style.actionsFilters}>
         {actionButtons.map((button, index) => (
@@ -135,7 +71,11 @@ export const FiltersContainer: React.FC<FiltersContainerProps> = ({
             leaveDelay={0}
             key={button.titleTooltip + index}
           >
-            <button onClick={button.onClick} className={style.actionButton} disabled={button.disabled}  >
+            <button
+              onClick={button.onClick}
+              className={style.actionButton}
+              disabled={button.disabled}
+            >
               {button.icon}
             </button>
           </Tooltip>

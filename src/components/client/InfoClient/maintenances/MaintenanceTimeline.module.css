@@ -1,0 +1,229 @@
+/*
+ * Linea de tiempo de visitas del panel de mantenciones.
+ *
+ * Reemplaza la tabla generica: `.linea` / `.nodo` / `.visita` / `.est` /
+ * `.prod-item`, portados literalmente del mockup D (`mockup-d-hibrido.html`).
+ * El mockup usa `var(--linea)` para el trazo vertical, que en ambos temas
+ * coincide exactamente con `var(--borde)`, asi que aca se referencia
+ * `--modal-borde` en su lugar en vez de declarar un token nuevo.
+ *
+ * Todo en rem: los px del mockup (2px, 3px, 4px, 999px, etc.) se convierten
+ * 1:1 (1px = 0.0625rem) para que el trazo y los nodos escalen con el control
+ * de tamano de letra igual que el resto del modal.
+ */
+
+.vacio {
+  margin: 0;
+  padding: 1rem 0;
+  font-size: var(--fs-base);
+  color: var(--modal-texto-2);
+}
+
+.linea {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-left: 2.25rem;
+}
+
+.linea::before {
+  content: "";
+  position: absolute;
+  left: 0.9rem;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 0.125rem;
+  background: var(--modal-borde);
+}
+
+.nodo {
+  position: relative;
+}
+
+.nodo::before {
+  content: "";
+  position: absolute;
+  left: -1.65rem;
+  top: 1.05rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999rem;
+  background: var(--modal-ok);
+  box-shadow: 0 0 0 0.25rem var(--modal-lienzo);
+}
+
+.nodoPendiente::before {
+  background: var(--modal-alerta);
+}
+
+.nodoFuturo::before {
+  background: var(--modal-borde-fuerte);
+}
+
+.visita {
+  background: var(--modal-superficie);
+  border: 0.0625rem solid var(--modal-borde);
+  border-radius: 0.75rem;
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.nodoFuturo .visita {
+  border-style: dashed;
+  background: transparent;
+}
+
+.visitaTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+}
+
+.visitaDia {
+  font-size: var(--fs-lg);
+  font-weight: 800;
+}
+
+.visitaFecha {
+  font-size: var(--fs-base);
+  color: var(--modal-texto-2);
+}
+
+.visitaAcciones {
+  margin-left: auto;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.estados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 0.09375rem solid var(--modal-borde);
+  background: var(--modal-superficie-2);
+  color: var(--modal-texto-2);
+}
+
+.estadoOk {
+  background: var(--modal-ok-suave);
+  color: var(--modal-ok);
+  border-color: var(--modal-ok);
+}
+
+.estadoPendiente {
+  background: var(--modal-alerta-suave);
+  color: var(--modal-alerta);
+  border-color: var(--modal-alerta);
+}
+
+.estadoPago {
+  background: var(--modal-acento-suave);
+  color: var(--modal-acento);
+  border-color: var(--modal-acento);
+}
+
+.productos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.producto {
+  font-size: var(--fs-base);
+  padding: 0.3rem 0.7rem;
+  border-radius: 999rem;
+  background: var(--modal-superficie-2);
+  border: 0.0625rem solid var(--modal-borde);
+  color: var(--modal-texto);
+}
+
+.producto b {
+  color: var(--modal-acento);
+}
+
+.observaciones {
+  margin: 0;
+  font-size: var(--fs-base);
+  color: var(--modal-texto-2);
+  border-left: 0.1875rem solid var(--modal-borde-fuerte);
+  padding: 0.4rem 0.7rem;
+  background: var(--modal-superficie-2);
+  border-radius: 0 0.5rem 0.5rem 0;
+  overflow-wrap: anywhere;
+}
+
+/* Botones de la visita: `.btn` + `.btn--sm` del mockup fundidos en una sola
+   clase por variante, siguiendo el patron ya usado en MonthBar.module.css y
+   ClientDialogHeader.module.css. `min-height` en 2.75rem cubre `--tap-min`. */
+.botonSecundario,
+.botonPeligro,
+.botonPrimario {
+  font: inherit;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  min-height: var(--tap-min);
+  border-radius: 0.75rem;
+  border: 0.125rem solid transparent;
+}
+
+.botonSecundario:focus-visible,
+.botonPeligro:focus-visible,
+.botonPrimario:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+.botonSecundario {
+  background: var(--modal-superficie);
+  color: var(--modal-acento);
+  border-color: var(--modal-acento);
+}
+
+.botonSecundario:hover {
+  background: var(--modal-acento-suave);
+}
+
+.botonPeligro {
+  background: var(--modal-superficie);
+  color: var(--modal-peligro);
+  border-color: var(--modal-peligro);
+}
+
+.botonPeligro:hover {
+  background: var(--modal-peligro-suave);
+}
+
+.botonPrimario {
+  background: var(--modal-acento);
+  color: #ffffff;
+  border-color: var(--modal-acento);
+}
+
+.botonPrimario:hover {
+  background: var(--modal-acento-2);
+  border-color: var(--modal-acento-2);
+}
+
+:global([data-theme="dark"]) .botonPrimario {
+  color: #04131b;
+}

@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { clientService } from "../core/services/ClientsService";
 import type { Client } from "../service/client.interface";
 import { useSnackbar } from "../utils/snackBarHooks";
@@ -11,6 +11,21 @@ export const useClient = () => {
   });
   return clientMutation;
 };
+
+/**
+ * Periodicidades de mantencion (Semanal / Quincenal / Mensual).
+ *
+ * `useQuery` y no `useMutation` como el resto del archivo: es un catalogo de
+ * tres filas que no cambia entre sesiones y lo consumen a la vez el selector
+ * de crear/editar, la ficha y el filtro avanzado. Con una mutacion cada uno
+ * dispararia su propia peticion.
+ */
+export const useFrecuenciasMantencion = () =>
+  useQuery({
+    queryKey: ["frecuencias-mantencion"],
+    queryFn: clientService.getFrecuencias,
+    staleTime: Infinity,
+  });
 
 export const useClientsById = () => {
   return useMutation({
@@ -84,6 +99,28 @@ export const useUpdateClientField = () => {
     },
   });
   return updateClientFieldMutation;
+};
+
+/**
+ * Cambio masivo de dia, ruta o periodicidad para los clientes seleccionados.
+ *
+ * No muestra snackbar de exito: el resumen del cambio (cuantos clientes y si
+ * hubo mantenciones reprogramadas) lo arma quien la llama, que es el unico que
+ * sabe que campo se toco y con que etiquetas mostrarlo.
+ */
+export const useBulkUpdateClients = () => {
+  const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
+  const { showSnackbar } = useSnackbar();
+
+  return useMutation({
+    mutationFn: clientService.bulkUpdateClients,
+    onError: () => {
+      showSnackbar("No se pudo aplicar el cambio a los clientes", "error");
+    },
+    onSuccess: () => {
+      setShouldRefetch(true);
+    },
+  });
 };
 
 export const useDeleteClient = () => {

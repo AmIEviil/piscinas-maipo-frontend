@@ -7,19 +7,41 @@
   max-height: 80dvh;
 }
 
-table {
+/*
+ * Todas las reglas cuelgan de .tableContainer.
+ *
+ * Antes se escribian con el selector de elemento pelado (`table`, `thead`,
+ * `th`, `tbody tr`, `td`, `button`). En un CSS Module eso NO se scopea: solo
+ * se renombran las clases, los selectores de elemento quedan globales. El
+ * resultado era que, apenas se cargaba Table.tsx, estas reglas pintaban
+ * todas las tablas de la aplicacion -- la de clientes, las de los graficos
+ * del inicio, las de migraciones -- y todos los botones. El zebrado y la
+ * cabecera negra que aparecian donde nadie los habia pedido salian de aca.
+ *
+ * El estilo por defecto de los botones se movio a index.css, que si es una
+ * hoja global de verdad, para no cambiar el aspecto del resto de la
+ * aplicacion al scopear esto.
+ */
+.tableContainer table {
   width: 100%;
   border-collapse: collapse;
 }
 
-thead {
+.tableContainer thead {
   background-color: var(--color-primario);
   color: var(--color-fondo);
   position: sticky;
   top: 0;
+  /*
+   * position: sticky crea contexto de apilado aunque no se declare z-index, y
+   * entonces el thead entero vale 0 frente a lo que se desplaza por debajo.
+   * Sin este valor, cualquier celda del cuerpo con z-index propio se dibuja
+   * encima de la cabecera.
+   */
+  z-index: 3;
 }
 
-th {
+.tableContainer th {
   padding: 1rem 1.2rem;
   text-align: left;
   font-weight: 600;
@@ -33,27 +55,27 @@ th {
   top: 0;
   z-index: 2;
 }
-th:last-child {
+.tableContainer th:last-child {
   border-right: none;
 }
 
-tbody tr {
+.tableContainer tbody tr {
   transition: all 0.2s ease;
 }
 
-tbody tr:nth-child(even) {
+.tableContainer tbody tr:nth-child(even) {
   background-color: var(--color-fondo-suave);
 }
 
-tbody tr:nth-child(odd) {
+.tableContainer tbody tr:nth-child(odd) {
   background-color: var(--color-fondo);
 }
 
-tbody tr:hover {
+.tableContainer tbody tr:hover {
   background-color: var(--color-secundario);
 }
 
-td {
+.tableContainer td {
   padding: 0.8rem 1.2rem;
   color: var(--color-gris-oscuro);
   border-bottom: 1px solid var(--color-detalle-claro);
@@ -65,22 +87,11 @@ td {
   left: 50%;
 }
 
-td:not(:last-child) {
+.tableContainer td:not(:last-child) {
   border-right: 1px solid var(--color-detalle-claro);
 }
 
-button {
-  background-color: var(--color-secundario);
-  color: var(--color-fondo);
-  border: none;
-  padding: 0.5rem 0.8rem;
-  margin-right: 0.5rem;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-tbody tr:hover button {
+.tableContainer tbody tr:hover button {
   background-color: var(--color-primario);
   color: var(--color-fondo);
 }

@@ -77,6 +77,15 @@
   background-color: var(--yellow-500);
 }
 
+.trailing {
+  display: flex;
+  align-items: center;
+  margin-left: 0.75rem;
+  padding-left: 0.75rem;
+  border-left: 0.0625rem solid rgba(255, 255, 255, 0.4);
+  cursor: default;
+}
+
 .snackbar-content {
   display: flex;
   align-items: center;

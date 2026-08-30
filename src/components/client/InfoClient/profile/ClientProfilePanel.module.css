@@ -1,0 +1,107 @@
+/*
+ * Pestana Ficha: grilla de tarjetas dato/valor + barra de acciones.
+ *
+ * Porta `.datos`, `.dato`, `.dato__et` y `.dato__val` del mockup D
+ * (`mockup-d-hibrido.html`) como `.datos`, `.dato`, `.etiqueta` y `.valor`,
+ * reemplazando los colores fijos por los tokens `--modal-*` del modal, igual
+ * que el resto de la familia de paneles (MaintenanceTimeline.module.css,
+ * MonthStatusPanel.module.css, PaymentsPanel.module.css). `.control` para el
+ * modo edicion se porta identico al ya usado en MaintenanceSheet.module.css
+ * (misma clase, mismo modal) en vez de reinventarlo.
+ *
+ * `.barra` / `.titulo` / `.barraAcciones` no vienen del mockup -ahi la accion
+ * de la ficha vive suelta, debajo de la grilla- pero el modo de edicion
+ * explicita de esta pestana necesita un lugar fijo para "Editar ficha" /
+ * "Cancelar" / "Guardar cambios", asi que siguen el mismo lenguaje que la
+ * cabecera de `.panelLado` en PaymentsPanel.module.css.
+ *
+ * Los cortes de columnas van por `@container` sobre `.modal` (definido en
+ * InfoDialogClient.module.css), nunca `@media` sobre el ancho de ventana: la
+ * grilla vieja (`grid-auto-flow: column`, cuatro filas fijas) rompia a partir
+ * del 150% de tamano de letra por depender del alto de viewport en vez del
+ * espacio disponible del modal. Todo en rem para escalar con el control de
+ * tamano de letra del TopBar.
+ */
+
+.barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.titulo {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 800;
+  color: var(--modal-texto);
+}
+
+.barraAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.datos {
+  display: grid;
+  gap: 0.6rem;
+}
+
+@container (min-width: 38.75rem) {
+  .datos {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@container (min-width: 57.5rem) {
+  .datos {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.dato {
+  background: var(--modal-superficie);
+  border: 0.0625rem solid var(--modal-borde);
+  border-left: 0.25rem solid var(--modal-acento);
+  border-radius: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.etiqueta {
+  display: block;
+  font-size: var(--fs-sm);
+  color: var(--modal-texto-2);
+  font-weight: 600;
+}
+
+.valor {
+  display: block;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+/* Identico a `.control` de MaintenanceSheet.module.css: mismo modal, misma
+   clase, mismo contrato de area tactil (--tap-min) y de piso tipografico
+   (--fs-base, nunca por debajo porque es un dato de negocio editable). */
+.control {
+  font: inherit;
+  font-size: var(--fs-base);
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  min-height: var(--tap-min);
+  background: var(--modal-superficie);
+  color: var(--modal-texto);
+  border: 0.125rem solid var(--modal-borde-fuerte);
+  border-radius: var(--radius-md);
+}
+
+.control:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
