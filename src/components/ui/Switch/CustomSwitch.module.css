@@ -1,57 +1,71 @@
-.switchContainerShort {
-  background-color: var(--color-primario);
-  color: black;
-  font-weight: 700;
-  border: 1px solid var(--color-primario);
-}
+/*
+ * Selector Si/No.
+ *
+ * Antes cada opcion medía 23px de ancho fijos y la opcion activa se forzaba a
+ * un circulo de 23x23 con !important. Con la letra por encima de 14px las
+ * palabras "Si" y "No" no cabian, las dos opciones se montaban una sobre otra
+ * y el control se veia como una mancha oscura. Todo va en rem para que crezca
+ * con el control de tamano de letra.
+ */
 
-.switchContainerShort.active {
-  background-color: var(--color-fondo-suave);
-  color: var(--black-50);
-}
-.switchContainerClassic {
+/* Esta clase la usaba CustomSwitch.tsx sin estar definida en ningun sitio. */
+.customSwitchContainer {
   display: flex;
-  width: 56px;
-  height: 32px;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.btnSwitchShort:first-child {
-  border-bottom-left-radius: 8px;
-  border-top-left-radius: 8px;
-}
-.btnSwitchShort:last-child {
-  border-bottom-right-radius: 8px;
-  border-top-right-radius: 8px;
-}
-
-.switchContainerShort {
+  flex-direction: column;
+  gap: var(--sp-1);
   width: fit-content;
-  border-radius: 100px;
-  border: 1px solid var(--color-primario);
-  padding: 4px 2px;
-  display: flex;
-  flex-direction: row !important;
 }
+
+.switchContainerShort {
+  display: inline-flex;
+  flex-direction: row !important;
+  align-items: center;
+  gap: var(--sp-1);
+  width: fit-content;
+  padding: var(--sp-1);
+  border: 1px solid var(--color-primario);
+  border-radius: 999px;
+  background-color: var(--color-primario);
+}
+
 .btnSwitchShort {
-  padding: 2px 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* El alto total del control queda en 2.75rem, el minimo tactil, sumando el
+     padding del contenedor. Anula el min-height global de los botones para no
+     acabar con una pastilla de 60px de alto. */
+  min-width: 2.75rem;
+  min-height: 2.25rem;
+  padding: 0 var(--sp-3);
   border: none;
+  border-radius: 999px;
   background-color: transparent;
-  transition: all 0.3s ease-out;
   color: white;
+  font-size: var(--fs-base);
   font-weight: 400;
-  font-size: 12px;
-  width: 23px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+}
+
+.btnSwitchShort:hover:not(:disabled):not(.active) {
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+.btnSwitchShort:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btnSwitchShort.active {
-  font-weight: 700;
-  border-radius: 50%;
-  width: 23px !important;
-  height: 23px !important;
-  color: var(--blue-600);
   background-color: white;
-  display: flex;
-  justify-content: center;
+  /* --blue-600 (#73a9dc) sobre blanco da 2.3:1 y no se leia. */
+  color: var(--color-primario);
+  font-weight: 700;
+}
+
+.btnSwitchShort:focus-visible {
+  outline: 3px solid white;
+  outline-offset: 2px;
 }

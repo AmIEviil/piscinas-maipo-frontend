@@ -1,74 +1,148 @@
+/*
+ * Panel del Home.
+ *
+ * El descuadre sobre 1440px venia de una media query invertida: el
+ * flex-wrap solo se aplicaba POR DEBAJO de 1440px, asi que en monitores anchos
+ * las dos secciones quedaban en una fila sin poder bajar de linea, sumaban mas
+ * que el viewport y .main-content, que lleva overflow-x: hidden, las recortaba.
+ *
+ * Ahora no hay conteos de columnas por breakpoint: las rejillas usan auto-fit
+ * con minimos en rem, deciden solas cuantas columnas caben y crecen con el
+ * nivel de letra. El contenido se topa en 96rem y se centra, para que en un
+ * monitor muy ancho no quede una tira de tarjetas de lado a lado.
+ */
 .bodyHomeContainer {
   display: flex;
-  justify-content: center;
-  padding-top: 1rem;
-  gap: 1rem;
+  flex-direction: column;
+  width: 100%;
+  max-width: min(100%, 96rem);
+  margin-inline: auto;
+  padding-inline: var(--sp-4);
+  padding-top: var(--sp-4);
   color: var(--color-fondo);
 }
+
+.sectionsGrid {
+  display: grid;
+  /* Dos secciones lado a lado cuando entran; una sola si no. Sin media query:
+     el minimo en rem ya sube con el nivel de letra. */
+  /* El min() es obligatorio: sin el, minmax(30rem, 1fr) impone una pista de
+     30rem aunque el contenedor mida menos, y la seccion se sale. Pasa al subir
+     el nivel de letra, cuando 30rem son 720px en una ventana de 800. */
+  grid-template-columns: repeat(auto-fit, minmax(min(30rem, 100%), 1fr));
+  gap: var(--sp-5);
+  align-items: start;
+}
+
 .chartsHomeContainer {
   display: flex;
-  align-items: center;
   flex-direction: column;
+  gap: var(--sp-3);
+  /* Sin esto una rejilla de contenido ancho estira la columna mas alla de su
+     fraccion y vuelve el desbordamiento. */
+  min-width: 0;
 }
+
+.sectionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
 .titleChart {
   font-weight: 700;
-  font-size: 24px;
+  font-size: var(--fs-xl);
+  margin: 0;
 }
 
-.chartsContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  padding: 0.5rem;
+.sectionBody {
   background-color: var(--color-gris-oscuro);
   border-radius: 16px;
+  padding: var(--sp-3);
+  min-width: 0;
 }
 
-.resumeMaintenance {
+/*
+ * Solo la vista de medidores es una rejilla de tarjetas. Las vistas agregadas
+ * (barras, reparto, tabla) son una sola figura que ocupa el ancho completo.
+ */
+.sectionBodyCards {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  padding: 0.5rem;
-  background-color: var(--color-gris-oscuro);
-  border-radius: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+  gap: var(--sp-4);
+  justify-items: stretch;
 }
 
-.resumeMaintenance {
-  grid-template-columns: repeat(3, 1fr);
+/* --- Estados: cargando, error, vacio -------------------------------------- */
+
+.stateBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  padding: var(--sp-6) var(--sp-3);
+  text-align: center;
+  /* La caja de estado ocupa la seccion entera aunque la rejilla de tarjetas
+     este activa. */
+  grid-column: 1 / -1;
 }
 
-@media screen and (max-width: 1580px) {
+.stateMessage {
+  margin: 0;
+  font-size: var(--fs-base);
+  max-width: 28rem;
+}
+
+.retryButton {
+  background-color: white;
+  color: black;
+  font-weight: 700;
+  font-size: var(--fs-base);
+  padding: var(--sp-2) var(--sp-5);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-secundario);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.retryButton:hover {
+  background-color: var(--color-secundario);
+  color: var(--color-primario);
+}
+
+@media screen and (max-width: 768px) {
   .bodyHomeContainer {
-    flex-wrap: wrap;
+    padding-inline: 0;
   }
-}
 
-@media screen and (max-width: 1020px) {
-  .resumeMaintenance {
-    grid-template-columns: repeat(2, 1fr);
+  .sectionsGrid {
+    /* Una seccion por fila: en un telefono no entran dos ni con el minimo. */
+    grid-template-columns: 1fr;
+    gap: var(--sp-4);
   }
-}
 
-@media screen and (max-width: 720px) {
-  .bodyHomeContainer {
-    display: flex;
-    flex-wrap: nowrap;
+  /*
+   * Una tarjeta por fila. Antes eran un carrusel horizontal: las tarjetas se
+   * comprimian hasta dejar los botones reducidos a un menu de tres puntos y los
+   * numeros del medidor montados entre si, y para ver la cuarta habia que
+   * desplazar de lado. Desplazar hacia abajo es mas simple para el publico de
+   * la aplicacion.
+   */
+  .sectionBodyCards {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: var(--sp-4);
+    padding: 0;
+  }
+
+  .sectionHeader {
+    justify-content: center;
     flex-direction: column;
-    width: 100%;
-  }
-
-  .chartsContainer,
-  .resumeMaintenance {
-    display: flex;
-    flex-direction: row;
-    max-width: 100%;
-    overflow-x: auto;
-    padding-bottom: 1rem;
-    gap: 2rem;
-  }
-
-  .resumeMaintenance {
-    gap: 3rem;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    align-items: stretch;
+    text-align: center;
   }
 }

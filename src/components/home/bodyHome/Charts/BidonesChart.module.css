@@ -1,6 +1,23 @@
+/*
+ * Tarjeta de un producto.
+ *
+ * Es una columna en cualquier ancho: medidor arriba, acciones abajo. Antes era
+ * una fila (botones al lado del medidor) que se volvia columna solo en celular,
+ * y con width: fit-content la tarjeta imponia su ancho a la rejilla: dos
+ * columnas de tarjetas anchas mas dos secciones lado a lado era lo que se salia
+ * de la pantalla en monitores grandes.
+ *
+ * La tarjeta ocupa ahora la celda que la rejilla le da y nunca al reves.
+ */
 .bidonesChartContainer {
   display: flex;
-  width: fit-content;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  min-width: 0;
+  padding: var(--sp-3);
   border-radius: 16px;
   border: 2px solid var(--color-secundario);
   box-shadow: 0 2px 8px var(--color-sombra);
@@ -8,22 +25,26 @@
 
 .actionsContainer {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 2rem;
-  padding: 10px;
+  gap: var(--sp-2);
+  width: 100%;
 }
 
 .actionButton {
   background-color: white;
   color: black;
   font-weight: 700;
-  padding: 10px;
-  border-radius: 16px;
+  padding: var(--sp-2) var(--sp-3);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-md);
   border: 2px solid var(--color-secundario);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--fs-base);
   transition: all 0.2s ease-in-out;
+  /* Dos acciones por fila si caben, apiladas si no. Con la letra en grande la
+     segunda baja sola en vez de salirse de la tarjeta. */
+  flex: 1 1 8rem;
 }
 
 .actionButton:hover {
@@ -32,18 +53,6 @@
   color: var(--color-primario);
 }
 
-.actionButton:focus {
-  outline: none;
-}
-
-@media screen and (max-width: 720px) {
-  .bidonesChartContainer {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .actionsContainer {
-    flex-direction: row;
-    gap: 1rem;
-  }
-}
+/* Sin regla :focus { outline: none }. La que habia ganaba en especificidad al
+   :focus-visible global de tokens.css y dejaba el boton sin anillo de foco:
+   navegando con teclado no se veia donde estabas parado. */

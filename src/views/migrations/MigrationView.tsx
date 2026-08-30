@@ -108,16 +108,16 @@ export const MigrationViewProtected = () => {
       redirectPath="/"
     >
       <div className="w-full bg-white shadow-md rounded-lg">
-        <div className="p-4 border-b border-gray-200 text-lg font-semibold flex items-center gap-2">
+        <div className="p-4 border-b border-gray-200 text-lg font-semibold flex flex-wrap items-center gap-2">
           <span>Resumen</span>
-          <span className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+          <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-1 rounded">
             Total Migraciones creadas en backend:{" "}
             {data?.summary.totalMigrations || 0}
           </span>
-          <span className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+          <span className="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-1 rounded">
             Total Migraciones ejecutadas: {data?.summary.totalExecuted || 0}
           </span>
-          <span className="bg-yellow-100 text-yellow-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+          <span className="bg-yellow-100 text-yellow-800 text-sm font-medium px-2.5 py-1 rounded">
             Total Migraciones pendientes: {data?.summary.totalPending || 0}
           </span>
           <button onClick={() => setShowMigrationModal(true)}>

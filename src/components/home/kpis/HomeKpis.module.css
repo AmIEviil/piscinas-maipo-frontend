@@ -1,0 +1,135 @@
+/*
+ * Fila de indicadores del Home.
+ *
+ * auto-fit con un minimo en rem: la fila decide sola cuantas tarjetas entran,
+ * y el minimo crece con el nivel de letra, asi que nunca quedan cuatro
+ * columnas apretadas con el texto en grande.
+ */
+.kpiRow {
+  display: grid;
+  /* min() para que la pista nunca supere al contenedor: ver la nota en
+     BodyHome.module.css. */
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+  gap: var(--sp-4);
+  width: 100%;
+  margin-bottom: var(--sp-5);
+}
+
+.kpiCard {
+  display: grid;
+  /* Icono a la izquierda, texto a la derecha: etiqueta, cifra y detalle. */
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "icono etiqueta"
+    "icono valor"
+    "detalle detalle";
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: 16px;
+  background-color: var(--color-gris-oscuro);
+  color: var(--color-fondo);
+  border: 2px solid var(--color-secundario);
+  box-shadow: 0 2px 8px var(--color-sombra);
+  text-align: left;
+}
+
+.kpiIcon {
+  grid-area: icono;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* En em para que el icono acompane al texto al subir el nivel de letra. */
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.kpiIcon svg {
+  width: 1.5em;
+  height: 1.5em;
+}
+
+.kpiLabel {
+  grid-area: etiqueta;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.kpiValue {
+  grid-area: valor;
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  line-height: var(--lh-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpiDetail {
+  grid-area: detalle;
+  font-size: var(--fs-sm);
+  opacity: 0.9;
+  margin-top: var(--sp-1);
+  /* Un detalle largo baja de linea en vez de ensanchar la tarjeta. */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Tarjeta accionable. Se distingue del resto por el cursor, el subrayado del
+ * detalle y el realce al pasar por encima, no solo por el color.
+ */
+.kpiCardButton {
+  cursor: pointer;
+  width: 100%;
+  font: inherit;
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.kpiCardButton .kpiDetail {
+  text-decoration: underline;
+}
+
+.kpiCardButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px var(--color-sombra);
+}
+
+/*
+ * Tonos de estado.
+ *
+ * El color va SIEMPRE con su icono y su texto: nunca es el unico portador del
+ * significado. Se aplica al icono y a un borde lateral grueso, no al fondo de
+ * la tarjeta, para no perder el contraste del texto.
+ */
+.tono_neutral .kpiIcon {
+  color: var(--color-secundario);
+}
+
+.tono_good {
+  border-left: 8px solid var(--viz-good);
+}
+.tono_good .kpiIcon {
+  color: var(--viz-good);
+}
+
+.tono_warning {
+  border-left: 8px solid var(--viz-warning);
+}
+.tono_warning .kpiIcon {
+  color: var(--viz-warning);
+}
+
+.tono_critical {
+  border-left: 8px solid var(--viz-critical);
+}
+.tono_critical .kpiIcon {
+  color: var(--viz-critical);
+}
+
+@media screen and (max-width: 480px) {
+  .kpiRow {
+    grid-template-columns: 1fr;
+    gap: var(--sp-3);
+  }
+}

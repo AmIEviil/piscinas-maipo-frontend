@@ -359,7 +359,7 @@ const BodyRevestimiento = () => {
                       ))
                     : "N/A"}
                 </td>
-                <td className="flex flex-col gap-2 sm:gap-4 items-center justify-center">
+                <td className="flex flex-row flex-wrap gap-2 items-center justify-center">
                   <Tooltip title="Ver detalles Cliente" arrow leaveDelay={0}>
                     <button
                       className="actions"

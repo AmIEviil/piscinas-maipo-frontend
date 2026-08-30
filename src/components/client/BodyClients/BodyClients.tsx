@@ -6,8 +6,14 @@ import {
   useClientsByFilters,
   useClientsById,
   useDeleteClient,
+  useFrecuenciasMantencion,
 } from "../../../hooks/ClientHooks";
-import type { Client, IClientForm } from "../../../service/client.interface";
+import type {
+  BulkUpdateClientsResponse,
+  CampoBulkCliente,
+  Client,
+  IClientForm,
+} from "../../../service/client.interface";
 import { useMaintenancesByClient } from "../../../hooks/MaintenanceHooks";
 import { type IMaintenance } from "../../../service/maintenance.interface";
 import style from "./BodyClients.module.css";
@@ -19,6 +25,7 @@ import { Checkbox } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import AddIcon from "@mui/icons-material/Add";
+import TuneIcon from "@mui/icons-material/Tune";
 import Tooltip from "@mui/material/Tooltip";
 
 import {
@@ -34,7 +41,10 @@ import { getWindowWidth } from "../../../utils/WindowUtils";
 import TrashIcon from "../../ui/Icons/TrashIcon";
 import { useBoundStore } from "../../../store/BoundedStore";
 import CollapsableTable from "../../ui/collapsable-table/CollapsableTable";
-import { formatNoResultsText } from "../../../utils/FiltersUtils";
+import {
+  formatNoResultsFromFilters,
+  type FiltroAplicado,
+} from "../../../utils/FiltersUtils";
 import { useRefetchStore } from "../../../store/refetchStore";
 import CustomModal from "../../ui/modal/CustomModal";
 import { usePermits } from "../../../utils/roleUtils";
@@ -44,14 +54,22 @@ import {
   FiltersContainer,
   type FilterItem,
 } from "../../common/FiltersContainer/FiltersContainer";
+import AdvancedFiltersSheet from "../../common/FiltersContainer/AdvancedFiltersSheet";
 import type { FilterValue } from "../../../service/employee.interface";
+import { BREAKPOINTS } from "../../../constant/breakpoints";
+import BulkActionsMenu from "../BulkActions/BulkActionsMenu";
+import BulkEditClientsDialog from "../BulkActions/BulkEditClientsDialog";
+import { useSnackbar } from "../../../utils/snackBarHooks";
 
 interface IfilterQuery {
   nombre?: string;
   direccion?: string;
+  telefono?: string;
   dia?: string;
   comuna?: string;
   ruta?: string;
+  /** Id de la periodicidad de visitas, no su nombre. */
+  frecuencia?: string;
   isActive?: boolean;
   orderBy?: string;
   orderDirection?: "ASC" | "DESC";
@@ -60,9 +78,11 @@ interface IfilterQuery {
 const initial_filters: IfilterQuery = {
   nombre: "",
   direccion: "",
+  telefono: "",
   dia: "",
   comuna: "",
   ruta: "",
+  frecuencia: "",
   isActive: true,
   orderBy: "nombre",
   orderDirection: "ASC",
@@ -88,6 +108,16 @@ const BodyClients = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedClients, setSelectedClients] = useState<Client[]>([]);
   const [currentClientIndex, setCurrentClientIndex] = useState(0);
+  /**
+   * Distingue con que puerta se abrio el detalle.
+   *
+   * Con clientes seleccionados se puede llegar al detalle por dos caminos: el
+   * aviso de "Ver detalles de N cliente(s)", que recorre la seleccion, o el
+   * ojo de una fila, que muestra ese cliente y nada mas. Sin esta bandera el
+   * segundo camino heredaba la navegacion del primero y el modal anunciaba
+   * "Cliente 1 de N" sobre un cliente que ni siquiera estaba seleccionado.
+   */
+  const [isMultiClientView, setIsMultiClientView] = useState(false);
 
   const [mantenciones, setMantenciones] =
     useState<Record<string, IMaintenance[]>>();
@@ -100,14 +130,23 @@ const BodyClients = () => {
 
   const selectedDayHome = useBoundStore((state) => state.dayFilter);
   const setDayFilterStore = useBoundStore((state) => state.setDayFilter);
+  const selectAllOnLoad = useBoundStore((state) => state.selectAllOnLoad);
+  const setSelectAllOnLoad = useBoundStore((state) => state.setSelectAllOnLoad);
 
   const [openPopUp, setOpenPopUp] = useState(false);
+  // Campo elegido en el menu de acciones en bloque. `null` = modal cerrado.
+  const [campoBulk, setCampoBulk] = useState<CampoBulkCliente | null>(null);
+  const [openBusquedaAvanzada, setOpenBusquedaAvanzada] = useState(false);
+
+  const { data: frecuencias = [] } = useFrecuenciasMantencion();
+  const { showSnackbar } = useSnackbar();
 
   const handleClosePopUp = () => {
     setOpenPopUp(false);
   };
 
   const handleOpenDialog = async (client: Client) => {
+    setIsMultiClientView(false);
     setSelectedClient(client);
     handleSeeDetailsClient(client);
     setOpenDialog(true);
@@ -118,7 +157,6 @@ const BodyClients = () => {
     setIsEditMode(false);
     setCurrentClientIndex(0);
     setMantenciones(undefined);
-    setSnackBar(false, "");
   };
 
   const fetchData = async () => {
@@ -146,8 +184,15 @@ const BodyClients = () => {
     }
   }, [filterQuery, shouldRefetch]);
 
+  /**
+   * Unico lugar que decide si se ve el aviso de la seleccion.
+   *
+   * Depende tambien de los modales: con uno abierto el aviso quedaba encima
+   * ofreciendo "Ver detalles de N cliente(s)" sobre el detalle que ya se esta
+   * mirando. Antes cada camino lo apagaba a mano y el del ojo se olvidaba.
+   */
   useEffect(() => {
-    if (selectedClients.length > 0) {
+    if (selectedClients.length > 0 && !openDialog && !openCreateDialog) {
       setSnackBar(
         true,
         `Ver detalles de ${selectedClients.length} cliente(s).`,
@@ -155,7 +200,7 @@ const BodyClients = () => {
     } else {
       setSnackBar(false, "");
     }
-  }, [selectedClients, setSnackBar]);
+  }, [selectedClients, openDialog, openCreateDialog, setSnackBar]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -175,6 +220,18 @@ const BodyClients = () => {
       setFilterQuery((prev) => ({ ...prev, dia: selectedDayHome }));
     }
   }, [selectedDayHome]);
+
+  // El Home puede pedir llegar con todo seleccionado para empezar a registrar
+  // mantenciones de inmediato. Hay que esperar a que termine el fetch: antes de
+  // eso `clients` todavia trae el resultado del filtro anterior (o nada).
+  useEffect(() => {
+    if (!selectAllOnLoad || loadingTable || clients === undefined) return;
+    const todosLosClientes = Object.values(clients).flat();
+    if (todosLosClientes.length > 0) {
+      setSelectedClients(todosLosClientes);
+    }
+    setSelectAllOnLoad(false);
+  }, [selectAllOnLoad, loadingTable, clients, setSelectAllOnLoad]);
 
   const handleFilterName = useMemo(
     () =>
@@ -210,6 +267,23 @@ const BodyClients = () => {
     [],
   );
 
+  const handleFilterTelefono = useMemo(
+    () =>
+      debounce((value: string) => {
+        setFilterQuery((prev) => {
+          if (value.length >= 3) {
+            return { ...prev, telefono: value };
+          } else if (value.length === 0) {
+            const updated = { ...prev };
+            delete updated.telefono;
+            return updated;
+          }
+          return prev ?? {};
+        });
+      }, 500),
+    [],
+  );
+
   const handleChangeComuna = (value: string) => {
     setFilterQuery((prev) => ({ ...prev, comuna: value }));
   };
@@ -222,6 +296,10 @@ const BodyClients = () => {
     setFilterQuery((prev) => ({ ...prev, ruta: value }));
   };
 
+  const handleChangeFrecuencia = (value: string) => {
+    setFilterQuery((prev) => ({ ...prev, frecuencia: value }));
+  };
+
   const handleChangeActive = (value: boolean) => {
     setFilterQuery((prev) => ({ ...prev, isActive: value }));
   };
@@ -229,20 +307,19 @@ const BodyClients = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setOpenCreateDialog(false);
+    setIsMultiClientView(false);
     if (selectedClients.length > 0) {
-      setSnackBar(
-        true,
-        `Ver detalles de ${selectedClients.length} cliente(s).`,
-      );
       setCurrentClientIndex(0);
     }
   };
 
   const handleSeeDetailsClient = async (client: Client) => {
+    // El corte por id va antes de encender el cargando: adentro del try dejaba
+    // el modal girando para siempre.
+    if (!client.id) return;
     setLoadingClientInfo(true);
     setSelectedClient(client);
     try {
-      if (!client.id) return;
       const clientInfo = await clientByIdMutation.mutateAsync(client.id);
       setClientInfo(clientInfo);
       setOpenDialog(true);
@@ -278,22 +355,60 @@ const BodyClients = () => {
     }
   };
 
+  /**
+   * Mensaje de tabla vacia.
+   *
+   * Nombra TODOS los filtros aplicados, no solo el primero: con la busqueda
+   * avanzada la mitad de ellos no se ve en la barra, y un listado vacio por un
+   * filtro escondido (periodicidad, comuna, "inactivos") se leia como si no
+   * hubiera clientes. La periodicidad se traduce de id a nombre porque en el
+   * filtro viaja como uuid.
+   */
   const handleTextNoResults = () => {
-    if (
-      filterQuery.nombre ||
-      filterQuery.direccion ||
-      filterQuery.comuna ||
-      filterQuery.dia
-    ) {
-      return formatNoResultsText(
-        "clients",
-        filterQuery.nombre ||
-          filterQuery.direccion ||
-          filterQuery.comuna ||
-          filterQuery.dia ||
-          "",
-      );
-    }
+    const nombreFrecuencia = frecuencias.find(
+      (frecuencia) => frecuencia.id === filterQuery.frecuencia,
+    )?.nombre;
+
+    const filtrosAplicados: FiltroAplicado[] = [
+      { etiqueta: "Nombre", valor: filterQuery.nombre ?? "" },
+      { etiqueta: "Teléfono", valor: filterQuery.telefono ?? "" },
+      { etiqueta: "Dirección", valor: filterQuery.direccion ?? "" },
+      { etiqueta: "Comuna", valor: filterQuery.comuna ?? "" },
+      { etiqueta: "Día de mantención", valor: filterQuery.dia ?? "" },
+      { etiqueta: "Ruta", valor: filterQuery.ruta ?? "" },
+      {
+        etiqueta: "Periodicidad",
+        valor: filterQuery.frecuencia ? (nombreFrecuencia ?? "") : "",
+      },
+      // El estado solo se nombra cuando se pidieron los inactivos: la vista
+      // arranca en "activos" y mencionarlo siempre seria ruido.
+      {
+        etiqueta: "Estado",
+        valor: filterQuery.isActive === false ? "Inactivos" : "",
+      },
+    ].filter((filtro) => filtro.valor !== "");
+
+    return formatNoResultsFromFilters("clientes", filtrosAplicados);
+  };
+
+  /**
+   * Cierra el modal de cambio masivo, avisa que paso y vacia la seleccion.
+   *
+   * La seleccion se limpia a proposito: despues del cambio los clientes ya no
+   * tienen el valor con el que se los eligio (el filtro por dia o por
+   * periodicidad ya no los incluye), asi que dejarlos marcados invita a
+   * aplicarles una segunda accion sobre un listado que ya cambio.
+   */
+  const handleBulkAplicado = (resumen: BulkUpdateClientsResponse) => {
+    setCampoBulk(null);
+    setSelectedClients([]);
+    const reprogramadas = resumen.mantencionesReprogramadas
+      ? ` y se reprogramaron ${resumen.mantencionesReprogramadas} mantención(es) futura(s)`
+      : "";
+    showSnackbar(
+      `Se actualizaron ${resumen.clientesActualizados} cliente(s)${reprogramadas}.`,
+      "success",
+    );
   };
 
   const handleOpenDeletePopUp = (client: Client) => {
@@ -334,11 +449,12 @@ const BodyClients = () => {
   };
 
   const handleSeeMultiSelectClients = async (index: number) => {
-    setLoadingClientInfo(true);
     if (selectedClients.length === 0) return;
+    const client = selectedClients[index];
+    if (!client?.id) return;
+    setIsMultiClientView(true);
+    setLoadingClientInfo(true);
     try {
-      const client = selectedClients[index];
-      if (!client.id) return;
       const clientInfo = await clientByIdMutation.mutateAsync(client.id);
       setClientInfo(clientInfo);
       const mantenciones = await maintenanceByClient.mutateAsync(client.id);
@@ -348,11 +464,15 @@ const BodyClients = () => {
       setSelectedClient(client);
       setCurrentClientIndex(index);
       setOpenDialog(true);
-      setSnackBar(false, "");
       setLoadingClientInfo(false);
     } catch (error) {
-      setSnackBar(true, "Error cargando mantenciones");
+      // El error va al toast y no al aviso de la seleccion: ese aviso es el
+      // que ofrece abrir el detalle, y dejarlo con un texto de error lo
+      // convertia en un boton que decia una cosa y hacia otra.
+      showSnackbar("Error cargando la información del cliente.", "error");
       console.error("Error cargando mantenciones:", error);
+      setIsMultiClientView(false);
+      setLoadingClientInfo(false);
     }
   };
 
@@ -370,80 +490,159 @@ const BodyClients = () => {
     }
   };
 
-  const filters: FilterItem[] = [
-    {
-      title: "Buscar por Nombre",
-      placeholder: "Nombre",
-      type: "text",
-      value: filterQuery.nombre || "",
-      onChange: (value: FilterValue) => {
-        handleFilterName(String(value));
-      },
+  /**
+   * Catalogo unico de filtros.
+   *
+   * Se declara una sola vez y despues se reparte: la barra muestra un
+   * subconjunto y la hoja de busqueda avanzada los muestra todos, agrupados.
+   * Antes eran dos listas paralelas, y cualquier filtro nuevo habia que
+   * acordarse de agregarlo en ambas.
+   */
+  const filtroNombre: FilterItem = {
+    title: "Nombre",
+    placeholder: "Nombre del cliente",
+    type: "text",
+    value: filterQuery.nombre || "",
+    onChange: (value: FilterValue) => {
+      handleFilterName(String(value));
     },
-    {
-      title: "Buscar por Dirección",
-      placeholder: "Dirección",
-      type: "text",
-      value: filterQuery.direccion || "",
-      onChange: (value: FilterValue) => {
-        handleFilterDireccion(String(value));
-      },
+  };
+
+  const filtroTelefono: FilterItem = {
+    title: "Teléfono",
+    placeholder: "Teléfono",
+    type: "text",
+    value: filterQuery.telefono || "",
+    onChange: (value: FilterValue) => {
+      handleFilterTelefono(String(value));
     },
-    {
-      title: "Buscar por Comuna",
-      placeholder: "Comuna",
-      type: "select",
-      options: comunas,
-      value: filterQuery.comuna || "",
-      onChange: (value: FilterValue) => {
-        handleChangeComuna(String(value));
-      },
+  };
+
+  const filtroDireccion: FilterItem = {
+    title: "Dirección",
+    placeholder: "Dirección",
+    type: "text",
+    value: filterQuery.direccion || "",
+    onChange: (value: FilterValue) => {
+      handleFilterDireccion(String(value));
     },
-    {
-      title: "Buscar por Día Mantención",
-      placeholder: "Día Mantención",
-      type: "select",
-      options: dias,
-      value: filterQuery.dia || "",
-      onChange: (value: FilterValue) => {
-        handleChangeDiaMantencion(String(value));
-      },
+  };
+
+  const filtroComuna: FilterItem = {
+    title: "Comuna",
+    placeholder: "Todas las comunas",
+    type: "select",
+    options: comunas,
+    value: filterQuery.comuna || "",
+    onChange: (value: FilterValue) => {
+      handleChangeComuna(String(value));
     },
-    {
-      title: "Buscar por Ruta",
-      placeholder: "Ruta",
-      type: "select",
-      options: rutas,
-      value: filterQuery.ruta || "",
-      onChange: (value: FilterValue) => {
-        handleChangeRuta(String(value));
-      },
+  };
+
+  const filtroDia: FilterItem = {
+    title: "Día de mantención",
+    placeholder: "Todos los días",
+    type: "select",
+    options: dias,
+    value: filterQuery.dia || "",
+    onChange: (value: FilterValue) => {
+      handleChangeDiaMantencion(String(value));
     },
-    ...(isSuperAdmin
-      ? [
-          {
-            title: "Buscar por Activo",
-            placeholder: "Activo",
-            type: "select" as const,
-            options: [
-              { label: "Sí", value: "true" },
-              { label: "No", value: "false" },
-            ],
-            value: filterQuery.isActive?.toString() || "",
-            onChange: (value: FilterValue) => {
-              handleChangeActive(value === "true");
-            },
+  };
+
+  const filtroFrecuencia: FilterItem = {
+    title: "Periodicidad",
+    placeholder: "Todas",
+    type: "select",
+    // El valor que viaja al API es el id de la frecuencia; la opcion vacia es
+    // la que permite volver a "todas".
+    options: [
+      { label: "Todas", value: "" },
+      ...frecuencias.map((frecuencia) => ({
+        label: frecuencia.nombre,
+        value: frecuencia.id,
+      })),
+    ],
+    value: filterQuery.frecuencia || "",
+    onChange: (value: FilterValue) => {
+      handleChangeFrecuencia(String(value));
+    },
+  };
+
+  const filtroRuta: FilterItem = {
+    title: "Ruta",
+    placeholder: "Todas las rutas",
+    type: "select",
+    options: rutas,
+    value: filterQuery.ruta || "",
+    onChange: (value: FilterValue) => {
+      handleChangeRuta(String(value));
+    },
+  };
+
+  const filtroActivo: FilterItem[] = isSuperAdmin
+    ? [
+        {
+          title: "Estado",
+          placeholder: "Activo",
+          type: "select",
+          options: [
+            { label: "Activos", value: "true" },
+            { label: "Inactivos", value: "false" },
+          ],
+          value: filterQuery.isActive?.toString() || "",
+          onChange: (value: FilterValue) => {
+            handleChangeActive(value === "true");
           },
-        ]
-      : []),
+        },
+      ]
+    : [];
+
+  /**
+   * Filtros de la barra: los tres que se usan para armar la ruta del dia.
+   *
+   * El resto vive en la hoja de busqueda avanzada. Con los ocho a la vista la
+   * barra ocupaba dos filas completas antes de que apareciera un solo cliente.
+   */
+  const filtrosBasicos: FilterItem[] = [filtroNombre, filtroDia, filtroRuta];
+
+  const gruposAvanzados = [
+    { titulo: "Identificación", filtros: [filtroNombre, filtroTelefono] },
+    { titulo: "Ubicación", filtros: [filtroDireccion, filtroComuna] },
+    { titulo: "Servicio", filtros: [filtroDia, filtroFrecuencia] },
+    { titulo: "Ruta y estado", filtros: [filtroRuta, ...filtroActivo] },
   ];
 
-  const hasFilters =
+  // Se cuentan los filtros que la barra no muestra: el badge existe para
+  // avisar de lo que esta aplicado y no se ve. isActive se cuenta solo cuando
+  // vale false, porque la vista arranca en "activos" y contarlo dejaria el
+  // badge en 1 desde el primer render.
+  const filtrosAvanzadosActivos = [
+    filterQuery.telefono,
+    filterQuery.direccion,
+    filterQuery.comuna,
+    filterQuery.frecuencia,
+    filterQuery.isActive === false ? "inactivos" : "",
+  ].filter(Boolean).length;
+
+  // Dos contadores distintos a proposito. El badge del boton solo cuenta lo
+  // que esta aplicado y NO se ve en la barra, que es de lo que avisa. El
+  // subtitulo y el "Limpiar" de la hoja cuentan todo, porque la hoja muestra
+  // todos los filtros y limpiar solo la mitad de lo que se ve seria mentira.
+  const totalFiltrosActivos =
+    filtrosAvanzadosActivos +
+    [filterQuery.nombre, filterQuery.dia, filterQuery.ruta].filter(Boolean)
+      .length;
+
+  const hasFilters = Boolean(
     filterQuery.nombre ||
-    filterQuery.direccion ||
-    filterQuery.comuna ||
-    filterQuery.dia ||
-    filterQuery.ruta;
+      filterQuery.telefono ||
+      filterQuery.direccion ||
+      filterQuery.comuna ||
+      filterQuery.dia ||
+      filterQuery.ruta ||
+      filterQuery.frecuencia,
+  );
 
   const actionsButtons = [
     {
@@ -463,23 +662,65 @@ const BodyClients = () => {
 
   return (
     <div className="pt-4 ">
-      <div className={style.filtersContainer}>
-        <FiltersContainer filters={filters} actionButtons={actionsButtons} />
+      <div className={style.filtersWrapper}>
+        <FiltersContainer
+          filters={filtrosBasicos}
+          actionButtons={actionsButtons}
+          extraControls={
+            <button
+              type="button"
+              className={style.advancedButton}
+              onClick={() => setOpenBusquedaAvanzada(true)}
+              aria-haspopup="dialog"
+              aria-expanded={openBusquedaAvanzada}
+            >
+              <TuneIcon fontSize="small" />
+              Búsqueda avanzada
+              {/* El contador es la unica senal de que hay filtros ocultos
+                  activos: sin el, una busqueda vacia por un filtro guardado en
+                  la hoja se lee como "no hay clientes". */}
+              {filtrosAvanzadosActivos > 0 && (
+                <span className={style.advancedBadge}>
+                  {filtrosAvanzadosActivos}
+                </span>
+              )}
+            </button>
+          }
+        />
       </div>
-      {windowWidth < 600 && selectedClients.length > 0 && (
-        <div className="flex flex-row w-full items-center justify-center pt-4">
-          <button
-            onClick={() => handleSeeMultiSelectClients(currentClientIndex)}
-            className={style.addButton}
-          >
-            Ver detalles de {selectedClients.length} cliente(s).
-          </button>
-        </div>
-      )}
+      <AdvancedFiltersSheet
+        abierta={openBusquedaAvanzada}
+        grupos={gruposAvanzados}
+        activos={totalFiltrosActivos}
+        onCerrar={() => setOpenBusquedaAvanzada(false)}
+        onLimpiar={handleClearFilter}
+      />
+      {windowWidth < BREAKPOINTS.tablet &&
+        selectedClients.length > 0 &&
+        !openDialog &&
+        !openCreateDialog && (
+          <div className="flex flex-row w-full items-center justify-center gap-2 pt-4">
+            <button
+              onClick={() => handleSeeMultiSelectClients(currentClientIndex)}
+              className={style.addButton}
+            >
+              Ver detalles de {selectedClients.length} cliente(s).
+            </button>
+            {/* En celular la snackbar esta oculta por CSS, asi que el menu de
+                acciones en bloque acompana a este boton. */}
+            <BulkActionsMenu
+              cantidad={selectedClients.length}
+              onSelectCampo={setCampoBulk}
+            />
+          </div>
+        )}
       <div className={style.tableContainer}>
         <CollapsableTable
           titlesTable={titlesTable}
           showCheckBoxes
+          // Con tipografia grande estas diez columnas desbordan a lo ancho y
+          // "Acciones" quedaba al final del desplazamiento.
+          stickyLastColumn
           data={clients ?? {}}
           emptyMessage={handleTextNoResults()}
           loading={loadingTable}
@@ -508,9 +749,10 @@ const BodyClients = () => {
               <td>{client.telefono}</td>
               <td>{client.email ? client.email : "No tiene email asociado"}</td>
               <td>{client.dia_mantencion}</td>
+              <td>{client.frecuencia_mantencion?.nombre ?? "—"}</td>
               <td>{client.ruta}</td>
               <td>{formatMoneyNumber(client.valor_mantencion)}</td>
-              <td className="flex flex-col gap-2 sm:gap-4 items-center justify-center">
+              <td className="flex flex-row flex-wrap gap-2 items-center justify-center">
                 <Tooltip title="Ver detalles Cliente" arrow leaveDelay={0}>
                   <button
                     className="actions"
@@ -569,8 +811,11 @@ const BodyClients = () => {
         }}
         onNextClient={handleNextClient}
         onPreviousClient={handlePreviousClient}
-        totalRecords={selectedClients.length}
-        currentIndex={currentClientIndex}
+        // Solo el recorrido de la seleccion muestra "Cliente N de M"; abierto
+        // desde el ojo de una fila es un cliente suelto, aunque haya otros
+        // marcados.
+        totalRecords={isMultiClientView ? selectedClients.length : 1}
+        currentIndex={isMultiClientView ? currentClientIndex : 0}
       />
       <CreateClientDialog
         open={openCreateDialog}
@@ -596,6 +841,19 @@ const BodyClients = () => {
       />
       <CustomSnackBar
         onClick={() => handleSeeMultiSelectClients(currentClientIndex)}
+        trailing={
+          <BulkActionsMenu
+            cantidad={selectedClients.length}
+            onSelectCampo={setCampoBulk}
+          />
+        }
+      />
+      <BulkEditClientsDialog
+        campo={campoBulk}
+        clientes={selectedClients}
+        frecuencias={frecuencias}
+        onClose={() => setCampoBulk(null)}
+        onAplicado={handleBulkAplicado}
       />
     </div>
   );

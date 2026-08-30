@@ -1,0 +1,194 @@
+/*
+ * Panel de estado del mes de la pestana de mantenciones.
+ *
+ * Porta `.panel-lado`, `.panel-lado__cab`, `.panel-lado__cuerpo`,
+ * `.anillo-fila`, `.anillo`, `.anillo__centro`, `.montos`, `.monto` (y sus
+ * modificadores) y `.desglose` del mockup D (`mockup-d-hibrido.html`),
+ * reemplazando los colores fijos del mockup por los tokens `--modal-*` del
+ * modal y los tamanos de letra bajo 1rem por `var(--fs-base)`: ese piso lo
+ * fija el contrato global del rediseno (nada de dato de negocio -monto,
+ * conteo, fecha o nombre de material- bajo 1rem), y ya se aplico igual en
+ * MaintenanceTimeline.module.css.
+ *
+ * Todo en rem para escalar con el control de tamano de letra del TopBar.
+ */
+
+.panel {
+  background: var(--modal-superficie);
+  border: 0.0625rem solid var(--modal-borde);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.cabecera {
+  margin: 0;
+  padding: 0.8rem 0.95rem;
+  font-size: var(--fs-md);
+  font-weight: 800;
+  background: var(--modal-superficie-3);
+  border-bottom: 0.0625rem solid var(--modal-borde);
+}
+
+.cuerpo {
+  padding: 1rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.anilloFila {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+/* --avance la fija el componente en linea, como porcentaje del avance. */
+.anillo {
+  flex: 0 0 auto;
+  width: 5.25rem;
+  height: 5.25rem;
+  border-radius: 999rem;
+  background: conic-gradient(
+    var(--modal-ok) 0 var(--avance, 0%),
+    var(--modal-superficie-3) var(--avance, 0%) 100%
+  );
+  display: grid;
+  place-items: center;
+}
+
+.anilloCentro {
+  width: 3.9rem;
+  height: 3.9rem;
+  border-radius: 999rem;
+  background: var(--modal-superficie);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.anilloNumero {
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  display: block;
+}
+
+.anilloTexto {
+  font-size: var(--fs-base);
+  color: var(--modal-texto-2);
+  display: block;
+}
+
+.anilloDetalle {
+  margin: 0;
+  font-size: var(--fs-base);
+  color: var(--modal-texto-2);
+}
+
+.anilloDetalle b {
+  display: block;
+  font-size: var(--fs-md);
+  color: var(--modal-texto);
+}
+
+.montos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.monto {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: var(--fs-md);
+}
+
+.monto span:first-child {
+  color: var(--modal-texto-2);
+  overflow-wrap: anywhere;
+}
+
+.montoTotal {
+  border-top: 0.125rem solid var(--modal-acento);
+  margin-top: 0.35rem;
+  padding-top: 0.6rem;
+  font-size: var(--fs-lg);
+  font-weight: 800;
+}
+
+.montoTotal span:first-child {
+  color: var(--modal-texto);
+}
+
+.montoPendiente span {
+  color: var(--modal-alerta);
+  font-weight: 700;
+}
+
+.desglose {
+  border-top: 0.0625rem solid var(--modal-borde);
+  padding-top: 0.6rem;
+}
+
+.desglose summary {
+  cursor: pointer;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--modal-acento);
+  list-style: none;
+  padding: 0.35rem 0;
+  min-height: var(--tap-min);
+  display: flex;
+  align-items: center;
+}
+
+.desglose summary::-webkit-details-marker {
+  display: none;
+}
+
+.desglose summary:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+  border-radius: 0.5rem;
+}
+
+.desglose .montos {
+  margin-top: 0.5rem;
+}
+
+.desglose .monto {
+  font-size: var(--fs-base);
+}
+
+.botonBloque {
+  width: 100%;
+  font: inherit;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  min-height: var(--tap-min);
+  border-radius: 0.75rem;
+  border: 0.125rem solid var(--modal-acento);
+  background: var(--modal-acento);
+  color: #ffffff;
+}
+
+.botonBloque:hover {
+  background: var(--modal-acento-2);
+  border-color: var(--modal-acento-2);
+}
+
+.botonBloque:focus-visible {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+:global([data-theme="dark"]) .botonBloque {
+  color: #04131b;
+}

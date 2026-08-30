@@ -24,7 +24,7 @@
 .dropdown-item {
   color: var(--black-900);
   padding: 0.5rem 1rem;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-style: normal;
   font-weight: 400;
   line-height: 22.7px;

@@ -43,7 +43,7 @@
 
 .custom-datepicker-selects {
   font-weight: bold;
-  font-size: 14px;
+  font-size: var(--fs-base);
 }
 
 .custom-select {
@@ -70,7 +70,7 @@
   padding: 8px 0;
   font-weight: bold;
   text-transform: uppercase;
-  font-size: 14px;
+  font-size: var(--fs-base);
 }
 
 .react-datepicker__day-name {
@@ -78,7 +78,7 @@
   text-align: center;
 }
 .react-datepicker__day {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: bold;
 }
 .react-datepicker__day--selected {
@@ -93,7 +93,7 @@
 
 .btn-footer {
   color: var(--Primary-600_cta, #006cd9);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-style: normal;
   font-weight: 700;
   line-height: 24px;

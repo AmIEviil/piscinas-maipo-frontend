@@ -51,7 +51,7 @@
 }
 
 .label {
-  font-size: 0.85rem;
+  font-size: var(--fs-base);
   color: var(--color-texto-secundario);
   font-weight: 500;
 }
@@ -113,7 +113,7 @@
 }
 
 .extraDetail {
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
   color: var(--color-texto-secundario);
 }
 
@@ -140,7 +140,7 @@
 }
 
 .totalLabel {
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
   color: var(--color-texto-secundario);
 }
 
@@ -150,7 +150,7 @@
   color: var(--color-primario);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .gridContainer {
     grid-template-columns: 1fr;
   }

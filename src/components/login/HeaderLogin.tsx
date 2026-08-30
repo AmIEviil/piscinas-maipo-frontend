@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getWindowWidth } from "../../utils/WindowUtils";
 import PiscinasElMaipoIcon from "../ui/Icons/piscinasDelMaipoIcon";
 import style from "./HeaderLogin.module.css";
+import { BREAKPOINTS } from "../../constant/breakpoints";
 
 const HeaderLogin = () => {
   const [windowWidth, setWindowWidth] = useState(getWindowWidth());
@@ -25,7 +26,7 @@ const HeaderLogin = () => {
     <div className={style.headerLogin}>
       <div className={style.headerContent}>
         <span className={style.iconHeader}>
-          <PiscinasElMaipoIcon size={windowWidth < 1000 ? 120 : 180} />
+          <PiscinasElMaipoIcon size={windowWidth < BREAKPOINTS.laptop ? 120 : 180} />
         </span>
         <div className={style.textHeader}>
           Bienvenido a la plataforma. Por favor, ingresa tus credenciales para

@@ -280,7 +280,7 @@ const CreateEmployeeDialog = ({
           <div className="row g-3 mb-4">
             <div className="col-md-6">
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <label className="input-title" style={{ fontSize: "14px", fontWeight: 500, color: "#666" }}>
+                <label className="input-title" style={{ fontSize: "var(--fs-base)", fontWeight: 500, color: "var(--color-texto-secundario)" }}>
                   Fecha Inicio Contrato <span className="required">*</span>
                 </label>
                 <DatePicker
@@ -291,7 +291,7 @@ const CreateEmployeeDialog = ({
             </div>
             <div className="col-md-6">
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <label className="input-title" style={{ fontSize: "14px", fontWeight: 500, color: "#666" }}>
+                <label className="input-title" style={{ fontSize: "var(--fs-base)", fontWeight: 500, color: "var(--color-texto-secundario)" }}>
                   Fecha Término (Opcional)
                 </label>
                 <DatePicker

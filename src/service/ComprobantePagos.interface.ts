@@ -15,6 +15,7 @@ export interface IComprobantePago {
   fileId: string;
   viewUrl: string;
   fileInfo: IFileInfo;
+  mantenciones?: { id: string; fechaMantencion: string }[];
 }
 
 interface IFileInfo {

@@ -255,7 +255,7 @@ const BodyInventory = () => {
                   )}
               </td>
               <td>{formatMoneyNumber(product.valor_unitario)}</td>
-              <td className="flex flex-col gap-2 sm:gap-4 items-center justify-center">
+              <td className="flex flex-row flex-wrap gap-2 items-center justify-center">
                 <Tooltip title="Ver Producto" arrow leaveDelay={0}>
                   <button onClick={() => handleSeeProduct(product)}>
                     <VisibilityIcon />

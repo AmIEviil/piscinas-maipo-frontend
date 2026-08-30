@@ -1,5 +1,5 @@
 import React from "react";
-import style from "./TableStyle.module.css"; 
+import style from "./TableStyle.module.css";
 import CircularProgress from "@mui/material/CircularProgress";
 import CaretIcon from "../Icons/CaretIcon";
 import OrderIcon from "../Icons/OrderIcon";
@@ -25,6 +25,9 @@ interface TableGenericProps<T> {
   onOrderChange?: (key: string, order: "ASC" | "DESC") => void;
 }
 
+type CellElement = React.ReactElement<{ "data-label"?: string }>;
+type RowElement = React.ReactElement<{ children?: React.ReactNode }>;
+
 const TableGeneric = <T,>({
   titles,
   data,
@@ -47,6 +50,34 @@ const TableGeneric = <T,>({
     onOrderChange(key, direction);
   };
 
+  /**
+   * En celular la tabla se muestra como tarjetas: cada fila es un bloque y
+   * cada celda lleva su titulo al lado. Para eso cada <td> necesita saber a
+   * que columna pertenece, y el CSS lo lee con attr(data-label).
+   *
+   * La etiqueta se inyecta aca en lugar de pedirsela a cada renderRow del
+   * proyecto: son mas de diez tablas y todas ya reciben sus titulos por props.
+   */
+  const withCellLabels = (row: React.ReactNode): React.ReactNode => {
+    if (!React.isValidElement(row)) return row;
+
+    const rowElement = row as RowElement;
+    const cells = React.Children.toArray(rowElement.props.children).map(
+      (cell, index) => {
+        if (!React.isValidElement(cell)) return cell;
+        const cellElement = cell as CellElement;
+        if (cellElement.props["data-label"] !== undefined) return cellElement;
+
+        const label = titles[index]?.label;
+        if (!label) return cellElement;
+
+        return React.cloneElement(cellElement, { "data-label": label });
+      }
+    );
+
+    return React.cloneElement(rowElement, undefined, cells);
+  };
+
   return (
     <div className={`${style.tableContainer} custom-scrollbar`}>
       <div>
@@ -64,6 +95,7 @@ const TableGeneric = <T,>({
                         <button
                           onClick={() => handleOrderChange(title.key)}
                           className="focus:outline-none normal"
+                          aria-label={`Ordenar por ${title.label}`}
                         >
                           {orderBy === title.key ? (
                             <CaretIcon
@@ -76,7 +108,7 @@ const TableGeneric = <T,>({
                             />
                           ) : (
                             <OrderIcon
-                              className={`${style.orderIcon} text-gray-400`}
+                              className={`${style.orderIcon} text-gray-600`}
                               size={16}
                             />
                           )}
@@ -88,7 +120,11 @@ const TableGeneric = <T,>({
               )}
             </tr>
           </thead>
-          <tbody>{data.length > 0 && !loading && data.map(renderRow)}</tbody>
+          <tbody>
+            {data.length > 0 &&
+              !loading &&
+              data.map((item) => withCellLabels(renderRow(item)))}
+          </tbody>
         </table>
         {loading && <CircularProgress className={style.iconTd} />}
         {!data.length && !loading && (

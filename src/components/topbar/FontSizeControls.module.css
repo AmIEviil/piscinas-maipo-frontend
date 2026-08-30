@@ -1,0 +1,87 @@
+.fontSizeControls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--radius-md);
+  background-color: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.label {
+  font-size: var(--fs-sm);
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-2);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.button:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.button:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* La A pequena y la grande hacen de indicador del sentido de cada boton. */
+.decreaseGlyph {
+  font-size: var(--fs-sm);
+}
+
+.increaseGlyph {
+  font-size: var(--fs-lg);
+}
+
+.levelIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+.dotActive {
+  background-color: #ffffff;
+}
+
+/* En celular se conservan los dos botones (son el motivo de la funcion) y se
+   ocultan la etiqueta y los puntos, que son el adorno prescindible. */
+@media screen and (max-width: 768px) {
+  .fontSizeControls {
+    gap: var(--sp-1);
+    padding: var(--sp-1);
+  }
+
+  .label,
+  .levelIndicator {
+    display: none;
+  }
+}

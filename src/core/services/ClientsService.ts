@@ -1,8 +1,11 @@
  
 import type {
+  BulkUpdateClientsPayload,
+  BulkUpdateClientsResponse,
   Client,
   ClientFilters,
   IClientForm,
+  IFrecuenciaMantencion,
 } from "../../service/client.interface";
 import type { IFieldPayload } from "../../utils/formUtils";
 import { CLIENT_API } from "../api/clients/api";
@@ -19,6 +22,13 @@ export const clientService = {
     const response = await apiClient.get("/api/clients/filter", {
       params: filters,
     });
+    return response.data;
+  },
+
+  getFrecuencias: async (): Promise<IFrecuenciaMantencion[]> => {
+    const response = await apiClient.get<IFrecuenciaMantencion[]>(
+      CLIENT_API.frecuencias
+    );
     return response.data;
   },
 
@@ -45,6 +55,16 @@ export const clientService = {
   deleteClient: async (id: string): Promise<{ message: string }> => {
     const url = CLIENT_API.deleteClient.replace(":id", id.toString());
     const response = await apiClient.delete(url);
+    return response.data;
+  },
+
+  bulkUpdateClients: async (
+    payload: BulkUpdateClientsPayload
+  ): Promise<BulkUpdateClientsResponse> => {
+    const response = await apiClient.put<BulkUpdateClientsResponse>(
+      CLIENT_API.bulkUpdateClients,
+      payload
+    );
     return response.data;
   },
 

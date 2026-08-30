@@ -1,0 +1,150 @@
+/*
+ * Tokens de diseno compartidos.
+ *
+ * Todo se expresa en rem a proposito: el control de tamano de letra del
+ * TopBar cambia el font-size del elemento <html>, y eso reescala tipografia,
+ * espaciado y areas tactiles de forma proporcional. Cualquier medida fija en
+ * px que se agregue aqui deja de escalar y rompe esa promesa.
+ *
+ * Breakpoints unificados (las media queries no aceptan variables, se repiten
+ * literales en cada archivo):
+ *   480px   celular
+ *   768px   tablet
+ *   1024px  notebook
+ *   1440px  escritorio ancho
+ */
+
+:root {
+  /* Escala tipografica. La aplicacion la usan adultos mayores: ningun dato de
+     negocio baja de --fs-base. --fs-sm queda reservado a metadatos. */
+  --fs-sm: 0.9375rem;
+  --fs-base: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 1.875rem;
+
+  --lh-tight: 1.35;
+  --lh-base: 1.5;
+
+  /* Espaciado */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+
+  /* Area tactil minima recomendada (44px al nivel de fuente por defecto) */
+  --tap-min: 2.75rem;
+
+  /* Alto del TopBar. Es un minimo, no un alto fijo: el contenido crece al
+     subir el nivel de fuente y el layout debe acompanarlo. */
+  --topbar-h: 3.75rem;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+
+  /* Texto secundario con contraste suficiente sobre fondo claro.
+     --color-detalle-claro (#b7b7b7) queda solo para bordes: sobre blanco da
+     1.9:1 y no cumple el minimo de 4.5:1 exigido para texto. */
+  --color-texto-secundario: #5a5a5a;
+}
+
+/*
+ * Paleta del modal de ficha del cliente (InfoDialogClient y sus hojas).
+ *
+ * Vive en :root -- no en `.modal` -- porque hay superficies del modal que se
+ * portan a document.body y quedan fuera de su subarbol: el popup de
+ * CustomCalendarV2 (createPortal) es el caso concreto. Definida aca, esa
+ * superficie portada hereda la misma paleta y el mismo tema oscuro que el
+ * resto del modal. `.modal` solo consume estos tokens; ya no los declara.
+ */
+:root {
+  --modal-lienzo: #f0f5fa;
+  --modal-superficie: #ffffff;
+  --modal-superficie-2: #e9f1f8;
+  --modal-superficie-3: #d9e7f2;
+  --modal-borde: #c3d5e3;
+  --modal-borde-fuerte: #96b2c7;
+  --modal-texto: #0c1e2a;
+  --modal-texto-2: #425c6c;
+  --modal-acento: #0a6f99;
+  --modal-acento-2: #084f6e;
+  --modal-acento-suave: #ddeef8;
+  --modal-ok: #12693a;
+  --modal-ok-suave: #d4efde;
+  --modal-alerta: #8a5100;
+  --modal-alerta-suave: #fbebcd;
+  --modal-peligro: #9c1f19;
+  --modal-peligro-suave: #f9dbd8;
+  --modal-cab-bg: #0b3d55;
+  --modal-cab-bg-2: #0f5673;
+  --modal-cab-texto: #ffffff;
+  --modal-cab-texto-2: #b8d5e4;
+  --modal-cab-borde: #1c6285;
+  --modal-hoja-w: 27rem;
+}
+
+[data-theme="dark"] {
+  --modal-lienzo: #0a1520;
+  --modal-superficie: #13212d;
+  --modal-superficie-2: #1b2d3b;
+  --modal-superficie-3: #223846;
+  --modal-borde: #2c4557;
+  --modal-borde-fuerte: #436073;
+  --modal-texto: #e9f2f8;
+  --modal-texto-2: #a2b9c8;
+  --modal-acento: #4dc2f2;
+  --modal-acento-2: #8bd9f9;
+  --modal-acento-suave: #0e3040;
+  --modal-ok: #67e397;
+  --modal-ok-suave: #0f311e;
+  --modal-alerta: #f3bf5e;
+  --modal-alerta-suave: #382a0d;
+  --modal-peligro: #ff968e;
+  --modal-peligro-suave: #3b1613;
+  --modal-cab-bg: #061c28;
+  --modal-cab-bg-2: #0a2c3d;
+  --modal-cab-texto: #eaf4fa;
+  --modal-cab-texto-2: #8fb3c6;
+  --modal-cab-borde: #17435c;
+}
+
+/* El nivel de fuente lo aplica useFontScale sobre <html>. */
+html {
+  font-size: 100%;
+}
+
+body {
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+}
+
+/* Foco siempre visible: sin esto no hay forma de navegar con teclado. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-secundario);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Los inputs por debajo de 16px hacen que iOS haga zoom al enfocarlos. */
+input,
+select,
+textarea {
+  font-size: var(--fs-base);
+}
+
+/* Utilidades compartidas por los patrones responsive */
+.tap-target {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+}
+
+/* Contenedor de tablas anchas: el scroll horizontal vive aca dentro y nunca
+   en el body. */
+.responsive-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}

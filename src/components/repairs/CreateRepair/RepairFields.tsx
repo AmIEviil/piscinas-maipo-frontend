@@ -152,7 +152,7 @@ const RepairFields = ({ clients, value, onChange }: RepairFieldsProps) => {
             }
           />
           <div className="flex items-end">
-            <VerifiedUserIcon className="text-gray-400 mr-2 mb-2" />
+            <VerifiedUserIcon className="text-gray-600 mr-2 mb-2" />
             <CustomInputText
               title="Garantía"
               value={value.garantia || ""}

@@ -1,0 +1,110 @@
+/*
+ * Acciones en bloque sobre los clientes seleccionados.
+ *
+ * El disparador vive dentro de la snackbar de "Ver detalles de N cliente(s)",
+ * que es blanca sobre `--color-secundario`: por eso el boton se pinta con
+ * `currentColor` y no con un color propio, asi acompana al fondo del aviso sin
+ * repetir el token.
+ *
+ * Todo en rem para escalar con el control de tamano de letra del TopBar.
+ */
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  padding: 0;
+  border: 0.0625rem solid rgba(255, 255, 255, 0.55);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.trigger:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.triggerIcon {
+  transition: transform 0.2s ease;
+}
+
+.triggerIconAbierto {
+  transform: rotate(90deg);
+}
+
+.opcion {
+  font-size: var(--fs-base);
+  gap: 0.5rem;
+}
+
+/* --- Modal de cambio masivo ---------------------------------------------- */
+
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-size: var(--fs-base);
+}
+
+.resumen {
+  margin: 0;
+  color: var(--color-texto-secundario);
+}
+
+.destacado {
+  font-weight: 700;
+}
+
+.confirmacion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: center;
+  font-size: var(--fs-base);
+}
+
+.cambio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 700;
+}
+
+.valorOrigen,
+.valorDestino {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 0.0625rem solid var(--color-detalle-claro);
+}
+
+.valorDestino {
+  border-color: var(--color-secundario);
+  color: var(--color-secundario);
+}
+
+.aviso {
+  margin: 0;
+  color: var(--color-texto-secundario);
+}
+
+.error {
+  margin: 0;
+  color: var(--red-500);
+  font-weight: 600;
+}
+
+/* Lista de clientes afectados: se muestra acotada para que el modal no crezca
+   con una seleccion de 40 clientes. */
+.listaClientes {
+  max-height: 8rem;
+  overflow-y: auto;
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--color-texto-secundario);
+}

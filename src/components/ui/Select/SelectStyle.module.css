@@ -12,3 +12,18 @@
   align-items: center;
   text-align: center;
 }
+
+/* Buscador dentro del menu (prop searchable) */
+.searchHeader {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 8px !important;
+  line-height: normal !important;
+  background-color: #fff;
+}
+
+.selectedCheck {
+  color: #22c55e;
+  flex-shrink: 0;
+}

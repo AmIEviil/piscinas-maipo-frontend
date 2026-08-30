@@ -1,0 +1,72 @@
+/*
+ * Capa donde vive la hoja de busqueda avanzada.
+ *
+ * SlideSheet se posiciona en absoluto y su corte a celular es un
+ * `@container (max-width: 40rem)`: dentro del modal de ficha eso lo daba
+ * `.modal` (position:relative + container-type:inline-size). Fuera del modal
+ * no hay tal contenedor, asi que lo aporta esta capa -- fija, del tamano de la
+ * ventana y declarada como contenedor de consulta, para que la hoja siga
+ * entrando por la derecha en escritorio y desde abajo en celular.
+ *
+ * `container-type: inline-size` ademas convierte a la capa en bloque
+ * contenedor de sus descendientes fijos y absolutos, que es justo lo que la
+ * hoja necesita.
+ */
+.capa {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  container-type: inline-size;
+}
+
+/*
+ * Cerrada, la capa cubre la ventana entera pero no debe interceptar ni un
+ * click: la hoja ya esta en visibility:hidden y el velo en pointer-events:
+ * none, pero la capa misma seguiria tapando la tabla que hay debajo.
+ */
+.capa[data-abierto="no"] {
+  pointer-events: none;
+}
+
+/*
+ * Grupo de filtros. El divider es el borde inferior del grupo y no un
+ * elemento aparte: asi nunca queda una linea colgando bajo el ultimo grupo ni
+ * hay que calcular indices para saber cual omitir.
+ */
+.grupo {
+  padding-bottom: 1.05rem;
+  border-bottom: 0.0625rem solid var(--modal-borde);
+}
+
+.grupo:last-of-type {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.grupoTitulo {
+  margin: 0 0 0.75rem;
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--modal-texto-2);
+}
+
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.campos > * {
+  width: 100%;
+}
+
+/*
+ * El menu del dropdown se ancla al boton dentro del cuerpo de la hoja, que
+ * scrollea: sin esto el listado desplegado se corta en el borde del cuerpo en
+ * vez de quedar por encima.
+ */
+.campos :global(.dropdown-menu) {
+  z-index: 20;
+}

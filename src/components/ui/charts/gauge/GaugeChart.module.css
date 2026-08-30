@@ -1,35 +1,85 @@
+/*
+ * El medidor entero se dimensiona con --gauge-size, que esta en rem: sube y
+ * baja con el control de tamano de letra. El SVG lee ese ancho ya resuelto en
+ * px (ResizeObserver en GaugeChart.tsx) y se dibuja del mismo lado.
+ *
+ * Ninguna medida de este archivo mezcla px del SVG con desplazamientos en rem.
+ * Esa mezcla era la causa de que los valores minimo, actual y maximo se
+ * montaran unos sobre otros al subir la letra.
+ */
 .gaugeContainer {
-  height: fit-content;
-  width: fit-content;
-}
-.titleGaugeContainer {
+  --gauge-size: 12.5rem;
+
   display: flex;
-  justify-content: center;
-  position: relative;
-  top: 1rem;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  width: 100%;
+  max-width: var(--gauge-size);
+  margin: 0 auto;
+  color: currentColor;
 }
+
 .titleGauge {
   font-weight: 700;
+  font-size: var(--fs-md);
+  text-align: center;
+  /* Un nombre de producto largo baja de linea en vez de ensanchar la tarjeta. */
+  overflow-wrap: anywhere;
 }
-.spanGaugeContainer {
-  display: inline-flex;
-  position: relative;
+
+/*
+ * Caja medida. El ancho lo fija el contenedor, nunca los hijos: el SVG toma su
+ * lado de esta caja, asi que no hay realimentacion con el ResizeObserver.
+ */
+.gaugeArc {
   width: 100%;
-  top: -2rem;
+  line-height: 0;
+}
+
+.gaugeArc svg {
+  display: block;
+  margin: 0 auto;
+}
+
+/*
+ * El arco cubre 220 grados y deja libre el cuarto inferior del cuadrado del
+ * SVG. La fila de valores sube a ese hueco con un margen negativo en
+ * porcentaje, que se resuelve contra el ANCHO del contenedor, es decir contra
+ * el lado del medidor.
+ */
+.rangeRow {
+  display: flex;
+  width: 100%;
+  /*
+   * El margen negativo mete esta fila dentro de la caja del SVG, y la
+   * superficie de MUI se lleva el puntero justo en el centro: el tooltip del
+   * valor del medio no llegaba a abrirse mientras los de los extremos, que
+   * caen fuera de esa zona, si funcionaban. Con position y z-index la fila
+   * queda por delante y los tres reciben el hover.
+   */
+  position: relative;
+  z-index: 1;
+  align-items: baseline;
   justify-content: space-between;
-  height: 30px;
+  gap: var(--sp-2);
+  margin-top: -24%;
+  padding-inline: 6%;
+  line-height: var(--lh-tight);
 }
-.minRange {
-  position: relative;
-  top: -1rem;
-  left: 1.5rem;
+
+.rangeValue {
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
 }
+
 .actualValue {
-  position: relative;
-  top: -1rem;
-}
-.maxRange {
-  position: relative;
-  top: -1rem;
-  right: 1.5rem;
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  /* El dato central no compite con los extremos por el espacio horizontal. */
+  flex: 0 1 auto;
+  text-align: center;
+  overflow-wrap: anywhere;
 }

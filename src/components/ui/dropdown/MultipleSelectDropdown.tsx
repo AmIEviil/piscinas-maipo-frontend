@@ -13,12 +13,33 @@ export interface DropdownOptions {
 
 interface MultiSelectDropdownProps {
   options: DropdownOptions[];
-  value: string; // string con valores separados por coma ("1,2,3")
+  /**
+   * En modo "multiple", labels separados por coma ("Lunes,Martes"). En modo
+   * "single", el `value` de la opcion elegida.
+   */
+  value: string;
   onSelect: (value: string) => void;
   placeholder?: string;
   buttonClassName?: string;
   buttonContent?: React.ReactNode;
   arrowType?: "caret" | "arrow";
+  /**
+   * "multiple" (por defecto) acumula labels; "single" elige una opcion, cierra
+   * el menu y devuelve su `value`.
+   *
+   * El modo por defecto se conserva tal cual estaba -- acumulando por label y
+   * no por value- porque FieldGroup guarda justamente esa cadena de labels y
+   * cambiarlo silenciosamente le romperia el guardado.
+   */
+  mode?: "multiple" | "single";
+  /** Rotulo sobre el control. */
+  title?: string;
+  /** Clase del contenedor, para que quien lo monta decida como dimensionarlo. */
+  containerClassName?: string;
+  /** Id del boton. Igual que en CustomInputText: hace falta cuando el mismo
+   * control se dibuja dos veces en la pagina. */
+  toggleId?: string;
+  disabled?: boolean;
 }
 
 const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
@@ -29,23 +50,50 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   buttonClassName = "",
   buttonContent,
   arrowType = "caret",
+  mode = "multiple",
+  title,
+  containerClassName = "",
+  toggleId,
+  disabled = false,
 }) => {
   const [show, setShow] = useState(false);
-  const selectedValues = value ? value.split(",") : [];
-  const toggleOption = (label: string) => {
-    let updated: string[];
+  const esSimple = mode === "single";
+  const idBoton = title ? (toggleId ?? `dropdown-${title}`) : undefined;
 
-    if (selectedValues.includes(label)) {
-      updated = selectedValues.filter((l) => l !== label);
-    } else {
-      updated = [...selectedValues, label];
+  const selectedValues = esSimple
+    ? value
+      ? [value]
+      : []
+    : value
+      ? value.split(",")
+      : [];
+
+  // En simple se compara contra `value` y en multiple contra `label`: son dos
+  // contratos distintos con el consumidor, no un detalle de presentacion.
+  const estaSeleccionada = (option: DropdownOptions) =>
+    esSimple
+      ? String(option.value) === value
+      : selectedValues.includes(option.label.toString());
+
+  const elegir = (option: DropdownOptions) => {
+    if (esSimple) {
+      onSelect(String(option.value));
+      setShow(false);
+      return;
     }
+
+    const label = option.label.toString();
+    const updated = selectedValues.includes(label)
+      ? selectedValues.filter((l) => l !== label)
+      : [...selectedValues, label];
 
     onSelect(updated.join(","));
   };
 
-  const displayLabel =
-    selectedValues.length > 0
+  const displayLabel = esSimple
+    ? (options.find((option) => String(option.value) === value)?.label ??
+      placeholder)
+    : selectedValues.length > 0
       ? options
           .filter((opt) => selectedValues.includes(opt.label.toString()))
           .map((opt) => opt.label)
@@ -54,19 +102,31 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 
   return (
     <Dropdown
+      // Solo con rotulo se toma el contenedor en columna: FieldGroup monta
+      // este control sin `title` dentro de su propia fila flex, y forzarle
+      // width:100% ahi le cambiaria el layout sin que nadie lo haya pedido.
+      className={`${title ? style.dropdown : ""} ${containerClassName}`}
       show={show}
       onToggle={(isOpen) => setShow(isOpen)}
-      autoClose="outside"
+      autoClose={esSimple ? true : "outside"}
     >
+      {title && (
+        <label className={style.dropdownTitle} htmlFor={idBoton}>
+          {title}
+        </label>
+      )}
       <Dropdown.Toggle
         as="button"
+        type="button"
+        id={idBoton}
+        disabled={disabled}
         className={`${buttonClassName} ${style.customDropdownToggle}`}
         onClick={(e) => {
           e.preventDefault();
           setShow(!show);
         }}
       >
-        <span>{buttonContent ?? displayLabel}</span>
+        <span className={style.toggleLabel}>{buttonContent ?? displayLabel}</span>
         {arrowType === "caret" ? (
           <CaretIcon
             size={16}
@@ -91,15 +151,13 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             key={option.value}
             onClick={(e) => {
               e.preventDefault();
-              toggleOption(option.label.toString()); // importante: usar label
+              elegir(option);
             }}
-            active={selectedValues.includes(option.label.toString())}
+            active={estaSeleccionada(option)}
           >
             <span className="flex items-center justify-between w-full">
               {option.label}
-              {selectedValues.includes(option.label.toString()) && (
-                <CheckIcon size={16} color="#006CD9" />
-              )}
+              {estaSeleccionada(option) && <CheckIcon size={16} color="#006CD9" />}
             </span>
           </Dropdown.Item>
         ))}

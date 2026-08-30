@@ -10,7 +10,11 @@ import CheckIcon from "@mui/icons-material/Check";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PoolIcon from "@mui/icons-material/Pool";
 
-import { useCreateClient, useUpdateClient } from "../../../hooks/ClientHooks";
+import {
+  useCreateClient,
+  useFrecuenciasMantencion,
+  useUpdateClient,
+} from "../../../hooks/ClientHooks";
 import { useEffect, useState } from "react";
 
 import CustomSelect from "../../ui/Select/Select";
@@ -43,6 +47,12 @@ const CreateClientDialog = ({
 }: CreateClientDialogProps) => {
   const createClientMutation = useCreateClient();
   const updateClientMutation = useUpdateClient();
+  const { data: frecuencias = [] } = useFrecuenciasMantencion();
+
+  const opcionesFrecuencia = frecuencias.map((frecuencia) => ({
+    value: frecuencia.id,
+    label: frecuencia.nombre,
+  }));
 
   // Estados del formulario
   const [nameClient, setNameClient] = useState<string>("");
@@ -57,6 +67,7 @@ const CreateClientDialog = ({
   const [valorMantencionClient, setValorMantencionClient] = useState<number>(0);
   const [inputValue, setInputValue] = useState<string>("");
   const [diaMantencionClient, setDiaMantencionClient] = useState<string>("");
+  const [frecuenciaClient, setFrecuenciaClient] = useState<string>("");
 
   // Nuevos campos
   const [rutaClient, setRutaClient] = useState<string>("");
@@ -81,6 +92,13 @@ const CreateClientDialog = ({
       setEmailClient(clientInfo.email || "");
       setValorMantencionClient(clientInfo.valor_mantencion);
       setDiaMantencionClient(clientInfo.dia_mantencion);
+      // El listado entrega la relacion completa; el formulario trabaja con el
+      // id, que es lo unico que el API acepta al guardar.
+      setFrecuenciaClient(
+        clientInfo.frecuencia_mantencion?.id ??
+          clientInfo.frecuencia_mantencion_id ??
+          "",
+      );
 
       // Cargar nuevos campos si existen en clientInfo
       setRutaClient(clientInfo.ruta || "");
@@ -110,12 +128,21 @@ const CreateClientDialog = ({
     setEmailClient("");
     setValorMantencionClient(0);
     setDiaMantencionClient("");
+    setFrecuenciaClient("");
     setInputValue("");
     setRutaClient("");
     setObservacionClient("");
     setIsActiveClient(true);
     setSuccess(false);
   };
+
+  // Cliente nuevo parte en Semanal: es lo que tiene hoy la totalidad de la
+  // cartera, y obliga a elegir explicitamente solo a quien sea la excepcion.
+  useEffect(() => {
+    if (isEditMode || frecuenciaClient || frecuencias.length === 0) return;
+    const semanal = frecuencias.find((f) => f.nombre === "Semanal");
+    if (semanal) setFrecuenciaClient(semanal.id);
+  }, [isEditMode, frecuenciaClient, frecuencias, open]);
 
   const handlePriceChange = (value: string) => {
     const numeric = value.replace(/[^\d]/g, "");
@@ -145,6 +172,9 @@ const CreateClientDialog = ({
       telefono: telefonoClient,
       tipo_piscina: tipoPiscinaClient,
       dia_mantencion: diaMantencionClient,
+      // undefined y no "": el campo valida como uuid en el backend, y una
+      // cadena vacia devuelve 400 en vez de dejarlo sin definir.
+      frecuencia_mantencion_id: frecuenciaClient || undefined,
       fecha_ingreso: fechaIngresoClient || new Date(),
       comuna: comunaClient,
       email: emailClient,
@@ -182,6 +212,7 @@ const CreateClientDialog = ({
     telefonoClient &&
     tipoPiscinaClient &&
     diaMantencionClient &&
+    frecuenciaClient &&
     comunaClient &&
     valorMantencionClient > 0;
 
@@ -283,6 +314,16 @@ const CreateClientDialog = ({
                       setDiaMantencionClient(String(e.target.value))
                     }
                     value={diaMantencionClient}
+                  />
+                </LabelField>
+              </div>
+              <div className="flex flex-col gap-1">
+                <LabelField label="Periodicidad de visitas" required>
+                  <CustomSelect
+                    label=""
+                    options={opcionesFrecuencia}
+                    onChange={(e) => setFrecuenciaClient(String(e.target.value))}
+                    value={frecuenciaClient}
                   />
                 </LabelField>
               </div>

@@ -41,6 +41,12 @@ interface CollapsableTableProps {
     selected: boolean
   ) => void;
   onSelectAllInGroup?: (groupKey: string, groupItems: Client[]) => void;
+  /**
+   * Deja la ultima columna pegada al borde derecho cuando la tabla desborda a
+   * lo ancho. Es opcional porque solo tiene sentido si esa columna son
+   * acciones; en una tabla que termina en un dato, fijarla no aporta nada.
+   */
+  stickyLastColumn?: boolean;
 }
 
 const CollapsableTable: React.FC<CollapsableTableProps> = ({
@@ -57,6 +63,7 @@ const CollapsableTable: React.FC<CollapsableTableProps> = ({
   selectedItems,
   onItemSelection,
   onSelectAllInGroup,
+  stickyLastColumn = false,
 }) => {
   const [collapsedGroups, setCollapsedGroups] = useState<
     Record<string, boolean>
@@ -103,6 +110,36 @@ const CollapsableTable: React.FC<CollapsableTableProps> = ({
     if (onItemSelection && item.id) {
       onItemSelection(groupKey, item.id, selected);
     }
+  };
+
+  /**
+   * En celular cada fila se muestra como tarjeta y cada celda necesita saber a
+   * que columna pertenece para poder mostrar su titulo al lado. El CSS lo lee
+   * con attr(data-label); aca se inyecta a partir de titlesTable, sin tocar
+   * los renderRow que ya existen en las vistas.
+   */
+  const withCellLabels = (row: React.ReactNode): React.ReactNode => {
+    if (!React.isValidElement(row)) return row;
+
+    const rowElement = row as React.ReactElement<{
+      children?: React.ReactNode;
+    }>;
+    const cells = React.Children.toArray(rowElement.props.children).map(
+      (cell, index) => {
+        if (!React.isValidElement(cell)) return cell;
+        const cellElement = cell as React.ReactElement<{
+          "data-label"?: string;
+        }>;
+        if (cellElement.props["data-label"] !== undefined) return cellElement;
+
+        const label = titlesTable[index]?.label;
+        if (!label) return cellElement;
+
+        return React.cloneElement(cellElement, { "data-label": label });
+      }
+    );
+
+    return React.cloneElement(rowElement, undefined, cells);
   };
 
   const renderGroupSection = (
@@ -166,13 +203,15 @@ const CollapsableTable: React.FC<CollapsableTableProps> = ({
         {!isCollapsed && (
           <>
             {groupItems.map((item, index) =>
-              renderRow(
-                item,
-                index,
-                selectedItems
-                  ? selectedItems.some((selected) => selected.id === item.id)
-                  : false,
-                (selected) => handleItemSelection(groupKey, item, selected)
+              withCellLabels(
+                renderRow(
+                  item,
+                  index,
+                  selectedItems
+                    ? selectedItems.some((selected) => selected.id === item.id)
+                    : false,
+                  (selected) => handleItemSelection(groupKey, item, selected)
+                )
               )
             )}
           </>
@@ -185,7 +224,9 @@ const CollapsableTable: React.FC<CollapsableTableProps> = ({
 
   return (
     <div
-      className={`${style.collapsableTable_container} ${className} custom-scrollbar`}
+      className={`${style.collapsableTable_container} ${
+        stickyLastColumn ? style.collapsableTable_stickyActions : ""
+      } ${className} custom-scrollbar`}
     >
       {hasData && !loading ? (
         <table className={style.collapsableTable_element}>
@@ -221,7 +262,7 @@ const CollapsableTable: React.FC<CollapsableTableProps> = ({
                             />
                           ) : (
                             <OrderIcon
-                              className={`${style.orderIcon} text-gray-400`}
+                              className={`${style.orderIcon} text-gray-600`}
                               size={16}
                             />
                           )}

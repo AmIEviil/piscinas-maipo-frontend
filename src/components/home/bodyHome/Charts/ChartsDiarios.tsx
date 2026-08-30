@@ -3,25 +3,16 @@ import type { IResumeMaintenance } from "../../../../service/maintenance.interfa
 import GaugeChart from "../../../ui/charts/gauge/GaugeChart";
 import style from "./ChartsDiarios.module.css";
 import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
-import CustomDropmenuV2 from "../../../ui/customdropmenu/CustomDropmenuV2";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { useBoundStore } from "../../../../store/BoundedStore";
 
 interface ProductsChart {
-  showPercentage?: boolean;
   loading?: boolean;
   productData: IResumeMaintenance;
 }
 
-const ChartDiario = ({
-  showPercentage = false,
-  productData,
-  loading,
-}: ProductsChart) => {
+const ChartDiario = ({ productData, loading }: ProductsChart) => {
   const noMaintenancesToDo = productData.programadas === 0;
   const navigate = useNavigate();
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const setDayFilter = useBoundStore((state) => state.setDayFilter);
 
   const handleSeeDayDetails = () => {
@@ -29,72 +20,45 @@ const ChartDiario = ({
     navigate("/clientes");
   };
 
-  const options = [
-    {
-      label: "Ir a Clientes",
-      onClick: () => navigate("/clientes"),
-    },
-    {
-      label: "Detalles dia",
-      onClick: () => {
-        handleSeeDayDetails();
-      },
-    },
-  ];
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    // Limpieza al desmontar
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
   return (
     <div className={style.diasChartContainer}>
       {loading && <CircularProgress />}
       {productData && !loading ? (
         <>
-          {windowWidth > 720 ? (
-            <div className={style.actionsContainer}>
-              <button
-                className={style.actionButton}
-                onClick={handleSeeDayDetails}
-              >
-                Detalles dia
-              </button>
-              <button
-                className={style.actionButton}
-                onClick={() => navigate("/clientes")}
-              >
-                Ir a Clientes
-              </button>
-            </div>
-          ) : (
-            <CustomDropmenuV2 options={options} icon={<MoreHorizIcon />} />
-          )}
           <div className={style.chartContainer}>
             {noMaintenancesToDo ? (
               <span className={style.noMaintenancesToDo}>
-                Sin Mantenciones programadas para el dia {productData.dia}
+                Sin mantenciones programadas para el día {productData.dia}
               </span>
             ) : (
+              /*
+               * Antes el valor del medidor salia de un ternario sobre
+               * showPercentage cuyas dos ramas devolvian `realizadas`: la prop
+               * no cambiaba nada y se elimino junto con el ternario.
+               */
               <GaugeChart
                 minValue={0}
                 maxValue={productData.programadas}
-                actualValue={
-                  showPercentage
-                    ? productData.realizadas
-                    : productData.realizadas
-                }
+                actualValue={productData.realizadas}
+                actualValueLabel="Mantenciones realizadas"
+                maxValueLabel="Mantenciones programadas"
                 title={productData.dia}
               />
             )}
+          </div>
+
+          {/* Igual que en BidonesChart: acciones debajo y con nombre a la
+              vista, no un menu de tres puntos sin etiqueta. */}
+          <div className={style.actionsContainer}>
+            <button className={style.actionButton} onClick={handleSeeDayDetails}>
+              Detalles día
+            </button>
+            <button
+              className={style.actionButton}
+              onClick={() => navigate("/clientes")}
+            >
+              Ir a Clientes
+            </button>
           </div>
         </>
       ) : null}

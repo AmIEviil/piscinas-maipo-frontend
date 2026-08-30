@@ -1,13 +1,27 @@
 .mainLayoutContainer {
-  padding: 16px;
   flex: 1;
   margin: 0 auto;
+  width: 100%;
+  /* El TopBar es fijo: el espacio que ocupa lo reserva el contenedor, con el
+     alto real que publica el propio TopBar en --topbar-h. */
+  padding-top: var(--topbar-h);
 }
 
 .main-content {
-  padding: 16px;
+  padding: var(--sp-4);
   flex: 1;
   margin: 0 auto;
-  margin-top: 60px;
-  height: 90dvh;
+  width: 100%;
+  /* min-height y no height: con letra grande el contenido supera el alto de la
+     ventana y con height fijo quedaba recortado. */
+  min-height: calc(100dvh - var(--topbar-h));
+  /* Ninguna vista debe provocar scroll horizontal del documento; las tablas
+     anchas hacen su propio scroll con .responsive-scroll-x. */
+  overflow-x: hidden;
+}
+
+@media screen and (max-width: 768px) {
+  .main-content {
+    padding: var(--sp-3) var(--sp-2);
+  }
 }

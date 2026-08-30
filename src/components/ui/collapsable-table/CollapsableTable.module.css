@@ -3,6 +3,22 @@
   overflow: auto;
   max-height: 80dvh;
   border-radius: 16px;
+
+  /*
+   * Colores reales de la superficie de la tabla.
+   *
+   * Ojo con de donde salen. La paleta --black-* que usaban estas reglas no
+   * esta definida en ningun lado del proyecto, asi que esos fondos eran
+   * invalidos y no pintaban nada: lo que se veia lo pintaban las reglas
+   * globales que se filtraban desde TableStyle.module.css, hoy ya scopeadas y
+   * traidas a este archivo (cebra clara en las filas, cabecera casi negra).
+   *
+   * Mientras nada se superpone da lo mismo, pero las celdas fijas necesitan
+   * fondo opaco o el contenido se les cruza por debajo, y ese fondo tiene que
+   * ser el mismo que pinta la fila o la columna se ve como un parche.
+   */
+  --table-surface: var(--color-fondo);
+  --table-header-surface: var(--color-primario);
 }
 .collapsableTable_element {
   width: 100%;
@@ -10,7 +26,66 @@
   border-collapse: separate;
   border-spacing: 0;
   border: 1px solid var(--black-400);
-  background-color: var(--black-50);
+  background-color: var(--table-surface);
+}
+
+/*
+ * Estilos que esta tabla recibia de components/ui/table/TableStyle.module.css.
+ *
+ * Ese archivo los declaraba con selectores de elemento pelados, que en un CSS
+ * Module quedan globales, asi que alcanzaban a esta tabla sin que nadie lo
+ * pidiera. Al scopearlos alli hubo que traerlos aca, tal cual estaban, porque
+ * son los que esta vista ya mostraba: cabecera oscura con texto claro, filas
+ * en cebra y celdas con su relleno y sus separadores.
+ */
+.collapsableTable_header {
+  color: var(--color-fondo);
+  position: sticky;
+  top: 0;
+  /*
+   * position: sticky crea contexto de apilado aunque no se declare z-index. Sin
+   * un valor propio el thead entero valia 0 y la columna de acciones fija, con
+   * z-index 2, se dibujaba encima de la cabecera al desplazar en vertical: los
+   * z-index de los <th> solo ordenan dentro del thead, no contra el cuerpo.
+   */
+  z-index: 3;
+}
+
+.collapsableTable_element tbody tr {
+  transition: all 0.2s ease;
+}
+
+.collapsableTable_element tbody tr:nth-child(even) {
+  background-color: var(--color-fondo-suave);
+}
+
+.collapsableTable_element tbody tr:nth-child(odd) {
+  background-color: var(--color-fondo);
+}
+
+.collapsableTable_element tbody tr:hover {
+  background-color: var(--color-secundario);
+}
+
+.collapsableTable_element td {
+  padding: 0.8rem 1.2rem;
+  color: var(--color-gris-oscuro);
+  border-bottom: 1px solid var(--color-detalle-claro);
+}
+
+.collapsableTable_element td:not(:last-child) {
+  border-right: 1px solid var(--color-detalle-claro);
+}
+
+.collapsableTable_element th {
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.collapsableTable_element tbody tr:hover button {
+  background-color: var(--color-primario);
+  color: var(--color-fondo);
 }
 
 .collapsableTable_headerRow .collapsableTable_headerCell {
@@ -20,11 +95,16 @@
   justify-content: center;
   gap: 1rem;
   border-collapse: collapse;
-  background-color: var(--black-50);
+  background-color: var(--table-header-surface);
   border-right: 1px solid var(--color-secundario);
   border-bottom: 1px solid var(--color-secundario);
   position: sticky;
   top: 0;
+  /*
+   * La cabecera se queda arriba, asi que tiene que pintarse por encima de
+   * todo lo que se desplaza por debajo, incluida la columna de acciones fija.
+   */
+  z-index: 4;
 }
 .collapsableTable_headerRow .collapsableTable_headerCell:first-child {
   text-align: left;
@@ -37,7 +117,7 @@
 .collapsableTable_headerText {
   display: flex;
   gap: 0.5rem;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
 }
 
@@ -84,7 +164,7 @@
   gap: 8px;
   align-self: stretch;
   border: 1px solid var(--black-300);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 400;
 }
 .collapsableTable_bodyCell:last-child {
@@ -99,9 +179,59 @@
   border-bottom-right-radius: 16px;
 }
 
+/*
+ * Columna de acciones fija al borde derecho.
+ *
+ * Con tipografia grande la tabla de clientes desborda a lo ancho y la columna
+ * de "Acciones" quedaba fuera de la pantalla: habia que desplazarse hasta el
+ * final de la fila para llegar a ver, editar o eliminar. Con position: sticky
+ * la ultima columna se queda pegada a la derecha mientras el resto se
+ * desplaza; si la tabla cabe entera no cambia nada, porque sticky sin
+ * desbordamiento no mueve el elemento.
+ *
+ * El fondo es obligatorio: sin el, las celdas que se desplazan por debajo se
+ * ven a traves de la columna fija. En el cuerpo se hereda del <tr> en vez de
+ * nombrar un color, porque las filas van en cebra (impares blancas, pares
+ * grises) y ademas cambian al pasar el mouse: cualquier color fijo acertaria
+ * en una fila de cada dos y en ninguna al hacer hover.
+ */
+.collapsableTable_stickyActions
+  .collapsableTable_headerRow
+  .collapsableTable_headerCell:last-child,
+.collapsableTable_stickyActions
+  tbody
+  tr:not(.collapsableTable_groupRow)
+  > td:last-child {
+  position: sticky;
+  right: 0;
+  border-left: 1px solid var(--color-secundario);
+  box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.2);
+}
+
+/*
+ * Orden de apilado, de arriba hacia abajo: esquina de la cabecera, resto de la
+ * cabecera (z-index 4), columna de acciones y por ultimo el cuerpo. La columna
+ * fija tiene que quedar POR DEBAJO de la cabecera: con el valor por defecto
+ * los botones de acciones se dibujaban encima del thead al desplazar vertical.
+ */
+.collapsableTable_stickyActions
+  .collapsableTable_headerRow
+  .collapsableTable_headerCell:last-child {
+  background-color: var(--table-header-surface);
+  z-index: 5;
+}
+
+.collapsableTable_stickyActions
+  tbody
+  tr:not(.collapsableTable_groupRow)
+  > td:last-child {
+  background-color: inherit;
+  z-index: 2;
+}
+
 .noApplyField {
   text-overflow: ellipsis;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   line-height: 19.4px;
   letter-spacing: 0.24px;
@@ -132,4 +262,125 @@ tr:hover .collapsableTable_checkbox {
 
 tr:hover .collapsableTable_checkbox {
   color: white;
+}
+
+/*
+ * Vista de tarjetas en celular.
+ *
+ * La tabla de clientes tiene diez columnas: en 375px es ilegible sin
+ * desplazamiento horizontal. Cada fila pasa a tarjeta con el titulo de la
+ * columna al lado del dato (data-label lo inyecta CollapsableTable.tsx).
+ * Las filas de grupo se conservan como separador, que es lo que ordena el
+ * listado por dia o por ruta.
+ */
+@media screen and (max-width: 768px) {
+  .collapsableTable_container {
+    max-height: none;
+    overflow: visible;
+    border-radius: 0;
+  }
+
+  .collapsableTable_element {
+    display: block;
+    border: none;
+    background-color: transparent;
+  }
+
+  .collapsableTable_element tbody {
+    display: block;
+  }
+
+  /* Cabecera oculta visualmente, presente para lectores de pantalla. */
+  .collapsableTable_header {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .collapsableTable_groupRow {
+    display: block;
+    margin: var(--sp-4) 0 var(--sp-2);
+  }
+
+  .collapsableTable_groupCell {
+    display: block;
+    padding: var(--sp-2) var(--sp-3);
+    background-color: var(--color-fondo-suave);
+    border-radius: var(--radius-md);
+    border-bottom: none;
+  }
+
+  .collapsableTable_groupContentContainer {
+    height: auto;
+    min-height: var(--tap-min);
+  }
+
+  .collapsableTable_element tbody tr:not(.collapsableTable_groupRow) {
+    display: block;
+    background-color: var(--color-fondo);
+    border: 2px solid var(--color-fondo-suave);
+    border-radius: var(--radius-md);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    margin-bottom: var(--sp-3);
+    padding: var(--sp-2) 0;
+  }
+
+  .collapsableTable_element tbody tr:not(.collapsableTable_groupRow) > td {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-2);
+    height: auto;
+    min-height: var(--tap-min);
+    padding: var(--sp-2) var(--sp-3);
+    border: none;
+    border-bottom: 1px solid var(--color-fondo-suave);
+    text-align: right;
+  }
+
+  .collapsableTable_element tbody tr:not(.collapsableTable_groupRow) > td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--color-primario);
+    text-align: left;
+  }
+
+  /* Celdas sin titulo, como la del checkbox o la de acciones. */
+  .collapsableTable_element
+    tbody
+    tr:not(.collapsableTable_groupRow)
+    > td:not([data-label])::before {
+    content: none;
+  }
+
+  .collapsableTable_element
+    tbody
+    tr:not(.collapsableTable_groupRow)
+    > td:last-child {
+    border-bottom: none;
+    justify-content: flex-end;
+  }
+
+  .collapsableTable_bodyCell {
+    height: auto;
+  }
+
+  /*
+   * En tarjeta no hay desplazamiento horizontal que esquivar y la fila deja de
+   * ser una fila: la columna fija volveria a pegarse al borde de la tarjeta con
+   * un borde y una sombra que ahi no significan nada.
+   */
+  .collapsableTable_stickyActions
+    tbody
+    tr:not(.collapsableTable_groupRow)
+    > td:last-child {
+    position: static;
+    background-color: transparent;
+    border-left: none;
+    box-shadow: none;
+  }
 }
