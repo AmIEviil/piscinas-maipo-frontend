@@ -8,6 +8,8 @@ export interface IMaintenance {
   realizada: true;
   recibioPago: false;
   observaciones: string;
+  /** Precio que quedo guardado en la visita al registrarla. */
+  valor_mantencion?: number | null;
   productos: IProductosUtilizados[];
 }
 export interface IProductosUtilizados {

@@ -4,9 +4,14 @@ import type { ResumenMonth } from "../types";
 import { useClientResumenMonthStore } from "../../../../store/ClientStore";
 import { formatCLP } from "../../../../utils/formatTextUtils";
 import style from "./MonthStatusPanel.module.css";
+import { valorDeVisita } from "./valorVisita";
 
 interface MonthStatusPanelProps {
   mesActivo: string | null;
+  /**
+   * Valor actual del cliente. Cada visita se cobra a su propio precio; este
+   * solo se usa para las que no traen el suyo.
+   */
   valorMantencion: number;
   mantencionesDelMes: IMaintenance[];
   /** Suma de los comprobantes cargados en el mes. */
@@ -18,8 +23,10 @@ interface MonthStatusPanelProps {
 /**
  * Calculo del resumen del mes.
  *
- * Es el mismo que hacia ResumeMaintenance, movido sin cambios: la boleta
- * depende de que estos totales no varien.
+ * Es el mismo que hacia ResumeMaintenance, salvo que cada visita realizada
+ * suma su propio precio guardado y no el valor actual del cliente: las
+ * mantenciones ya registradas conservan su precio, y la boleta lee estos
+ * totales.
  */
 function calcularResumen(
   mantenciones: IMaintenance[],
@@ -31,7 +38,7 @@ function calcularResumen(
   let totalProductos = 0;
 
   for (const mant of mantenciones) {
-    if (mant.realizada) totalMantencion += valorMantencion;
+    if (mant.realizada) totalMantencion += valorDeVisita(mant, valorMantencion);
 
     for (const prod of mant.productos) {
       const nombre = prod.product.nombre;
