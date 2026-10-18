@@ -51,6 +51,27 @@ export interface BulkUpdateClientsResponse {
   mantencionesReprogramadas: number;
 }
 
+export interface BulkValorMantencionPayload {
+  items: { id: string; valor: number }[];
+}
+
+export interface BulkValorMantencionResponse {
+  clientesActualizados: number;
+  sinCambios: number;
+}
+
+/** Fila del historial de cambios de un cliente; `fecha` viene en ISO. */
+export interface ClientHistoryEntry {
+  id: string;
+  accion: "creado" | "modificado";
+  campo: string | null;
+  valorAnterior: string | null;
+  valorNuevo: string | null;
+  origen: "creacion" | "ficha" | "masivo";
+  usuario: string | null;
+  fecha: string;
+}
+
 export interface ClientFilters {
   nombre?: string;
   direccion?: string;

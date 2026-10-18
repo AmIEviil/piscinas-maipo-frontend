@@ -1,9 +1,11 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { clientService } from "../core/services/ClientsService";
 import type { Client } from "../service/client.interface";
 import { useSnackbar } from "../utils/snackBarHooks";
 import type { IFieldPayload } from "../utils/formUtils";
 import { useRefetchStore } from "../store/refetchStore";
+
+export const CLIENT_HISTORY_KEY = "client-history";
 
 export const useClient = () => {
   const clientMutation = useMutation({
@@ -59,6 +61,7 @@ export const useCreateClient = () => {
 };
 
 export const useUpdateClient = () => {
+  const queryClient = useQueryClient();
   const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
   const { showSnackbar } = useSnackbar();
   const updateClientMutation = useMutation({
@@ -68,6 +71,7 @@ export const useUpdateClient = () => {
       console.log(error);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [CLIENT_HISTORY_KEY] });
       setShouldRefetch(true);
       showSnackbar("Cliente actualizado exitosamente", "success");
     },
@@ -76,6 +80,7 @@ export const useUpdateClient = () => {
 };
 
 export const useUpdateClientField = () => {
+  const queryClient = useQueryClient();
   const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
   const { showSnackbar } = useSnackbar();
 
@@ -94,6 +99,7 @@ export const useUpdateClientField = () => {
       );
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [CLIENT_HISTORY_KEY] });
       setShouldRefetch(true);
       showSnackbar("Campo del cliente actualizado exitosamente", "success");
     },
@@ -109,6 +115,7 @@ export const useUpdateClientField = () => {
  * sabe que campo se toco y con que etiquetas mostrarlo.
  */
 export const useBulkUpdateClients = () => {
+  const queryClient = useQueryClient();
   const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
   const { showSnackbar } = useSnackbar();
 
@@ -118,6 +125,39 @@ export const useBulkUpdateClients = () => {
       showSnackbar("No se pudo aplicar el cambio a los clientes", "error");
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [CLIENT_HISTORY_KEY] });
+      setShouldRefetch(true);
+    },
+  });
+};
+
+/**
+ * Historial de cambios de un cliente. `enabled` lo maneja quien la usa para
+ * no pedirlo hasta que el usuario abre el panel.
+ */
+export const useClientHistory = (
+  clientId: string | undefined,
+  enabled: boolean
+) =>
+  useQuery({
+    queryKey: [CLIENT_HISTORY_KEY, clientId],
+    queryFn: () => clientService.getClientHistory(clientId as string),
+    enabled: enabled && !!clientId,
+  });
+
+/** Cambio masivo del valor de mantencion; el resumen lo muestra quien la llama. */
+export const useBulkUpdateValorMantencion = () => {
+  const queryClient = useQueryClient();
+  const setShouldRefetch = useRefetchStore((state) => state.setShouldRefetch);
+  const { showSnackbar } = useSnackbar();
+
+  return useMutation({
+    mutationFn: clientService.bulkUpdateValorMantencion,
+    onError: () => {
+      showSnackbar("No se pudo actualizar el valor de mantención", "error");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [CLIENT_HISTORY_KEY] });
       setShouldRefetch(true);
     },
   });
