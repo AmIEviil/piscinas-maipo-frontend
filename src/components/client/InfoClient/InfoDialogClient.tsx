@@ -46,6 +46,7 @@ import type { IClientForm } from "./types";
 import ClientDialogHeader from "./header/ClientDialogHeader";
 import ClientTabs, { type PestanaId } from "./tabs/ClientTabs";
 import { useMonthNavigation } from "./hooks/useMonthNavigation";
+import HistoryPanel from "./history/HistoryPanel";
 import MonthBar from "./monthBar/MonthBar";
 import BodyRepairs from "../../repairs/BodyRepairs";
 
@@ -95,7 +96,8 @@ const InfoClientDialog = ({
   totalRecords,
   currentIndex,
 }: InfoClientDialogProps) => {
-  const { isSuperAdmin } = usePermits();
+  const { isSuperAdmin, isAdmin } = usePermits();
+  const puedeVerHistorial = isSuperAdmin || isAdmin;
   const { showSnackbar } = useSnackbar();
 
   const createMaintenance = useCreateMaintenance();
@@ -711,6 +713,7 @@ const InfoClientDialog = ({
 
           <ClientTabs
             activa={pestanaActiva}
+            mostrarHistorial={puedeVerHistorial}
             onCambiar={setPestanaActiva}
             conteos={{
               mantenciones: mantencionesDelMes.length,
@@ -721,7 +724,7 @@ const InfoClientDialog = ({
             }}
           />
 
-          {pestanaActiva !== "ficha" && (
+          {(pestanaActiva === "mantenciones" || pestanaActiva === "cobros") && (
             <MonthBar
               meses={meses}
               mesActivo={mesActivo}
@@ -852,6 +855,22 @@ const InfoClientDialog = ({
               />
             )}
           </div>
+
+          {puedeVerHistorial && (
+            <div
+              className={style.panel}
+              data-activo={pestanaActiva === "historial" ? "si" : "no"}
+              role="tabpanel"
+              id="panel-historial"
+              aria-labelledby="pestana-historial"
+              tabIndex={0}
+            >
+              <HistoryPanel
+                clientId={clientInfo?.id?.value}
+                activo={pestanaActiva === "historial"}
+              />
+            </div>
+          )}
         </>
       )}
 

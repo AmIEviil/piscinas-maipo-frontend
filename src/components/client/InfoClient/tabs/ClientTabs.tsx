@@ -1,18 +1,21 @@
 import { useRef } from "react";
 import style from "./ClientTabs.module.css";
 
-export type PestanaId = "mantenciones" | "cobros" | "ficha";
+export type PestanaId = "mantenciones" | "cobros" | "ficha" | "historial";
 
 interface ClientTabsProps {
   activa: PestanaId;
   onCambiar: (id: PestanaId) => void;
   conteos: { mantenciones: number; cobros: number };
+  /** Historial solo para Superadmin y Admin. */
+  mostrarHistorial: boolean;
 }
 
 const PESTANAS: { id: PestanaId; etiqueta: string }[] = [
   { id: "mantenciones", etiqueta: "Mantenciones" },
   { id: "cobros", etiqueta: "Cobros" },
   { id: "ficha", etiqueta: "Ficha" },
+  { id: "historial", etiqueta: "Historial" },
 ];
 
 /**
@@ -23,15 +26,18 @@ const PESTANAS: { id: PestanaId; etiqueta: string }[] = [
  * moverse, Inicio y Fin para los extremos, y solo la pestana activa participa
  * del orden de tabulacion.
  *
- * Las tres pestanas se ven siempre, para todos los roles: quien no es
- * superadmin ve Cobros en modo lectura (decision de producto 6 del diseno).
+ * Mantenciones, Cobros y Ficha se ven siempre, para todos los roles: quien
+ * no es superadmin ve Cobros en modo lectura (decision de producto 6 del diseno).
  * Una pestana escondida hace sospechar que falta informacion; una pestana
- * visible y honesta, no.
+ * visible y honesta, no. Historial es la excepcion: solo Superadmin y Admin
+ * (decision de esta feature).
  */
-const ClientTabs = ({ activa, onCambiar, conteos }: ClientTabsProps) => {
+const ClientTabs = ({ activa, onCambiar, conteos, mostrarHistorial }: ClientTabsProps) => {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const pestanas = PESTANAS;
+  const pestanas = PESTANAS.filter(
+    (p) => p.id !== "historial" || mostrarHistorial
+  );
 
   const alPresionar = (evento: React.KeyboardEvent, indice: number) => {
     const ultimo = pestanas.length - 1;
