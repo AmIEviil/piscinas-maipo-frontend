@@ -117,3 +117,10 @@ export function totales(filas: FilaValor[]): { actual: number; nuevo: number } {
   }
   return { actual, nuevo };
 }
+
+// Cuenta solo los ajustes manuales que realmente viajan: un override igual al
+// valor actual no se envia, y contarlo dejaria "K ajustados" mayor que "N".
+export function contarAjustesEnviados(filas: FilaValor[]): number {
+  const enviados = new Set(itemsAEnviar(filas).map((item) => item.id));
+  return filas.filter((f) => f.override !== null && enviados.has(f.id)).length;
+}

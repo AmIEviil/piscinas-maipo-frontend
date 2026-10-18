@@ -10,6 +10,7 @@ import { useBulkUpdateValorMantencion } from "../../../hooks/ClientHooks";
 import { formatMoneyNumber } from "../../../utils/formatTextUtils";
 import {
   construirFilas,
+  contarAjustesEnviados,
   errorDeFila,
   itemsAEnviar,
   parsearCantidad,
@@ -97,7 +98,7 @@ export const BulkValorMantencionDialog = ({
 
   const items = useMemo(() => itemsAEnviar(filas), [filas]);
   const suma = useMemo(() => totales(filas), [filas]);
-  const manuales = filas.filter((fila) => fila.override !== null).length;
+  const manuales = contarAjustesEnviados(filas);
   const hayErrorFila = filas.some((fila) => errorDeFila(fila) !== null);
   const puedeContinuar = !cantidad.error && !hayErrorFila && items.length > 0;
   const sinCambios = !cantidad.error && !hayErrorFila && items.length === 0;

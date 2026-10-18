@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   calcularValorNuevo,
+  contarAjustesEnviados,
   construirFilas,
   errorDeFila,
   itemsAEnviar,
@@ -146,5 +147,16 @@ describe("itemsAEnviar / totales", () => {
       actual: 0,
       nuevo: 0,
     });
+  });
+
+  it("contarAjustesEnviados ignora overrides iguales al valor actual", () => {
+    const base = construirFilas(clientes, "monto", 1000, {});
+    const [a, b] = base;
+    const filas = construirFilas(clientes, "monto", 1000, {
+      [a.id]: a.actual, // igual al actual: no se envia
+      [b.id]: b.actual + 2500, // distinto: se envia
+    });
+    expect(contarAjustesEnviados(filas)).toBe(1);
+    expect(contarAjustesEnviados(base)).toBe(0);
   });
 });
