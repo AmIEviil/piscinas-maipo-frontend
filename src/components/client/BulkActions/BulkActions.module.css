@@ -108,3 +108,109 @@
   padding-left: 1.25rem;
   color: var(--color-texto-secundario);
 }
+
+/* --- Modal de valor de mantencion ---------------------------------------- */
+
+.segmentado {
+  display: inline-flex;
+  align-self: flex-start;
+  border: 0.0625rem solid var(--color-secundario);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.segmento {
+  min-height: var(--tap-min);
+  padding: 0 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-secundario);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segmento[aria-pressed="true"] {
+  background: var(--color-secundario);
+  color: var(--color-fondo);
+}
+
+.campoCantidad {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 14rem;
+}
+
+.adorno {
+  font-weight: 700;
+}
+
+.inputCantidad,
+.inputFila {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 0.75rem;
+  border: 0.0625rem solid var(--color-detalle-claro);
+  border-radius: var(--radius-md);
+  background: var(--color-fondo);
+  color: inherit;
+  font-size: var(--fs-base);
+}
+
+.inputFila {
+  min-width: 7rem;
+}
+
+/* La tabla desborda en celular: se desplaza dentro del modal, no la pagina. */
+.tablaScroll {
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+}
+
+.tabla th,
+.tabla td {
+  padding: 0.5rem;
+  border-bottom: 0.0625rem solid var(--color-detalle-claro);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.filaAjustada {
+  background: var(--color-fondo-suave);
+}
+
+.celdaNuevo {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.restaurar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-secundario);
+  cursor: pointer;
+}
+
+.errorFila {
+  margin: 0.25rem 0 0;
+  color: var(--red-500);
+  font-size: 0.85em;
+  white-space: normal;
+}
+
+.diferenciaNegativa {
+  color: var(--red-500);
+}

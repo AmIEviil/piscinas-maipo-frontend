@@ -4,6 +4,7 @@ import style from "./TopBar.module.css";
 import PiscinasElMaipoIcon from "../ui/Icons/piscinasDelMaipoIcon";
 import CustomDropmenu from "../ui/customdropmenu/NavBarComponent";
 import FontSizeControls from "./FontSizeControls";
+import { NotificationBell } from "../notifications/NotificationBell";
 import { useHideOnScroll } from "../../hooks/useHideOnScroll";
 
 export const TopBar = () => {
@@ -59,6 +60,7 @@ export const TopBar = () => {
       </div>
       <div className={style.actionsContainer}>
         <FontSizeControls />
+        <NotificationBell />
         <CustomDropmenu />
       </div>
     </div>

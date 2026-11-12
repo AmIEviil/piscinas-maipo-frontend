@@ -10,7 +10,7 @@ import {
 } from "../../../hooks/ClientHooks";
 import type {
   BulkUpdateClientsResponse,
-  CampoBulkCliente,
+  BulkValorMantencionResponse,
   Client,
   IClientForm,
 } from "../../../service/client.interface";
@@ -57,7 +57,10 @@ import {
 import AdvancedFiltersSheet from "../../common/FiltersContainer/AdvancedFiltersSheet";
 import type { FilterValue } from "../../../service/employee.interface";
 import { BREAKPOINTS } from "../../../constant/breakpoints";
-import BulkActionsMenu from "../BulkActions/BulkActionsMenu";
+import BulkActionsMenu, {
+  type AccionBulkCliente,
+} from "../BulkActions/BulkActionsMenu";
+import BulkValorMantencionDialog from "../BulkActions/BulkValorMantencionDialog";
 import BulkEditClientsDialog from "../BulkActions/BulkEditClientsDialog";
 import { useSnackbar } from "../../../utils/snackBarHooks";
 
@@ -89,7 +92,9 @@ const initial_filters: IfilterQuery = {
 };
 
 const BodyClients = () => {
-  const { isSuperAdmin } = usePermits();
+  const { isSuperAdmin, isAdmin } = usePermits();
+  // El Tecnico selecciona clientes en terreno pero no cambia datos en bloque.
+  const puedeAccionesMasivas = isSuperAdmin || isAdmin;
   const clientByIdMutation = useClientsById();
   const maintenanceByClient = useMaintenancesByClient();
   const comprobantesByClient = useGetComprobantesByParentId();
@@ -135,7 +140,9 @@ const BodyClients = () => {
 
   const [openPopUp, setOpenPopUp] = useState(false);
   // Campo elegido en el menu de acciones en bloque. `null` = modal cerrado.
-  const [campoBulk, setCampoBulk] = useState<CampoBulkCliente | null>(null);
+  const [accionBulk, setAccionBulk] = useState<AccionBulkCliente | null>(
+    null,
+  );
   const [openBusquedaAvanzada, setOpenBusquedaAvanzada] = useState(false);
 
   const { data: frecuencias = [] } = useFrecuenciasMantencion();
@@ -400,13 +407,22 @@ const BodyClients = () => {
    * aplicarles una segunda accion sobre un listado que ya cambio.
    */
   const handleBulkAplicado = (resumen: BulkUpdateClientsResponse) => {
-    setCampoBulk(null);
+    setAccionBulk(null);
     setSelectedClients([]);
     const reprogramadas = resumen.mantencionesReprogramadas
       ? ` y se reprogramaron ${resumen.mantencionesReprogramadas} mantención(es) futura(s)`
       : "";
     showSnackbar(
       `Se actualizaron ${resumen.clientesActualizados} cliente(s)${reprogramadas}.`,
+      "success",
+    );
+  };
+
+  const handleBulkValorAplicado = (resumen: BulkValorMantencionResponse) => {
+    setAccionBulk(null);
+    setSelectedClients([]);
+    showSnackbar(
+      `Valor de mantención actualizado a ${resumen.clientesActualizados} cliente(s)`,
       "success",
     );
   };
@@ -708,10 +724,12 @@ const BodyClients = () => {
             </button>
             {/* En celular la snackbar esta oculta por CSS, asi que el menu de
                 acciones en bloque acompana a este boton. */}
-            <BulkActionsMenu
-              cantidad={selectedClients.length}
-              onSelectCampo={setCampoBulk}
-            />
+            {puedeAccionesMasivas && (
+              <BulkActionsMenu
+                cantidad={selectedClients.length}
+                onSelectAccion={setAccionBulk}
+              />
+            )}
           </div>
         )}
       <div className={style.tableContainer}>
@@ -842,18 +860,26 @@ const BodyClients = () => {
       <CustomSnackBar
         onClick={() => handleSeeMultiSelectClients(currentClientIndex)}
         trailing={
-          <BulkActionsMenu
-            cantidad={selectedClients.length}
-            onSelectCampo={setCampoBulk}
-          />
+          puedeAccionesMasivas ? (
+            <BulkActionsMenu
+              cantidad={selectedClients.length}
+              onSelectAccion={setAccionBulk}
+            />
+          ) : undefined
         }
       />
       <BulkEditClientsDialog
-        campo={campoBulk}
+        campo={accionBulk !== "valor_mantencion" ? accionBulk : null}
         clientes={selectedClients}
         frecuencias={frecuencias}
-        onClose={() => setCampoBulk(null)}
+        onClose={() => setAccionBulk(null)}
         onAplicado={handleBulkAplicado}
+      />
+      <BulkValorMantencionDialog
+        abierto={accionBulk === "valor_mantencion"}
+        clientes={selectedClients}
+        onClose={() => setAccionBulk(null)}
+        onAplicado={handleBulkValorAplicado}
       />
     </div>
   );

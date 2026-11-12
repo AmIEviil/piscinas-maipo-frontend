@@ -6,34 +6,43 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EventRepeatIcon from "@mui/icons-material/EventRepeat";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
+import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
 import type { CampoBulkCliente } from "../../../service/client.interface";
 import style from "./BulkActions.module.css";
+
+/** Acciones del menu: un campo del cambio masivo generico o el alza de valor. */
+export type AccionBulkCliente = CampoBulkCliente | "valor_mantencion";
 
 interface BulkActionsMenuProps {
   /** Cuantos clientes hay seleccionados; solo se usa para el texto de ayuda. */
   cantidad: number;
-  onSelectCampo: (campo: CampoBulkCliente) => void;
+  onSelectAccion: (accion: AccionBulkCliente) => void;
 }
 
 const ACCIONES: Array<{
-  campo: CampoBulkCliente;
+  accion: AccionBulkCliente;
   label: string;
   icon: React.ReactNode;
 }> = [
   {
-    campo: "frecuencia_mantencion_id",
+    accion: "frecuencia_mantencion_id",
     label: "Cambiar periodicidad de visitas",
     icon: <EventRepeatIcon fontSize="small" />,
   },
   {
-    campo: "dia_mantencion",
+    accion: "dia_mantencion",
     label: "Cambiar día de mantención",
     icon: <CalendarMonthIcon fontSize="small" />,
   },
   {
-    campo: "ruta",
+    accion: "ruta",
     label: "Cambiar ruta",
     icon: <AltRouteIcon fontSize="small" />,
+  },
+  {
+    accion: "valor_mantencion",
+    label: "Modificar valor mantención",
+    icon: <PaidOutlinedIcon fontSize="small" />,
   },
 ];
 
@@ -47,14 +56,14 @@ const ACCIONES: Array<{
  */
 export const BulkActionsMenu = ({
   cantidad,
-  onSelectCampo,
+  onSelectAccion,
 }: BulkActionsMenuProps) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const abierto = Boolean(anchorEl);
 
-  const handleSelect = (campo: CampoBulkCliente) => {
+  const handleSelect = (accion: AccionBulkCliente) => {
     setAnchorEl(null);
-    onSelectCampo(campo);
+    onSelectAccion(accion);
   };
 
   return (
@@ -84,8 +93,8 @@ export const BulkActionsMenu = ({
       >
         {ACCIONES.map((accion) => (
           <MenuItem
-            key={accion.campo}
-            onClick={() => handleSelect(accion.campo)}
+            key={accion.accion}
+            onClick={() => handleSelect(accion.accion)}
             className={style.opcion}
           >
             <ListItemIcon>{accion.icon}</ListItemIcon>

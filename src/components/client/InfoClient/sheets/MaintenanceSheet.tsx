@@ -14,6 +14,7 @@ import type {
 import type { IProducto } from "../../../../service/products.interface";
 import { formatDateToLocalString } from "../../../../utils/DateUtils";
 import { formatCLP } from "../../../../utils/formatTextUtils";
+import { valorDeVisita } from "../maintenances/valorVisita";
 
 interface MaintenanceSheetProps {
   abierta: boolean;
@@ -97,7 +98,10 @@ const MaintenanceSheet = ({
           .split("T")[0],
         realizada: mantencionAEditar.realizada,
         recibioPago: mantencionAEditar.recibioPago,
-        valorMantencion,
+        // Solo para mostrar el total: al guardar una edicion el valor no se
+        // envia (ver guardar), la visita conserva el precio con que se
+        // registro.
+        valorMantencion: valorDeVisita(mantencionAEditar, valorMantencion),
         client: { id: clientId },
         productosUsados: productosFormateados,
         observaciones: mantencionAEditar.observaciones || "",
@@ -182,8 +186,8 @@ const MaintenanceSheet = ({
       const producto = productosList.find((p) => p.id === usado.productId);
       return suma + (producto?.valor_unitario ?? 0) * usado.cantidad;
     }, 0);
-    return (maintenance.realizada ? valorMantencion : 0) + productos;
-  }, [maintenance, productosList, valorMantencion]);
+    return (maintenance.realizada ? maintenance.valorMantencion : 0) + productos;
+  }, [maintenance, productosList]);
 
   /**
    * `fechaMantencion` se guarda como "YYYY-MM-DD" (es lo que espera el API),
@@ -213,6 +217,25 @@ const MaintenanceSheet = ({
 
   const encadena = maintenance.recibioPago && puedeRegistrarPago;
 
+  // Al editar no se manda `valorMantencion`: el backend lo pisaria con lo que
+  // llegue, y una mantencion ya registrada conserva su precio aunque el valor
+  // del cliente haya cambiado despues. `client` tampoco va: la edicion no lo
+  // acepta.
+  const guardar = () => {
+    if (!mantencionAEditar) {
+      onGuardar(maintenance, encadena);
+      return;
+    }
+    const cambios: IMaintenanceUpdate = {
+      fechaMantencion: maintenance.fechaMantencion,
+      realizada: maintenance.realizada,
+      recibioPago: maintenance.recibioPago,
+      productosUsados: maintenance.productosUsados,
+      observaciones: maintenance.observaciones,
+    };
+    onGuardar(cambios, encadena);
+  };
+
   return (
     <SlideSheet
       abierta={abierta}
@@ -228,7 +251,7 @@ const MaintenanceSheet = ({
               encadena ? "Guardar y registrar el pago" : "Guardar mantención"
             }
             variant="primary"
-            onClick={() => onGuardar(maintenance, encadena)}
+            onClick={guardar}
             disabled={
               !maintenance.realizada &&
               maintenance.productosUsados.length === 0

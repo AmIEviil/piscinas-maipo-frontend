@@ -2,7 +2,10 @@
 import type {
   BulkUpdateClientsPayload,
   BulkUpdateClientsResponse,
+  BulkValorMantencionPayload,
+  BulkValorMantencionResponse,
   Client,
+  ClientHistoryEntry,
   ClientFilters,
   IClientForm,
   IFrecuenciaMantencion,
@@ -65,6 +68,22 @@ export const clientService = {
       CLIENT_API.bulkUpdateClients,
       payload
     );
+    return response.data;
+  },
+
+  bulkUpdateValorMantencion: async (
+    payload: BulkValorMantencionPayload
+  ): Promise<BulkValorMantencionResponse> => {
+    const response = await apiClient.put<BulkValorMantencionResponse>(
+      CLIENT_API.bulkValorMantencion,
+      payload
+    );
+    return response.data;
+  },
+
+  getClientHistory: async (id: string): Promise<ClientHistoryEntry[]> => {
+    const url = CLIENT_API.historial.replace(":id", id.toString());
+    const response = await apiClient.get<ClientHistoryEntry[]>(url);
     return response.data;
   },
 
