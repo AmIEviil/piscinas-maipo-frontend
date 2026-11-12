@@ -38,6 +38,10 @@ import LoadingSpinner from "../../ui/loading/Loading";
 import { useClientResumenMonthStore } from "../../../store/ClientStore";
 import MaintenanceTimeline from "./maintenances/MaintenanceTimeline";
 import MonthStatusPanel from "./maintenances/MonthStatusPanel";
+import {
+  totalCobrableDelMes,
+  valorDeVisita,
+} from "./maintenances/valorVisita";
 import { useModalStore } from "../../../store/ModalStore";
 import FieldGroup from "../../ui/labelField/FieldGroup";
 import { usePermits } from "../../../utils/roleUtils";
@@ -46,6 +50,7 @@ import type { IClientForm } from "./types";
 import ClientDialogHeader from "./header/ClientDialogHeader";
 import ClientTabs, { type PestanaId } from "./tabs/ClientTabs";
 import { useMonthNavigation } from "./hooks/useMonthNavigation";
+import HistoryPanel from "./history/HistoryPanel";
 import MonthBar from "./monthBar/MonthBar";
 import BodyRepairs from "../../repairs/BodyRepairs";
 
@@ -95,7 +100,8 @@ const InfoClientDialog = ({
   totalRecords,
   currentIndex,
 }: InfoClientDialogProps) => {
-  const { isSuperAdmin } = usePermits();
+  const { isSuperAdmin, isAdmin } = usePermits();
+  const puedeVerHistorial = isSuperAdmin || isAdmin;
   const { showSnackbar } = useSnackbar();
 
   const createMaintenance = useCreateMaintenance();
@@ -200,21 +206,20 @@ const InfoClientDialog = ({
     );
   }, [mesActivo, comprobantesClient]);
 
+  // Valor actual del cliente: es el precio de las visitas nuevas. Las ya
+  // registradas se cobran a su propio precio (ver valorDeVisita); este valor
+  // solo las cubre si no traen el suyo.
+  const valorCliente = clientInfo?.valor_mantencion?.value ?? 0;
+
   // Total cobrable del mes para el panel lateral de la pestana Cobros: el
-  // mismo calculo que MonthStatusPanel.calcularResumen (mantenciones
-  // realizadas * valor de mantencion, mas productos), pero calculado aca para
-  // que la pestana Cobros no dependa de que el panel de la pestana
-  // Mantenciones este montado ni de cuando ese panel recalculo.
-  const totalMesCobros = useMemo(() => {
-    const valorMantencion = clientInfo?.valor_mantencion?.value ?? 0;
-    return mantencionesDelMes.reduce((suma, mantencion) => {
-      const totalProductos = mantencion.productos.reduce(
-        (subtotal, p) => subtotal + p.product.valor_unitario * p.cantidad,
-        0,
-      );
-      return suma + (mantencion.realizada ? valorMantencion : 0) + totalProductos;
-    }, 0);
-  }, [mantencionesDelMes, clientInfo]);
+  // mismo calculo que MonthStatusPanel.calcularResumen (cada visita realizada
+  // a su propio precio, mas productos), pero calculado aca para que la
+  // pestana Cobros no dependa de que el panel de la pestana Mantenciones este
+  // montado ni de cuando ese panel recalculo.
+  const totalMesCobros = useMemo(
+    () => totalCobrableDelMes(mantencionesDelMes, valorCliente),
+    [mantencionesDelMes, valorCliente],
+  );
 
   // Opciones de la hoja de pago para "que visitas cubre este pago": las
   // visitas del mes que aun no tienen pago, salvo la recien fijada (esa ya
@@ -227,9 +232,9 @@ const InfoClientDialog = ({
         .map((m) => ({
           id: m.id,
           etiqueta: formatDateToDDMMYYYY(m.fechaMantencion),
-          monto: clientInfo?.valor_mantencion?.value ?? 0,
+          monto: valorDeVisita(m, valorCliente),
         })),
-    [mantencionesDelMes, clientInfo, visitaFijada],
+    [mantencionesDelMes, valorCliente, visitaFijada],
   );
 
   /**
@@ -367,7 +372,7 @@ const InfoClientDialog = ({
     setVisitaFijada({
       id: creada.id,
       etiqueta: formatDateToDDMMYYYY(creada.fechaMantencion),
-      monto: clientInfo?.valor_mantencion?.value ?? 0,
+      monto: valorDeVisita(creada, valorCliente),
     });
     setPagoEncadenado(true);
 
@@ -711,6 +716,7 @@ const InfoClientDialog = ({
 
           <ClientTabs
             activa={pestanaActiva}
+            mostrarHistorial={puedeVerHistorial}
             onCambiar={setPestanaActiva}
             conteos={{
               mantenciones: mantencionesDelMes.length,
@@ -721,7 +727,7 @@ const InfoClientDialog = ({
             }}
           />
 
-          {pestanaActiva !== "ficha" && (
+          {(pestanaActiva === "mantenciones" || pestanaActiva === "cobros") && (
             <MonthBar
               meses={meses}
               mesActivo={mesActivo}
@@ -769,7 +775,7 @@ const InfoClientDialog = ({
                 <aside className={style.columnaLado}>
                   <MonthStatusPanel
                     mesActivo={mesActivo}
-                    valorMantencion={clientInfo?.valor_mantencion?.value ?? 0}
+                    valorMantencion={valorCliente}
                     mantencionesDelMes={mantencionesDelMes}
                     montoPagado={comprobantesDelMes.reduce(
                       (suma, c) => suma + (c.monto ?? 0),
@@ -792,7 +798,7 @@ const InfoClientDialog = ({
           <MaintenanceSheet
             abierta={hojaMantencionAbierta}
             clientId={clientInfo?.id?.value ?? ""}
-            valorMantencion={clientInfo?.valor_mantencion?.value ?? 0}
+            valorMantencion={valorCliente}
             productosList={products}
             mantencionAEditar={maintenanceToEdit}
             fechaSugerida={fechaSugerida}
@@ -852,6 +858,22 @@ const InfoClientDialog = ({
               />
             )}
           </div>
+
+          {puedeVerHistorial && (
+            <div
+              className={style.panel}
+              data-activo={pestanaActiva === "historial" ? "si" : "no"}
+              role="tabpanel"
+              id="panel-historial"
+              aria-labelledby="pestana-historial"
+              tabIndex={0}
+            >
+              <HistoryPanel
+                clientId={clientInfo?.id?.value}
+                activo={pestanaActiva === "historial"}
+              />
+            </div>
+          )}
         </>
       )}
 

@@ -13,6 +13,7 @@ import CreateRepairsDialog from "./CreateRepair/CreateRepairsDialog";
 import { ActionsTdTable } from "../common/ActionsTable/ActionsTable";
 import CustomModal from "../ui/modal/CustomModal";
 import { titleTable } from "../../constant/constantBodyReparis";
+import { usePermits } from "../../utils/roleUtils";
 
 export interface FilterQueryRepairs {
   nombreCliente?: string;
@@ -33,6 +34,11 @@ const BodyRepairs = ({
   nombreCliente,
   showFilters = true,
 }: BodyRepairsProps) => {
+  // Crear, editar y eliminar es solo Superadmin/Admin en el backend; el
+  // Tecnico llega aca desde "Ver reparaciones" del cliente y solo puede leer.
+  const { isSuperAdmin, isAdmin } = usePermits();
+  const puedeEscribir = isSuperAdmin || isAdmin;
+
   const reparisMutation = useRepairs();
   const deleteRepairMutation = useDeleteRepair();
 
@@ -128,27 +134,31 @@ const BodyRepairs = ({
             {hasFilters && (
               <button onClick={handleClearFilters}>Limpiar filtros</button>
             )}
-            <Tooltip title="Crear nueva Reparación" arrow leaveDelay={0}>
-              <button
-                onClick={handleOpenCreateDialog}
-                className="flex items-center gap-2"
-              >
-                Crear reparación
-                <PlusIcon />
-              </button>
-            </Tooltip>
+            {puedeEscribir && (
+              <Tooltip title="Crear nueva Reparación" arrow leaveDelay={0}>
+                <button
+                  onClick={handleOpenCreateDialog}
+                  className="flex items-center gap-2"
+                >
+                  Crear reparación
+                  <PlusIcon />
+                </button>
+              </Tooltip>
+            )}
           </div>
         </div>
       ) : (
-        <Tooltip title="Crear nueva Reparación" arrow leaveDelay={0}>
-          <button
-            onClick={handleOpenCreateDialog}
-            className="flex items-center gap-2"
-          >
-            Crear reparación
-            <PlusIcon />
-          </button>
-        </Tooltip>
+        puedeEscribir && (
+          <Tooltip title="Crear nueva Reparación" arrow leaveDelay={0}>
+            <button
+              onClick={handleOpenCreateDialog}
+              className="flex items-center gap-2"
+            >
+              Crear reparación
+              <PlusIcon />
+            </button>
+          </Tooltip>
+        )
       )}
       {repairs.length === 0 && !loading && nombreCliente ? (
         <div className={style.noData}>
@@ -171,9 +181,17 @@ const BodyRepairs = ({
                   <td>
                     <ActionsTdTable
                       onView={() => handleOpenDialog(repair)}
-                      onEdit={() => handleEditRepair(repair)}
-                      onDelete={() =>
-                        repair.id !== undefined && handleOpenDeletePopUp(repair)
+                      onEdit={
+                        puedeEscribir
+                          ? () => handleEditRepair(repair)
+                          : undefined
+                      }
+                      onDelete={
+                        puedeEscribir
+                          ? () =>
+                              repair.id !== undefined &&
+                              handleOpenDeletePopUp(repair)
+                          : undefined
                       }
                     />
                   </td>

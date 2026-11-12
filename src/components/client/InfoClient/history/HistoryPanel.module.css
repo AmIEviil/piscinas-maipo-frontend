@@ -1,0 +1,71 @@
+/*
+ * Pestana Historial. Mismos tokens `--modal-*` y mismas tarjetas que
+ * PaymentsPanel.module.css (cada modulo CSS esta scopeado, asi que las clases
+ * se duplican). Todo en rem; los datos no bajan de `--fs-base`.
+ */
+
+.estado {
+  margin: 0;
+  padding: 1rem 0;
+  font-size: var(--fs-base);
+  color: var(--modal-texto-2);
+}
+
+.error {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.75rem;
+  background: var(--modal-peligro-suave);
+  border: 0.0625rem solid var(--modal-peligro);
+  color: var(--modal-peligro);
+  font-size: var(--fs-base);
+  font-weight: 600;
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.item {
+  background: var(--modal-superficie);
+  border: 0.0625rem solid var(--modal-borde);
+  border-left: 0.25rem solid var(--modal-acento);
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.cambio {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.6rem;
+  font-size: var(--fs-md);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.5rem;
+  font-size: var(--fs-sm);
+  color: var(--modal-texto-2);
+}
+
+.chip {
+  padding: 0.1rem 0.6rem;
+  border-radius: 999rem;
+  background: var(--modal-acento-suave);
+  border: 0.0625rem solid var(--modal-acento);
+  color: var(--modal-acento);
+  font-weight: 700;
+}

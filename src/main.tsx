@@ -8,6 +8,18 @@ import { router } from "./router/index.ts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./i18n.ts";
 import FontScaleRoot from "./components/a11y/FontScaleRoot.tsx";
+import { registerSW } from "virtual:pwa-register";
+
+// Registro automático del Service Worker para PWA y notificaciones push
+registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    console.log("PWA: Hay una nueva versión disponible.");
+  },
+  onOfflineReady() {
+    console.log("PWA: Aplicación lista para operar sin conexión.");
+  },
+});
 
 const queryClient = new QueryClient();
 
