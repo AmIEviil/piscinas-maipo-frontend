@@ -30,6 +30,8 @@ export interface IRevestimientoCreate {
 }
 
 export interface ICloudinaryImage {
+  /** Solo las imagenes ya guardadas; las recien subidas no lo tienen. */
+  id?: string;
   url: string;
   public_id: string;
 }

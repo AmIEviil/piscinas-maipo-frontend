@@ -29,15 +29,21 @@ export const revestimientoService = {
     return response.data;
   },
 
+  // Antes armaba "api/revestimiento/:id/<id>" (sin reemplazar el :id) y
+  // toda edicion devolvia 404.
   updateRevestimiento: async (
     id: string,
-    data: IRevestimiento
+    data: Partial<IRevestimientoCreate>
   ): Promise<IRevestimiento> => {
     const response = await apiClient.put<IRevestimiento>(
-      `${REVESTIMIENTO_API.revestimientoId}/${id}`,
+      REVESTIMIENTO_API.revestimientoId.replace(":id", id.toString()),
       data
     );
     return response.data;
+  },
+
+  deleteImagen: async (imagenId: string): Promise<void> => {
+    await apiClient.delete(`api/upload/${imagenId}`);
   },
 
   deleteRevestimiento: async (id: string): Promise<{ message: string }> => {

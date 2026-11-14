@@ -76,3 +76,19 @@ export const formatDateTOYYYYMMDD = (date: Date): string => {
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
+
+/**
+ * Fecha guardada ("YYYY-MM-DD" o ISO completo) como Date a medianoche LOCAL.
+ * `new Date("YYYY-MM-DD")` la interpreta como medianoche UTC y en Chile
+ * muestra el dia anterior.
+ */
+export const parseDateLocal = (
+  valor?: string | Date | null,
+): Date | undefined => {
+  if (!valor) return undefined;
+  const fecha =
+    typeof valor === "string"
+      ? DateTime.fromISO(valor)
+      : DateTime.fromJSDate(valor);
+  return fecha.isValid ? fecha.startOf("day").toJSDate() : undefined;
+};

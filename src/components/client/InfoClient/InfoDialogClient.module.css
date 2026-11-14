@@ -172,3 +172,91 @@
   backdrop-filter: blur(0.125rem);
   pointer-events: auto;
 }
+
+/*
+ * Celular: pantalla completa.
+ *
+ * responsive.css ya pone .modal-content a height:100% bajo 768px, pero el
+ * max-height de 90dvh de `.modal` lo recortaba y dejaba una franja muerta
+ * abajo. Mismo corte de 768px que esa hoja global.
+ */
+@media screen and (max-width: 768px) {
+  .modal {
+    max-height: none;
+    height: 100dvh;
+    border-radius: 0;
+  }
+}
+
+/*
+ * Boton flotante "+ Registrar mantencion / pago" (solo celular).
+ *
+ * Vive al final del panel con scroll y es sticky abajo: queda siempre a mano
+ * sobre la lista sin tapar el ultimo item (ocupa su propio lugar al final
+ * del contenido). margin-top:auto lo lleva al fondo cuando la lista es corta.
+ * En pantallas anchas el boton de la barra de meses sigue siendo el unico.
+ */
+.fab {
+  display: none;
+}
+
+@container (max-width: 40rem) {
+  .fab {
+    position: sticky;
+    bottom: 0.25rem;
+    z-index: 2;
+    align-self: flex-end;
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 3.75rem;
+    height: 3.75rem;
+    border-radius: 999rem;
+    border: 0;
+    cursor: pointer;
+    font-size: 2rem;
+    background: var(--modal-acento);
+    color: #ffffff;
+    box-shadow: 0 0.35rem 1rem rgba(4, 16, 24, 0.35);
+  }
+
+  .fab:active {
+    background: var(--modal-acento-2);
+  }
+
+  .fab:focus-visible {
+    outline: 0.1875rem solid var(--modal-acento);
+    outline-offset: 0.1875rem;
+  }
+
+  .panel {
+    padding: 0.85rem 0.75rem 1rem;
+  }
+
+  /* El pie solo trae "Cerrar" cuando hay un unico cliente, y en celular la
+     cabecera ya tiene la X: se oculta para devolverle ese alto al panel. Con
+     el recorrido de varios clientes se queda, compacto, con la navegacion. */
+  .pie[data-solo-cerrar="si"] {
+    display: none;
+  }
+
+  .pie {
+    padding: 0.5rem 0.75rem;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    gap: 0.5rem;
+  }
+
+  .pieFin {
+    display: none;
+  }
+
+  .pieNav {
+    margin-left: auto;
+  }
+}
+
+:global([data-theme="dark"]) .fab {
+  color: #04131b;
+}

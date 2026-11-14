@@ -1,6 +1,9 @@
 import type { IClientForm } from "../types";
 import style from "./ClientDialogHeader.module.css";
 import { formatCLP } from "../../../../utils/formatTextUtils";
+import PlaceIcon from "@mui/icons-material/Place";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import BuildIcon from "@mui/icons-material/Build";
 
 interface ClientDialogHeaderProps {
   clientInfo: IClientForm;
@@ -99,24 +102,33 @@ const ClientDialogHeader = ({
           href={`https://www.google.com/maps/search/?api=1&query=${consulta}`}
           target="_blank"
           rel="noreferrer"
+          aria-label="Cómo llegar"
         >
-          Cómo llegar
+          <PlaceIcon fontSize="inherit" aria-hidden="true" />
+          <span className={style.largo}>Cómo llegar</span>
+          <span className={style.corto} aria-hidden="true">Mapa</span>
         </a>
         {puedeGenerarBoleta && (
           <button
             type="button"
             className={style.botonCabecera}
             onClick={onGenerarBoleta}
+            aria-label="Generar boleta"
           >
-            Generar boleta
+            <ReceiptLongIcon fontSize="inherit" aria-hidden="true" />
+            <span className={style.largo}>Generar boleta</span>
+            <span className={style.corto} aria-hidden="true">Boleta</span>
           </button>
         )}
         <button
           type="button"
           className={style.botonCabecera}
           onClick={onVerReparaciones}
+          aria-label="Ver reparaciones"
         >
-          Ver reparaciones
+          <BuildIcon fontSize="inherit" aria-hidden="true" />
+          <span className={style.largo}>Ver reparaciones</span>
+          <span className={style.corto} aria-hidden="true">Reparaciones</span>
         </button>
       </div>
     </header>

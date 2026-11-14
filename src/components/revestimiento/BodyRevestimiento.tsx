@@ -99,12 +99,14 @@ const BodyRevestimiento = () => {
   };
 
   const handleOpenCreateDialog = () => {
+    setIsEditMode(false);
     setOpenCreateDialog(true);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setOpenCreateDialog(false);
+    setIsEditMode(false);
   };
 
   const fetchRevestimientos = async () => {
@@ -403,6 +405,7 @@ const BodyRevestimiento = () => {
         onClose={handleCloseDialog}
         isEditMode={isEditMode}
         revestimientoInfo={selectedRevestimiento ?? undefined}
+        onSaved={fetchRevestimientos}
       />
       <ModalPdfViewer
         visible={showModalPdf}

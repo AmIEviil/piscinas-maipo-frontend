@@ -38,10 +38,7 @@ import LoadingSpinner from "../../ui/loading/Loading";
 import { useClientResumenMonthStore } from "../../../store/ClientStore";
 import MaintenanceTimeline from "./maintenances/MaintenanceTimeline";
 import MonthStatusPanel from "./maintenances/MonthStatusPanel";
-import {
-  totalCobrableDelMes,
-  valorDeVisita,
-} from "./maintenances/valorVisita";
+import { totalCobrableDelMes, valorDeVisita } from "./maintenances/valorVisita";
 import { useModalStore } from "../../../store/ModalStore";
 import FieldGroup from "../../ui/labelField/FieldGroup";
 import { usePermits } from "../../../utils/roleUtils";
@@ -131,7 +128,8 @@ const InfoClientDialog = ({
     useState<IMaintenance | null>(null);
 
   const [pestanaActiva, setPestanaActiva] = useState<PestanaId>("mantenciones");
-  const { meses, mesActivo, setMesActivo } = useMonthNavigation(maintenancesClient);
+  const { meses, mesActivo, setMesActivo } =
+    useMonthNavigation(maintenancesClient);
   const [hojaMantencionAbierta, setHojaMantencionAbierta] = useState(false);
   /**
    * Fecha con la que se abre la hoja de registro cuando se entra desde una
@@ -144,9 +142,7 @@ const InfoClientDialog = ({
   // Visita recien creada/editada que encadeno el registro del pago: viene
   // marcada y bloqueada en la hoja de pago. null cuando la hoja de pago se
   // abre directo desde la pestana Cobros (sin encadenado).
-  const [visitaFijada, setVisitaFijada] = useState<VisitaCubrible | null>(
-    null,
-  );
+  const [visitaFijada, setVisitaFijada] = useState<VisitaCubrible | null>(null);
   // true solo mientras la hoja de pago esta encadenada tras guardar una
   // mantencion; false cuando se abre directo desde Cobros.
   const [pagoEncadenado, setPagoEncadenado] = useState(false);
@@ -594,9 +590,7 @@ const InfoClientDialog = ({
   const handleVerComprobante = (comprobante: IComprobantePago) => {
     setOpenModal({
       header: (
-        <b className="text-header-modal">
-          Visualizando: {comprobante.nombre}
-        </b>
+        <b className="text-header-modal">Visualizando: {comprobante.nombre}</b>
       ),
       content: (
         <div className="w-full h-full flex justify-center items-center">
@@ -733,7 +727,9 @@ const InfoClientDialog = ({
               mesActivo={mesActivo}
               onCambiarMes={setMesActivo}
               etiquetaAccion={
-                pestanaActiva === "cobros" ? "Registrar pago" : "Registrar mantención"
+                pestanaActiva === "cobros"
+                  ? "Registrar pago"
+                  : "Registrar mantención"
               }
               mostrarAccion={pestanaActiva === "mantenciones" || isSuperAdmin}
               onAccion={() =>
@@ -789,6 +785,16 @@ const InfoClientDialog = ({
             ) : (
               <p className={style.vacio}>No hay mantenciones para mostrar.</p>
             )}
+            {/* Solo visible en celular (ver `.fab`): reemplaza al boton de la
+                barra de meses, que ahi se oculta para no partirla en dos filas. */}
+            <button
+              type="button"
+              className={style.fab}
+              onClick={() => setHojaMantencionAbierta(true)}
+              aria-label="Registrar mantención"
+            >
+              +
+            </button>
           </div>
 
           {puenteVeloVisible && (
@@ -839,6 +845,16 @@ const InfoClientDialog = ({
               onGenerarBoleta={abrirBoleta}
               onRegistrarPago={abrirHojaPagoDirecta}
             />
+            {isSuperAdmin && (
+              <button
+                type="button"
+                className={style.fab}
+                onClick={abrirHojaPagoDirecta}
+                aria-label="Registrar pago"
+              >
+                +
+              </button>
+            )}
           </div>
 
           <div
@@ -880,15 +896,26 @@ const InfoClientDialog = ({
       {/* Fuera del ternario de loading a proposito: antes del rewrite el
           Modal.Footer era un hermano incondicional, asi que Cerrar y la
           paginacion seguian disponibles mientras cargaban los datos. */}
-      <div className={style.pie}>
+      <div
+        className={style.pie}
+        data-solo-cerrar={totalRecords > 1 ? "no" : "si"}
+      >
         {totalRecords > 1 && (
           <>
             <span className={style.piePosicion}>
               Cliente {currentIndex + 1} <small>de {totalRecords}</small>
             </span>
             <div className={style.pieNav}>
-              <Button label="‹ Anterior" variant="tertiary" onClick={onPreviousClient} />
-              <Button label="Siguiente ›" variant="tertiary" onClick={onNextClient} />
+              <Button
+                label="‹ Anterior"
+                variant="tertiary"
+                onClick={onPreviousClient}
+              />
+              <Button
+                label="Siguiente ›"
+                variant="tertiary"
+                onClick={onNextClient}
+              />
             </div>
           </>
         )}

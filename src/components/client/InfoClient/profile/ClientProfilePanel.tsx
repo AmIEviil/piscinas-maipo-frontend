@@ -10,6 +10,12 @@ import {
 import Button from "../../../ui/button/Button";
 import CustomCalendarV2 from "../../../ui/calendar/CustomCalendarV2";
 import { useFrecuenciasMantencion } from "../../../../hooks/ClientHooks";
+import {
+  comunas,
+  dias,
+  rutas,
+  tiposPiscinasMaterial,
+} from "../../../../constant/constantBodyClient";
 import style from "./ClientProfilePanel.module.css";
 import campos from "../camposModal.module.css";
 
@@ -44,6 +50,32 @@ const ROTULOS: Record<string, string> = {
   frecuencia_mantencion: "Periodicidad de visitas",
   dia_mantencion: "Día de mantención",
   isActive: "Estado",
+};
+
+/**
+ * Campos de texto que en realidad son una lista cerrada: se editan con un
+ * <select> nativo (en iPhone abre el picker del sistema) con las mismas
+ * opciones que el formulario de alta. Antes eran <input> libres y cualquier
+ * "puente alto" o "lunes " quedaba guardado distinto del resto.
+ */
+const OPCIONES_FIJAS: Record<string, { value: string; label: string }[]> = {
+  comuna: comunas.filter((o) => o.value !== ""),
+  ruta: rutas.filter((o) => o.value !== ""),
+  dia_mantencion: dias.filter((o) => o.value !== ""),
+  tipo_piscina: tiposPiscinasMaterial,
+};
+
+/** Campos opcionales: su select ofrece la opcion vacia. */
+const OPCIONALES = new Set(["ruta"]);
+
+/** Teclado adecuado para los <input> libres que quedan. */
+const TIPO_INPUT: Record<
+  string,
+  { type?: string; inputMode?: "tel" | "email" | "numeric" }
+> = {
+  telefono: { type: "tel", inputMode: "tel" },
+  email: { type: "email", inputMode: "email" },
+  valor_mantencion: { inputMode: "numeric" },
 };
 
 const rotuloDe = (clave: string) =>
@@ -252,10 +284,45 @@ const ClientProfilePanel = ({
                   }))
                 }
               />
+            ) : editando && OPCIONES_FIJAS[clave] ? (
+              <select
+                id={`campo-${clave}`}
+                className={style.control}
+                value={String(borrador[clave]?.value ?? "")}
+                onChange={(e) =>
+                  setBorrador((previo) => ({
+                    ...previo,
+                    [clave]: { ...previo[clave], value: e.target.value },
+                  }))
+                }
+              >
+                {(OPCIONALES.has(clave) || !borrador[clave]?.value) && (
+                  <option value="">
+                    {OPCIONALES.has(clave) ? "Sin definir" : "Elegir..."}
+                  </option>
+                )}
+                {/* Un valor guardado que no esta en la lista (dato antiguo
+                    escrito a mano) se conserva como opcion para no perderlo
+                    al guardar otro campo. */}
+                {borrador[clave]?.value &&
+                  !OPCIONES_FIJAS[clave].some(
+                    (o) => o.value === String(borrador[clave]?.value),
+                  ) && (
+                    <option value={String(borrador[clave]?.value)}>
+                      {String(borrador[clave]?.value)}
+                    </option>
+                  )}
+                {OPCIONES_FIJAS[clave].map((opcion) => (
+                  <option key={opcion.value} value={opcion.value}>
+                    {opcion.label}
+                  </option>
+                ))}
+              </select>
             ) : editando ? (
               <input
                 id={`campo-${clave}`}
                 className={style.control}
+                {...TIPO_INPUT[clave]}
                 value={String(borrador[clave]?.value ?? "")}
                 onChange={(e) =>
                   setBorrador((previo) => ({

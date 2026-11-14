@@ -19,7 +19,8 @@ export interface IEmployee {
   telefono: string;
   direccion: string;
   fechaInicioContrato: string;
-  fechaTerminoContrato?: string;
+  // Nombre de la columna en el backend; null la deja vacia al editar.
+  fechaFinContrato?: string | null;
   sueldo: number;
   tipoContrato: string;
   estado: string;
