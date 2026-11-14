@@ -1,32 +1,36 @@
 import { useEffect, useState } from "react";
-import { Modal } from "react-bootstrap";
-import dayjs from "dayjs";
 import type { IEmployee } from "../../../service/employee.interface";
 
 // UI Components
-import CustomInputText from "../../ui/InputText/CustomInputText";
-import CustomSelect from "../../ui/Select/Select";
-import DatePicker from "../../ui/calendar/DatePicker";
 import Button from "../../ui/button/Button";
+import FormSheet from "../../ui/formSheet/FormSheet";
+import {
+  FormCell,
+  FormDate,
+  FormField,
+  FormInput,
+  FormSection,
+  FormSelect,
+  FormTextarea,
+} from "../../ui/formSheet/FormFields";
 
 // Icons
 import PersonIcon from "@mui/icons-material/Person";
-import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
-import HomeIcon from "@mui/icons-material/Home";
-import PaidIcon from "@mui/icons-material/Paid";
-import BadgeIcon from "@mui/icons-material/Badge";
 import WorkIcon from "@mui/icons-material/Work";
-import GroupsIcon from "@mui/icons-material/Groups";
+import NotesIcon from "@mui/icons-material/Notes";
 import SaveIcon from "@mui/icons-material/Save";
-import BlockIcon from "@mui/icons-material/Block";
-import { CustomTextArea } from "../../ui/InputText/CustonTextArea";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { grupos } from "../../../constant/employees.contant";
 import {
   useCreateEmployee,
   useDeleteEmployee,
   useUpdateEmployee,
 } from "../../../hooks/EmployeeHooks";
+import {
+  formatDateToLocalString,
+  parseDateLocal,
+} from "../../../utils/DateUtils";
 
 const ESTADOS_EMPLEADO = [
   { value: "ACTIVO", label: "Activo" },
@@ -77,12 +81,12 @@ const CreateEmployeeDialog = ({
 
   // 2. Inicializamos con un objeto parcial en lugar de null
   const [employeeState, setEmployeeState] = useState<Partial<IEmployee>>(INITIAL_EMPLOYEE_STATE);
-  
-  // 3. Mantenemos las fechas aparte para el DatePicker, pero las sincronizaremos al guardar
+
+  // 3. Mantenemos las fechas aparte para el calendario, pero las sincronizaremos al guardar
   const [fechaInicio, setFechaInicio] = useState<Date | undefined>(undefined);
   const [fechaTermino, setFechaTermino] = useState<Date | undefined>(undefined);
   const [sueldoInput, setSueldoInput] = useState<string>("");
-  
+
   const isViewOnly = viewMode === "view";
 
   const handleTitle = () => {
@@ -96,11 +100,11 @@ const CreateEmployeeDialog = ({
   useEffect(() => {
     if ((viewMode === "edit" || viewMode === "view" || viewMode === "delete") && employeeInfo) {
       setEmployeeState(employeeInfo);
-      
+
       // Sincronizar estados auxiliares
       setSueldoInput(formatCurrency(employeeInfo.sueldo || 0));
-      setFechaInicio(employeeInfo.fechaInicioContrato ? new Date(employeeInfo.fechaInicioContrato) : undefined);
-      setFechaTermino(employeeInfo.fechaTerminoContrato ? new Date(employeeInfo.fechaTerminoContrato) : undefined);
+      setFechaInicio(parseDateLocal(employeeInfo.fechaInicioContrato));
+      setFechaTermino(parseDateLocal(employeeInfo.fechaFinContrato));
     } else {
       clearForm();
     }
@@ -123,7 +127,7 @@ const CreateEmployeeDialog = ({
   const handleSueldoChange = (value: string) => {
     const numeric = value.replace(/[^\d]/g, "");
     setSueldoInput(numeric); // Actualizamos el input visual
-    
+
     // 4. Simplificamos la actualización del estado (ya no necesitamos comprobar si es null)
     setEmployeeState((prev) => ({
         ...prev,
@@ -155,9 +159,12 @@ const CreateEmployeeDialog = ({
       email: employeeState.email || "",
       telefono: employeeState.telefono || "",
       direccion: employeeState.direccion || "",
-      // Usamos las variables de estado de fecha directamente:
-      fechaInicioContrato: fechaInicio ? fechaInicio.toISOString() : "", 
-      fechaTerminoContrato: fechaTermino ? fechaTermino.toISOString() : undefined,
+      // Columnas `date`: se mandan como "YYYY-MM-DD" local, nunca via
+      // toISOString(), que pasa a UTC. El fin vacio va como null para que
+      // una edicion pueda borrarlo (el backend lo llama fechaFinContrato;
+      // antes se enviaba fechaTerminoContrato y se perdia).
+      fechaInicioContrato: fechaInicio ? formatDateToLocalString(fechaInicio) : "",
+      fechaFinContrato: fechaTermino ? formatDateToLocalString(fechaTermino) : null,
       sueldo: employeeState.sueldo || 0,
       tipoContrato: employeeState.tipoContrato || "",
       estado: employeeState.estado || "ACTIVO",
@@ -181,214 +188,234 @@ const CreateEmployeeDialog = ({
     onClose();
   };
 
+  const nombreCompleto = [employeeState.nombre, employeeState.apellido]
+    .filter(Boolean)
+    .join(" ");
+
   const renderBody = () => {
     if (viewMode === "delete") {
       return (
-        <div className="p-3">
-          <h5>¿Estás seguro de que deseas eliminar este empleado?</h5>
-          <p className="font-weight-bold">
-            {employeeState.nombre} {employeeState.apellido}
-          </p>
-        </div>
-      );
-    } else {
-      return (
-        <div className="container-fluid">
-          <h6 className="mb-3 text-muted border-bottom pb-2">
-            Información Personal
-          </h6>
-          <div className="row g-3 mb-4">
-            <div className="col-md-6">
-              <CustomInputText
-                title="Nombres"
-                value={employeeState.nombre || ""}
-                onChange={(val) => handleChangeField("nombre", val)} // Uso simplificado
-                icon={<PersonIcon />}
-                disabled={isViewOnly}
-              />
-            </div>
-            <div className="col-md-6">
-              <CustomInputText
-                title="Apellidos"
-                value={employeeState.apellido || ""}
-                onChange={(val) => handleChangeField("apellido", val)}
-                icon={<PersonIcon />}
-                disabled={isViewOnly}
-              />
-            </div>
-            <div className="col-md-8">
-              <CustomInputText
-                title="RUT (sin DV)"
-                value={employeeState.rut || ""}
-                onChange={(val) => handleChangeField("rut", val)}
-                placeholder="12345678"
-                icon={<BadgeIcon />}
-                disabled={isViewOnly}
-                maxLength={8}
-              />
-            </div>
-            <div className="col-md-4">
-              <CustomInputText
-                title="DV"
-                value={employeeState.dv || ""}
-                onChange={(val) => handleChangeField("dv", val.slice(0, 1))}
-                placeholder="K"
-                disabled={isViewOnly}
-                maxLength={1}
-              />
-            </div>
-          </div>
-
-          {/* Contacto */}
-          <h6 className="mb-3 text-muted border-bottom pb-2">Contacto</h6>
-          <div className="row g-3 mb-4">
-            <div className="col-md-6">
-              <CustomInputText
-                title="Email"
-                value={employeeState.email || ""}
-                onChange={(val) => handleChangeField("email", val)}
-                icon={<EmailIcon />}
-                type="email"
-                require={false}
-                disabled={isViewOnly}
-              />
-            </div>
-            <div className="col-md-6">
-              <CustomInputText
-                title="Teléfono"
-                value={employeeState.telefono || ""}
-                onChange={(val) => handleChangeField("telefono", val)}
-                icon={<PhoneIcon />}
-                disabled={isViewOnly}
-              />
-            </div>
-            <div className="col-12">
-              <CustomInputText
-                title="Dirección"
-                value={employeeState.direccion || ""}
-                onChange={(val) => handleChangeField("direccion", val)}
-                icon={<HomeIcon />}
-                disabled={isViewOnly}
-              />
-            </div>
-          </div>
-
-          {/* Información Laboral */}
-          <h6 className="mb-3 text-muted border-bottom pb-2">
-            Datos Laborales
-          </h6>
-          <div className="row g-3 mb-4">
-            <div className="col-md-6">
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <label className="input-title" style={{ fontSize: "var(--fs-base)", fontWeight: 500, color: "var(--color-texto-secundario)" }}>
-                  Fecha Inicio Contrato <span className="required">*</span>
-                </label>
-                <DatePicker
-                  value={fechaInicio ? dayjs(fechaInicio) : undefined}
-                  onChange={setFechaInicio} // Actualiza el estado local de fecha
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <label className="input-title" style={{ fontSize: "var(--fs-base)", fontWeight: 500, color: "var(--color-texto-secundario)" }}>
-                  Fecha Término (Opcional)
-                </label>
-                <DatePicker
-                  value={fechaTermino ? dayjs(fechaTermino) : undefined}
-                  onChange={setFechaTermino} // Actualiza el estado local de fecha
-                />
-              </div>
-            </div>
-
-            <div className="col-md-6">
-              <CustomInputText
-                title="Sueldo Base"
-                value={sueldoInput}
-                onChange={handleSueldoChange}
-                onBlur={handleSueldoBlur}
-                icon={<PaidIcon />}
-                disabled={isViewOnly}
-              />
-            </div>
-            <div className="col-md-6">
-              <CustomSelect
-                title="Tipo de Contrato"
-                label="Seleccione..."
-                options={TIPOS_CONTRATO}
-                value={employeeState.tipoContrato || ""}
-                onChange={(e) => handleChangeField("tipoContrato", String(e.target.value))}
-                icon={<WorkIcon />}
-                disabled={isViewOnly}
-                required
-              />
-            </div>
-            <div className="col-md-6">
-              <CustomSelect
-                title="Grupo "
-                label="Seleccione..."
-                options={grupos}
-                value={employeeState.grupo || ""}
-                onChange={(e) => handleChangeField("grupo", String(e.target.value))}
-                icon={<GroupsIcon />}
-                disabled={isViewOnly}
-                required
-              />
-            </div>
-            <div className="col-md-6">
-              <CustomSelect
-                title="Estado"
-                label="Seleccione..."
-                options={ESTADOS_EMPLEADO}
-                value={employeeState.estado || ""}
-                onChange={(e) => handleChangeField("estado", String(e.target.value))}
-                icon={<BlockIcon />}
-                disabled={isViewOnly}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Notas */}
-          <div className="row">
-            <div className="col-12">
-              <CustomTextArea
-                title="Notas / Observaciones"
-                value={employeeState.notas || ""}
-                onChange={(val) => handleChangeField("notas", val)} // Asumiendo que CustomTextArea devuelve string directo
-                disabled={isViewOnly}
-                placeholder="Ingrese información adicional aquí..."
-              />
-            </div>
-          </div>
-        </div>
+        <FormSection
+          title="Confirmar eliminación"
+          icon={<DeleteIcon fontSize="inherit" />}
+        >
+          <FormCell full>
+            <p className="m-0">
+              ¿Estás seguro de que deseas eliminar este empleado?
+            </p>
+            <strong>{nombreCompleto}</strong>
+          </FormCell>
+        </FormSection>
       );
     }
+
+    return (
+      <>
+        <FormSection
+          title="Información personal"
+          icon={<PersonIcon fontSize="inherit" />}
+        >
+          <FormField label="Nombres" htmlFor="empleado-nombre">
+            <FormInput
+              id="empleado-nombre"
+              autoComplete="given-name"
+              autoCapitalize="words"
+              value={employeeState.nombre || ""}
+              onChange={(e) => handleChangeField("nombre", e.target.value)}
+              disabled={isViewOnly}
+            />
+          </FormField>
+          <FormField label="Apellidos" htmlFor="empleado-apellido">
+            <FormInput
+              id="empleado-apellido"
+              autoComplete="family-name"
+              autoCapitalize="words"
+              value={employeeState.apellido || ""}
+              onChange={(e) => handleChangeField("apellido", e.target.value)}
+              disabled={isViewOnly}
+            />
+          </FormField>
+          <FormField label="RUT (sin DV)" htmlFor="empleado-rut">
+            <FormInput
+              id="empleado-rut"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="12345678"
+              maxLength={8}
+              value={employeeState.rut || ""}
+              onChange={(e) => handleChangeField("rut", e.target.value)}
+              disabled={isViewOnly}
+            />
+          </FormField>
+          <FormField label="DV" htmlFor="empleado-dv">
+            <FormInput
+              id="empleado-dv"
+              autoComplete="off"
+              autoCapitalize="characters"
+              placeholder="K"
+              maxLength={1}
+              value={employeeState.dv || ""}
+              onChange={(e) =>
+                handleChangeField("dv", e.target.value.slice(0, 1))
+              }
+              disabled={isViewOnly}
+            />
+          </FormField>
+        </FormSection>
+
+        <FormSection title="Contacto" icon={<PhoneIcon fontSize="inherit" />}>
+          <FormField label="Email" htmlFor="empleado-email" hint="(opcional)">
+            <FormInput
+              id="empleado-email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              value={employeeState.email || ""}
+              onChange={(e) => handleChangeField("email", e.target.value)}
+              disabled={isViewOnly}
+            />
+          </FormField>
+          <FormField label="Teléfono" htmlFor="empleado-telefono">
+            <FormInput
+              id="empleado-telefono"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="+56 9 1234 5678"
+              value={employeeState.telefono || ""}
+              onChange={(e) => handleChangeField("telefono", e.target.value)}
+              disabled={isViewOnly}
+            />
+          </FormField>
+          <FormField label="Dirección" htmlFor="empleado-direccion" full>
+            <FormInput
+              id="empleado-direccion"
+              autoComplete="street-address"
+              value={employeeState.direccion || ""}
+              onChange={(e) => handleChangeField("direccion", e.target.value)}
+              disabled={isViewOnly}
+            />
+          </FormField>
+        </FormSection>
+
+        <FormSection
+          title="Datos laborales"
+          icon={<WorkIcon fontSize="inherit" />}
+        >
+          <FormDate
+            label="Fecha inicio contrato"
+            require
+            initialDate={fechaInicio}
+            onSave={(fecha) => setFechaInicio(fecha ?? undefined)}
+            disabled={isViewOnly}
+          />
+          <FormDate
+            label="Fecha término (opcional)"
+            initialDate={fechaTermino}
+            onSave={(fecha) => setFechaTermino(fecha ?? undefined)}
+            disabled={isViewOnly}
+          />
+          <FormField label="Sueldo base" htmlFor="empleado-sueldo">
+            <FormInput
+              id="empleado-sueldo"
+              inputMode="numeric"
+              placeholder="$0"
+              value={sueldoInput}
+              onChange={(e) => handleSueldoChange(e.target.value)}
+              onBlur={handleSueldoBlur}
+              disabled={isViewOnly}
+            />
+          </FormField>
+          <FormField
+            label="Tipo de contrato"
+            htmlFor="empleado-contrato"
+            required
+          >
+            <FormSelect
+              id="empleado-contrato"
+              placeholder="Seleccione..."
+              options={TIPOS_CONTRATO}
+              value={employeeState.tipoContrato || ""}
+              onChange={(e) =>
+                handleChangeField("tipoContrato", e.target.value)
+              }
+              disabled={isViewOnly}
+            />
+          </FormField>
+          <FormField label="Grupo" htmlFor="empleado-grupo" required>
+            <FormSelect
+              id="empleado-grupo"
+              placeholder="Seleccione..."
+              options={grupos}
+              value={employeeState.grupo || ""}
+              onChange={(e) => handleChangeField("grupo", e.target.value)}
+              disabled={isViewOnly}
+            />
+          </FormField>
+          <FormField label="Estado" htmlFor="empleado-estado" required>
+            <FormSelect
+              id="empleado-estado"
+              placeholder="Seleccione..."
+              options={ESTADOS_EMPLEADO}
+              value={employeeState.estado || ""}
+              onChange={(e) => handleChangeField("estado", e.target.value)}
+              disabled={isViewOnly}
+            />
+          </FormField>
+        </FormSection>
+
+        <FormSection title="Notas" icon={<NotesIcon fontSize="inherit" />}>
+          <FormField
+            label="Notas / observaciones"
+            htmlFor="empleado-notas"
+            hint="(opcional)"
+            full
+          >
+            <FormTextarea
+              id="empleado-notas"
+              placeholder="Ingrese información adicional aquí..."
+              value={employeeState.notas || ""}
+              onChange={(e) => handleChangeField("notas", e.target.value)}
+              disabled={isViewOnly}
+            />
+          </FormField>
+        </FormSection>
+      </>
+    );
   };
 
   return (
-    <Modal show={isOpen} onHide={onClose} centered size="lg" backdrop="static">
-      <Modal.Header closeButton>
-        <Modal.Title style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          {viewMode === "create" && <PersonIcon color="primary" />}
-          {handleTitle()}
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>{renderBody()}</Modal.Body>
-      <Modal.Footer>
-        <div className="d-flex gap-2 justify-content-end w-100">
-          <Button label="Cerrar" variant="secondary" onClick={onClose} />
+    <FormSheet
+      open={isOpen}
+      onClose={onClose}
+      title={handleTitle()}
+      subtitle={
+        viewMode === "create"
+          ? "Los campos con * son obligatorios"
+          : nombreCompleto || undefined
+      }
+      size={viewMode === "delete" ? "md" : "lg"}
+      footer={
+        <>
+          <Button
+            label={isViewOnly ? "Cerrar" : "Cancelar"}
+            variant="tertiary"
+            onClick={onClose}
+          />
           {!isViewOnly && (
             <Button
-              label="Guardar"
-              variant="primary"
-              icon={<SaveIcon />}
+              label={viewMode === "delete" ? "Eliminar" : "Guardar"}
+              variant={viewMode === "delete" ? "destructive" : "primary"}
+              icon={viewMode === "delete" ? <DeleteIcon /> : <SaveIcon />}
               onClick={handleSave}
             />
           )}
-        </div>
-      </Modal.Footer>
-    </Modal>
+        </>
+      }
+    >
+      {renderBody()}
+    </FormSheet>
   );
 };
 

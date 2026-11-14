@@ -1,12 +1,22 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
-import CustomInputText from "../../ui/InputText/CustomInputText";
-import CustomSelect from "../../ui/Select/Select";
 import { tiposRevestimientos } from "../../../constant/constantBodyClient";
 import { revestimientoService } from "../../../core/services/RevestimientoService";
-import style from "./RevestimientoFields.module.css"; // Asegúrate de importar el nuevo CSS
+import { formatDateToLocalString } from "../../../utils/DateUtils";
+import Button from "../../ui/button/Button";
+import {
+  FormCell,
+  FormDate,
+  FormField,
+  FormInput,
+  FormSection,
+  FormSearchSelect,
+  FormSelect,
+  FormTextarea,
+} from "../../ui/formSheet/FormFields";
+import style from "./RevestimientoFields.module.css";
 
-// Icons (puedes ajustar las importaciones según tus iconos disponibles)
+// Icons
 import PersonIcon from "@mui/icons-material/Person";
 import PoolIcon from "@mui/icons-material/Pool";
 import ConstructionIcon from "@mui/icons-material/Construction";
@@ -16,14 +26,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import CheckIcon from "@mui/icons-material/Check";
 import type { Client } from "../../../service/client.interface";
 import type {
   IExtraRevestimientoCreate,
   IRevestimientoCreate,
 } from "../../../service/revestimiento.interface";
-import { CustomTextArea } from "../../ui/InputText/CustonTextArea";
-import Calendar from "../../ui/datepicker/DatePicker";
-import CustomCombobox from "../../ui/combobox/Combobox";
 
 interface RevestimientoFieldsProps {
   clients: Client[];
@@ -34,6 +42,28 @@ interface RevestimientoFieldsProps {
     ) => Partial<IRevestimientoCreate>,
   ) => void;
 }
+
+// "YYYY-MM-DD" (o ISO) a fecha local. new Date("YYYY-MM-DD") es medianoche
+// UTC y en Chile mostraria el dia anterior.
+const aFechaLocal = (valor?: string) => {
+  const partes = /^(\d{4})-(\d{2})-(\d{2})/.exec(valor ?? "");
+  if (!partes) return undefined;
+  const [, anio, mes, dia] = partes;
+  return new Date(Number(anio), Number(mes) - 1, Number(dia));
+};
+
+const formatoCLP = new Intl.NumberFormat("es-CL", {
+  style: "currency",
+  currency: "CLP",
+  maximumFractionDigits: 0,
+});
+
+// Atributos comunes de los campos numericos (medidas, precios)
+const numerico = {
+  type: "number",
+  inputMode: "decimal",
+  step: "any",
+} as const;
 
 const RevestimientoFields = ({
   clients,
@@ -52,7 +82,8 @@ const RevestimientoFields = ({
     .map((client) => ({
       value: client.id.toString(),
       label: client.nombre,
-    }));
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, "es"));
 
   // Area
   useEffect(() => {
@@ -160,241 +191,321 @@ const RevestimientoFields = ({
   };
 
   return (
-    <div className={style.container}>
-      {/* Sección 1: Información General */}
-      <div className={style.section}>
-        <h4 className={style.sectionTitle}>
-          <PersonIcon sx={{ mr: 1, verticalAlign: "middle" }} />
-          Información General
-        </h4>
-        <div className={style.gridContainer}>
-          <CustomCombobox
-            title="Seleccionar Cliente"
-            required
+    <>
+      <FormSection
+        title="Información general"
+        icon={<PersonIcon fontSize="inherit" />}
+      >
+        <FormField
+          label="Cliente"
+          htmlFor="revestimiento-cliente"
+          required
+          full
+        >
+          <FormSearchSelect
+            id="revestimiento-cliente"
+            searchPlaceholder="Buscar cliente por nombre..."
+            placeholder="Elegir cliente..."
+            options={optionsClients}
             value={
               value.clienteId?.toString() || value.client?.id?.toString() || ""
             }
-            options={optionsClients}
-            onChange={(val) =>
+            onChange={(e) => {
+              const val = e.target.value;
               onChange((prev) => ({
                 ...prev,
                 clienteId: val ? String(val) : undefined,
-              }))
-            }
+              }));
+            }}
           />
-          <Calendar
-            title="Fecha Propuesta"
-            className="w-fit!"
-            required
-            mode="day"
-            onChange={({ start }) =>
+        </FormField>
+        <FormDate
+          full
+          label="Fecha propuesta"
+          placeholder="Elegir fecha"
+          require
+          initialDate={aFechaLocal(value.fechaPropuesta)}
+          onSave={(fecha) =>
+            onChange((prev) => ({
+              ...prev,
+              fechaPropuesta: fecha
+                ? formatDateToLocalString(fecha)
+                : prev.fechaPropuesta,
+            }))
+          }
+        />
+      </FormSection>
+
+      <FormSection
+        title="Dimensiones de la piscina"
+        icon={<PoolIcon fontSize="inherit" />}
+      >
+        <FormField label="Largo (m)" htmlFor="rev-largo">
+          <FormInput
+            id="rev-largo"
+            {...numerico}
+            value={value.largoPiscina ?? ""}
+            onChange={(e) =>
               onChange((prev) => ({
                 ...prev,
-                fechaPropuesta: start
-                  ? start.toISOString().split("T")[0]
-                  : prev.fechaPropuesta,
+                largoPiscina: Number(e.target.value),
               }))
             }
-            initialValue={new Date(value.fechaPropuesta || new Date())}
           />
-        </div>
-      </div>
+        </FormField>
+        <FormField label="Ancho (m)" htmlFor="rev-ancho">
+          <FormInput
+            id="rev-ancho"
+            {...numerico}
+            value={value.anchoPiscina ?? ""}
+            onChange={(e) =>
+              onChange((prev) => ({
+                ...prev,
+                anchoPiscina: Number(e.target.value),
+              }))
+            }
+          />
+        </FormField>
+        <FormField label="Prof. mínima (m)" htmlFor="rev-prof-min">
+          <FormInput
+            id="rev-prof-min"
+            {...numerico}
+            value={value.profundidadMin ?? ""}
+            onChange={(e) =>
+              onChange((prev) => ({
+                ...prev,
+                profundidadMin: Number(e.target.value),
+              }))
+            }
+          />
+        </FormField>
+        <FormField label="Prof. máxima (m)" htmlFor="rev-prof-max">
+          <FormInput
+            id="rev-prof-max"
+            {...numerico}
+            value={value.profundidadMax ?? ""}
+            onChange={(e) =>
+              onChange((prev) => ({
+                ...prev,
+                profundidadMax: Number(e.target.value),
+              }))
+            }
+          />
+        </FormField>
+        <FormField
+          label="Prof. promedio (m)"
+          htmlFor="rev-prof-avg"
+          hint="(calculado)"
+        >
+          <FormInput
+            id="rev-prof-avg"
+            className={style.calculado}
+            readOnly
+            tabIndex={-1}
+            value={value.profundidadAvg?.toFixed(2) ?? ""}
+          />
+        </FormField>
+        <FormField label="Área (m²)" htmlFor="rev-area" hint="(calculado)">
+          <FormInput
+            id="rev-area"
+            className={style.calculado}
+            readOnly
+            tabIndex={-1}
+            value={value.areaPiscina?.toFixed(2) ?? ""}
+          />
+        </FormField>
+        <FormField
+          label="Volumen (m³)"
+          htmlFor="rev-volumen"
+          hint="(calculado)"
+          full
+        >
+          <FormInput
+            id="rev-volumen"
+            className={style.calculado}
+            readOnly
+            tabIndex={-1}
+            value={value.volumenPiscina?.toFixed(2) ?? ""}
+          />
+        </FormField>
+      </FormSection>
 
-      {/* Sección 2: Dimensiones de la Piscina */}
-      <div className={style.section}>
-        <h4 className={style.sectionTitle}>
-          <PoolIcon sx={{ mr: 1, verticalAlign: "middle" }} />
-          Dimensiones de la Piscina
-        </h4>
-        <div className={style.gridContainer}>
-          <CustomInputText
-            title="Largo (m)"
-            type="number"
-            value={value.largoPiscina}
-            onChange={(val) =>
-              onChange((prev) => ({ ...prev, largoPiscina: Number(val) }))
-            }
-          />
-          <CustomInputText
-            title="Ancho (m)"
-            type="number"
-            value={value.anchoPiscina}
-            onChange={(val) =>
-              onChange((prev) => ({ ...prev, anchoPiscina: Number(val) }))
-            }
-          />
-          <CustomInputText
-            title="Prof. Mínima (m)"
-            type="number"
-            value={value.profundidadMin}
-            onChange={(val) =>
-              onChange((prev) => ({ ...prev, profundidadMin: Number(val) }))
-            }
-          />
-          <CustomInputText
-            title="Prof. Máxima (m)"
-            type="number"
-            value={value.profundidadMax}
-            onChange={(val) =>
-              onChange((prev) => ({ ...prev, profundidadMax: Number(val) }))
-            }
-          />
-          <CustomInputText
-            title="Prof. Promedio (m)"
-            type="number"
-            value={value.profundidadAvg?.toFixed(2)}
-            onChange={() => {}}
-          />
-          <CustomInputText
-            title="Área (m²)"
-            type="number"
-            value={value.areaPiscina?.toFixed(2)}
-            onChange={() => {}}
-          />
-          <CustomInputText
-            title="Volumen (m³)"
-            type="number"
-            value={value.volumenPiscina?.toFixed(2)}
-            onChange={() => {}}
-          />
-        </div>
-      </div>
-
-      {/* Sección 3: Costos y Revestimiento */}
-      <div className={style.section}>
-        <h4 className={style.sectionTitle}>
-          <ConstructionIcon sx={{ mr: 1, verticalAlign: "middle" }} />
-          Costos y Revestimiento
-        </h4>
-        <div className={style.gridContainer}>
-          <CustomSelect
-            title="Tipo de Revestimiento"
-            required
-            label=""
+      <FormSection
+        title="Costos y revestimiento"
+        icon={<ConstructionIcon fontSize="inherit" />}
+      >
+        <FormField
+          label="Tipo de revestimiento"
+          htmlFor="rev-tipo"
+          required
+          full
+        >
+          <FormSelect
+            id="rev-tipo"
+            placeholder="Elegir tipo..."
             options={tiposRevestimientos}
             value={value.tipoRevestimiento || ""}
-            onChange={(event) =>
+            onChange={(e) =>
               onChange((prev) => ({
                 ...prev,
-                tipoRevestimiento: String(event.target.value),
+                tipoRevestimiento: String(e.target.value),
               }))
             }
           />
-          <CustomInputText
-            title="Valor m²"
-            type="number"
-            value={value.valorM2}
-            onChange={(val) =>
-              onChange((prev) => ({ ...prev, valorM2: Number(val) }))
+        </FormField>
+        <FormField label="Valor m²" htmlFor="rev-valor-m2">
+          <FormInput
+            id="rev-valor-m2"
+            {...numerico}
+            placeholder="$0"
+            value={value.valorM2 ?? ""}
+            onChange={(e) =>
+              onChange((prev) => ({ ...prev, valorM2: Number(e.target.value) }))
             }
           />
-          <CustomInputText
-            title="Costo Mano de Obra"
-            type="number"
-            value={value.costoManoObra}
-            onChange={(val) =>
-              onChange((prev) => ({ ...prev, costoManoObra: Number(val) }))
+        </FormField>
+        <FormField label="Costo mano de obra" htmlFor="rev-mano-obra">
+          <FormInput
+            id="rev-mano-obra"
+            {...numerico}
+            placeholder="$0"
+            value={value.costoManoObra ?? ""}
+            onChange={(e) =>
+              onChange((prev) => ({
+                ...prev,
+                costoManoObra: Number(e.target.value),
+              }))
             }
           />
-          <CustomInputText
-            title="Costo Materiales"
-            type="number"
-            value={value.costoMateriales}
-            onChange={(val) =>
-              onChange((prev) => ({ ...prev, costoMateriales: Number(val) }))
+        </FormField>
+        <FormField label="Costo materiales" htmlFor="rev-materiales">
+          <FormInput
+            id="rev-materiales"
+            {...numerico}
+            placeholder="$0"
+            value={value.costoMateriales ?? ""}
+            onChange={(e) =>
+              onChange((prev) => ({
+                ...prev,
+                costoMateriales: Number(e.target.value),
+              }))
             }
           />
-          <CustomInputText
-            title="Costo Total"
-            type="number"
-            value={value.costoTotal}
-            onChange={() => {}}
-          />
-          <CustomInputText
-            title="% Ganancia"
-            type="number"
-            value={value.porcentajeGanancia}
-            onChange={(val) =>
-              onChange((prev) => ({ ...prev, porcentajeGanancia: Number(val) }))
+        </FormField>
+        <FormField label="% Ganancia" htmlFor="rev-ganancia">
+          <FormInput
+            id="rev-ganancia"
+            {...numerico}
+            placeholder="0"
+            value={value.porcentajeGanancia ?? ""}
+            onChange={(e) =>
+              onChange((prev) => ({
+                ...prev,
+                porcentajeGanancia: Number(e.target.value),
+              }))
             }
           />
-          <CustomInputText
-            title="Valor Total (Cliente)"
-            type="number"
-            value={Math.round(value.valorTotal || 0)}
-            onChange={() => {}}
+        </FormField>
+        <FormField
+          label="Costo total"
+          htmlFor="rev-costo-total"
+          hint="(calculado)"
+        >
+          <FormInput
+            id="rev-costo-total"
+            className={style.calculado}
+            readOnly
+            tabIndex={-1}
+            value={
+              value.costoTotal !== undefined
+                ? formatoCLP.format(value.costoTotal)
+                : ""
+            }
           />
-        </div>
-      </div>
+        </FormField>
+        <FormField
+          label="Valor total (cliente)"
+          htmlFor="rev-valor-total"
+          hint="(calculado)"
+        >
+          <FormInput
+            id="rev-valor-total"
+            className={style.calculado}
+            readOnly
+            tabIndex={-1}
+            value={formatoCLP.format(Math.round(value.valorTotal || 0))}
+          />
+        </FormField>
+      </FormSection>
 
-      {/* Sección 4: Detalles Adicionales */}
-      <div className={style.section}>
-        <h4 className={style.sectionTitle}>
-          <DescriptionIcon sx={{ mr: 1, verticalAlign: "middle" }} />
-          Detalles y Fechas
-        </h4>
-        <div className={style.gridContainer}>
-          <div style={{ gridColumn: "1 / -1" }}>
-            <CustomTextArea
-              title="Detalles / Observaciones"
-              value={value.detalles}
-              onChange={(val) =>
-                onChange((prev) => ({ ...prev, detalles: String(val) }))
-              }
-            />
-          </div>
-          <CustomInputText
-            title="Garantía"
-            value={value.garantia}
-            onChange={(val) =>
-              onChange((prev) => ({ ...prev, garantia: String(val) }))
+      <FormSection
+        title="Detalles y fechas"
+        icon={<DescriptionIcon fontSize="inherit" />}
+      >
+        <FormField
+          label="Detalles / observaciones"
+          htmlFor="rev-detalles"
+          hint="(opcional)"
+          full
+        >
+          <FormTextarea
+            id="rev-detalles"
+            value={value.detalles ?? ""}
+            onChange={(e) =>
+              onChange((prev) => ({ ...prev, detalles: String(e.target.value) }))
             }
           />
-          <Calendar
-            title="Fecha Inicio Obra"
-            className="w-fit!"
-            required
-            mode="day"
-            onChange={({ start }) =>
-              onChange((prev) => ({
-                ...prev,
-                fechaInicio: start
-                  ? start.toISOString().split("T")[0]
-                  : prev.fechaInicio,
-              }))
-            }
-            initialValue={new Date(value.fechaInicio || new Date())}
-          />
-          <Calendar
-            title="Fecha Término Obra"
-            className="w-fit!"
-            required
-            mode="day"
-            initialValue={new Date(value.fechaTermino || new Date())}
-            onChange={({ start }) =>
-              onChange((prev) => ({
-                ...prev,
-                fechaTermino: start
-                  ? start.toISOString().split("T")[0]
-                  : prev.fechaTermino,
-              }))
+        </FormField>
+        <FormField label="Garantía" htmlFor="rev-garantia" full>
+          <FormInput
+            id="rev-garantia"
+            placeholder="Ej: 2 años"
+            value={value.garantia ?? ""}
+            onChange={(e) =>
+              onChange((prev) => ({ ...prev, garantia: String(e.target.value) }))
             }
           />
-        </div>
-      </div>
+        </FormField>
+        <FormDate
+          label="Fecha inicio obra"
+          placeholder="Elegir fecha"
+          require
+          initialDate={aFechaLocal(value.fechaInicio)}
+          onSave={(fecha) =>
+            onChange((prev) => ({
+              ...prev,
+              fechaInicio: fecha
+                ? formatDateToLocalString(fecha)
+                : prev.fechaInicio,
+            }))
+          }
+        />
+        <FormDate
+          label="Fecha término obra"
+          placeholder="Elegir fecha"
+          require
+          initialDate={aFechaLocal(value.fechaTermino)}
+          onSave={(fecha) =>
+            onChange((prev) => ({
+              ...prev,
+              fechaTermino: fecha
+                ? formatDateToLocalString(fecha)
+                : prev.fechaTermino,
+            }))
+          }
+        />
+      </FormSection>
 
-      {/* Sección 5: Imágenes */}
-      <div className={style.section}>
-        <h4 className={style.sectionTitle}>
-          <ImageIcon sx={{ mr: 1, verticalAlign: "middle" }} />
-          Imágenes del Proyecto
-        </h4>
-        <div className={style.imageUploadContainer}>
-          <label className={style.fileInputLabel}>
-            <CloudUploadIcon sx={{ mr: 1 }} />
-            Subir Imágenes
+      <FormSection
+        title="Imágenes del proyecto"
+        icon={<ImageIcon fontSize="inherit" />}
+      >
+        <FormCell full>
+          <label className={style.subir}>
+            <CloudUploadIcon fontSize="small" />
+            Subir imágenes
             <input
-              className={style.hiddenInput}
+              className={style.inputOculto}
               type="file"
               multiple
               accept="image/*"
@@ -413,126 +524,133 @@ const RevestimientoFields = ({
               }}
             />
           </label>
-
-          {/* Galería de Previsualización */}
-          <div className={style.previewGrid}>
-            {value.imagenes?.map((u, i) => (
-              <div key={i} className={style.imageCard}>
-                <img
-                  src={u.url}
-                  className={style.previewImage}
-                  alt={`preview-${i}`}
-                />
-                <button
-                  className={style.deleteButton}
-                  type="button"
-                  onClick={() => {
-                    onChange((prev) => ({
-                      ...prev,
-                      imagenes: prev.imagenes?.filter((_, idx) => idx !== i),
-                    }));
-                  }}
-                  title="Eliminar imagen"
-                >
-                  <DeleteIcon fontSize="small" />
-                </button>
-              </div>
-            ))}
-            {(!value.imagenes || value.imagenes.length === 0) && (
-              <span style={{ color: "#888", fontStyle: "italic" }}>
-                No hay imágenes seleccionadas
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-      {/* Sección 6: Extras */}
-
-      <div className={style.section}>
-        <div className="flex justify-between items-center border-b pb-2 mb-4 border-[#0289c7]">
-          <h4 className="text-[1.1rem] font-semibold text-[#1a1a1a] m-0">
-            <LibraryAddIcon sx={{ mr: 1, verticalAlign: "middle" }} />
-            Extras
-          </h4>
-          <button
-            type="button"
-            className={style.addExtraButton}
-            onClick={() => setIsAddingExtra(!isAddingExtra)}
-          >
-            <AddCircleOutlineIcon sx={{ mr: 0.5 }} />
-            {isAddingExtra ? "Cerrar" : "Agregar Extra"}
-          </button>
-        </div>
-
-        {/* Lista de Extras Agregados */}
-        {value.extras && value.extras.length > 0 && (
-          <div className={style.extrasList}>
-            {value.extras.map((extra, index) => (
-              <div key={index} className={style.extraItem}>
-                <div className="flex-1">
-                  <span className="font-bold block">{extra.nombre}</span>
-                  <span className="text-sm text-gray-600">{extra.detalle}</span>
+        </FormCell>
+        <FormCell full>
+          {value.imagenes && value.imagenes.length > 0 ? (
+            <div className={style.galeria}>
+              {value.imagenes.map((u, i) => (
+                <div key={i} className={style.imagen}>
+                  <img src={u.url} alt={`preview-${i}`} />
+                  <button
+                    className={style.quitarImagen}
+                    type="button"
+                    onClick={() => {
+                      onChange((prev) => ({
+                        ...prev,
+                        imagenes: prev.imagenes?.filter((_, idx) => idx !== i),
+                      }));
+                    }}
+                    title="Eliminar imagen"
+                    aria-label="Eliminar imagen"
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </button>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="font-semibold text-[#0289c7]">
+              ))}
+            </div>
+          ) : (
+            <p className={style.vacio}>No hay imágenes seleccionadas</p>
+          )}
+        </FormCell>
+      </FormSection>
+
+      <FormSection title="Extras" icon={<LibraryAddIcon fontSize="inherit" />}>
+        {/* Lista de extras agregados */}
+        {value.extras && value.extras.length > 0 && (
+          <FormCell full>
+            <ul className={style.extras}>
+              {value.extras.map((extra, index) => (
+                <li key={index} className={style.extra}>
+                  <div className={style.extraTexto}>
+                    <span className={style.extraNombre}>{extra.nombre}</span>
+                    {extra.detalle && (
+                      <span className={style.extraDetalle}>
+                        {extra.detalle}
+                      </span>
+                    )}
+                  </div>
+                  <span className={style.extraValor}>
                     ${extra.valor.toLocaleString()}
                   </span>
                   <button
                     type="button"
-                    className="text-red-500 hover:text-red-700"
+                    className={style.quitarExtra}
                     onClick={() => handleRemoveExtra(index)}
+                    aria-label={`Quitar ${extra.nombre}`}
                   >
                     <DeleteIcon />
                   </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Formulario para Nuevo Extra */}
-        {isAddingExtra && (
-          <div className={style.newExtraForm}>
-            <div className={style.gridContainer}>
-              <CustomInputText
-                title="Nombre del Extra"
-                value={newExtraName}
-                onChange={(val) => setNewExtraName(String(val))}
-              />
-              <CustomInputText
-                title="Valor ($)"
-                type="number"
-                value={newExtraValue}
-                onChange={(val) => setNewExtraValue(Number(val))}
-              />
-              <div style={{ gridColumn: "1 / -1" }}>
-                <CustomTextArea
-                  title="Detalle (Opcional)"
-                  value={newExtraDetail}
-                  onChange={(val) => setNewExtraDetail(String(val))}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end mt-4">
-              <button
-                type="button"
-                className={style.saveExtraButton}
-                onClick={handleAddExtra}
-                disabled={!newExtraName || newExtraValue <= 0}
-              >
-                Guardar Extra
-              </button>
-            </div>
-          </div>
+                </li>
+              ))}
+            </ul>
+          </FormCell>
         )}
 
         {(!value.extras || value.extras.length === 0) && !isAddingExtra && (
-          <p className="text-gray-500 italic text-center py-4">
-            No hay extras agregados.
-          </p>
+          <FormCell full>
+            <p className={style.vacio}>No hay extras agregados.</p>
+          </FormCell>
         )}
-      </div>
-    </div>
+
+        {/* Formulario para nuevo extra */}
+        {isAddingExtra ? (
+          <FormCell full>
+            <div className={style.nuevoExtra}>
+              <FormField label="Nombre del extra" htmlFor="rev-extra-nombre">
+                <FormInput
+                  id="rev-extra-nombre"
+                  value={newExtraName}
+                  onChange={(e) => setNewExtraName(String(e.target.value))}
+                />
+              </FormField>
+              <FormField label="Valor ($)" htmlFor="rev-extra-valor">
+                <FormInput
+                  id="rev-extra-valor"
+                  {...numerico}
+                  placeholder="$0"
+                  value={newExtraValue || ""}
+                  onChange={(e) => setNewExtraValue(Number(e.target.value))}
+                />
+              </FormField>
+              <FormField
+                label="Detalle"
+                htmlFor="rev-extra-detalle"
+                hint="(opcional)"
+              >
+                <FormTextarea
+                  id="rev-extra-detalle"
+                  value={newExtraDetail}
+                  onChange={(e) => setNewExtraDetail(String(e.target.value))}
+                />
+              </FormField>
+              <div className={style.accionesExtra}>
+                <Button
+                  variant="tertiary"
+                  label="Cerrar"
+                  onClick={() => setIsAddingExtra(false)}
+                />
+                <Button
+                  variant="primary"
+                  label="Guardar extra"
+                  icon={<CheckIcon fontSize="small" />}
+                  onClick={handleAddExtra}
+                  disabled={!newExtraName || newExtraValue <= 0}
+                />
+              </div>
+            </div>
+          </FormCell>
+        ) : (
+          <FormCell full>
+            <Button
+              variant="secondary"
+              label="Agregar extra"
+              icon={<AddCircleOutlineIcon fontSize="small" />}
+              onClick={() => setIsAddingExtra(true)}
+            />
+          </FormCell>
+        )}
+      </FormSection>
+    </>
   );
 };
 

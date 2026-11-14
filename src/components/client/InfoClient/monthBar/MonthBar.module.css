@@ -176,3 +176,40 @@
 :global([data-theme="dark"]) .botonAccion {
   color: #04131b;
 }
+
+/*
+ * Celular. La barra partia en dos filas: el carrusel (flex-basis 14rem) y
+ * "+ Registrar mantencion" no caben juntos en 430px. Ahora la barra es una
+ * sola fila de pildoras compactas; la accion pasa a un boton flotante dentro
+ * del panel (`.fab` en InfoDialogClient.module.css). Las flechas se ocultan:
+ * en pantalla tactil la pista se desliza con el dedo.
+ */
+@container (max-width: 40rem) {
+  .barra {
+    padding: 0.45rem 0.6rem;
+    gap: 0.5rem;
+  }
+
+  .flecha {
+    display: none;
+  }
+
+  .pista {
+    gap: 0.4rem;
+  }
+
+  .pildora {
+    font-size: var(--fs-sm);
+    padding: 0.3rem 0.8rem;
+    min-height: var(--tap-min);
+    line-height: 1.2;
+  }
+
+  .pildora small {
+    font-size: 0.8125rem;
+  }
+
+  .accion {
+    display: none;
+  }
+}

@@ -1,14 +1,12 @@
 import { type Client } from "../../../service/client.interface";
-import CustomInputText from "../../ui/InputText/CustomInputText";
-import style from "./CreateClientDialog.module.css";
 
 // Icons
 import PersonIcon from "@mui/icons-material/Person";
 import HomeIcon from "@mui/icons-material/Home";
-import PaidIcon from "@mui/icons-material/Paid";
 import CheckIcon from "@mui/icons-material/Check";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PoolIcon from "@mui/icons-material/Pool";
+import SaveIcon from "@mui/icons-material/Save";
 
 import {
   useCreateClient,
@@ -17,20 +15,23 @@ import {
 } from "../../../hooks/ClientHooks";
 import { useEffect, useState } from "react";
 
-import CustomSelect from "../../ui/Select/Select";
 import {
   comunas,
   dias,
   rutas,
   tiposPiscinasMaterial,
 } from "../../../constant/constantBodyClient";
-import SaveIcon from "@mui/icons-material/Save";
-import Calendar from "../../ui/datepicker/DatePicker";
 import Button from "../../ui/button/Button";
-import LabelField from "../../ui/labelField/LabelField";
-import CustomCheckbox from "../../ui/checkbox/CustomCheckBox";
-import { CustomTextArea } from "../../ui/InputText/CustonTextArea";
-import { Modal } from "react-bootstrap";
+import FormSheet from "../../ui/formSheet/FormSheet";
+import {
+  FormDate,
+  FormField,
+  FormInput,
+  FormSection,
+  FormSelect,
+  FormTextarea,
+  FormToggle,
+} from "../../ui/formSheet/FormFields";
 
 interface CreateClientDialogProps {
   open: boolean;
@@ -216,197 +217,191 @@ const CreateClientDialog = ({
     comunaClient &&
     valorMantencionClient > 0;
 
+  const opcionesSinVacio = (opciones: { value: string; label: string }[]) =>
+    opciones.filter((opcion) => opcion.value !== "");
+
   return (
-    <Modal
-      size="xl"
-      show={open}
-      onExit={onClose}
-      onHide={onClose}
-      className="max-h-dvh"
+    <FormSheet
+      open={open}
+      onClose={onClose}
+      title={isEditMode ? "Editar cliente" : "Nuevo cliente"}
+      subtitle={
+        isEditMode ? clientInfo?.nombre : "Los campos con * son obligatorios"
+      }
+      size="lg"
+      footer={
+        <>
+          <Button
+            label="Cancelar"
+            variant="tertiary"
+            onClick={onClose}
+            disabled={loading || success}
+          />
+          <Button
+            onClick={handleButtonClick}
+            label={
+              success
+                ? "¡Guardado!"
+                : isEditMode
+                  ? "Guardar cambios"
+                  : "Crear cliente"
+            }
+            variant="primary"
+            disabled={!isValidForm || loading || success}
+            icon={success ? <CheckIcon /> : <SaveIcon />}
+          />
+        </>
+      }
     >
-      <Modal.Header className={style.dialogTitle} closeButton>
-        {isEditMode ? "Editar Cliente" : "Crear Nuevo Cliente"}
-      </Modal.Header>
+      <FormSection
+        title="Datos personales"
+        icon={<PersonIcon fontSize="inherit" />}
+      >
+        <FormField label="Nombre" htmlFor="cliente-nombre" required full>
+          <FormInput
+            id="cliente-nombre"
+            autoComplete="name"
+            autoCapitalize="words"
+            value={nameClient}
+            onChange={(e) => setNameClient(e.target.value)}
+          />
+        </FormField>
+        <FormField label="Teléfono" htmlFor="cliente-telefono" required>
+          <FormInput
+            id="cliente-telefono"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="+56 9 1234 5678"
+            value={telefonoClient}
+            onChange={(e) => setTelefonoClient(e.target.value)}
+          />
+        </FormField>
+        <FormField label="Email" htmlFor="cliente-email" hint="(opcional)">
+          <FormInput
+            id="cliente-email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            value={emailClient}
+            onChange={(e) => setEmailClient(e.target.value)}
+          />
+        </FormField>
+      </FormSection>
 
-      <Modal.Body className="custom-scrollbar">
-        <div className={style.container}>
-          {/* Sección 1: Información Personal */}
-          <div className={style.section}>
-            <h4 className={style.sectionTitle}>
-              <PersonIcon fontSize="small" /> Información Personal
-            </h4>
-            <div className={style.gridContainer}>
-              <CustomInputText
-                title="Nombre Cliente"
-                require
-                onChange={setNameClient}
-                value={nameClient}
-              />
-              <CustomInputText
-                title="Teléfono"
-                require
-                onChange={setTelefonoClient}
-                value={telefonoClient}
-              />
-              <CustomInputText
-                title="Email"
-                require={false}
-                onChange={setEmailClient}
-                value={emailClient}
-              />
-            </div>
-          </div>
+      <FormSection title="Ubicación" icon={<HomeIcon fontSize="inherit" />}>
+        <FormField label="Dirección" htmlFor="cliente-direccion" required full>
+          <FormInput
+            id="cliente-direccion"
+            autoComplete="street-address"
+            value={direccionClient}
+            onChange={(e) => setdireccionClient(e.target.value)}
+          />
+        </FormField>
+        <FormField label="Comuna" htmlFor="cliente-comuna" required>
+          <FormSelect
+            id="cliente-comuna"
+            placeholder="Elegir comuna..."
+            options={opcionesSinVacio(comunas)}
+            value={comunaClient}
+            onChange={(e) => setcomunaClient(e.target.value)}
+          />
+        </FormField>
+        <FormField label="Ruta" htmlFor="cliente-ruta">
+          <FormSelect
+            id="cliente-ruta"
+            placeholder="Sin ruta"
+            options={opcionesSinVacio(rutas)}
+            value={rutaClient}
+            onChange={(e) => setRutaClient(e.target.value)}
+          />
+        </FormField>
+      </FormSection>
 
-          {/* Sección 2: Ubicación */}
-          <div className={style.section}>
-            <h4 className={style.sectionTitle}>
-              <HomeIcon fontSize="small" /> Ubicación
-            </h4>
-            <div className={style.gridContainer}>
-              <CustomInputText
-                title="Dirección"
-                require
-                onChange={setdireccionClient}
-                value={direccionClient}
-              />
-              <div className="flex flex-col gap-1">
-                <LabelField label="Comuna" required />
-                <CustomSelect
-                  label=""
-                  options={comunas}
-                  onChange={(e) => setcomunaClient(String(e.target.value))}
-                  value={comunaClient}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <LabelField label="Ruta" required />
-                <CustomSelect
-                  label=""
-                  options={rutas} // Asegúrate de tener rutas importado de tus constantes
-                  onChange={(e) => setRutaClient(String(e.target.value))}
-                  value={rutaClient}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Sección 3: Detalles del Servicio */}
-          <div className={style.section}>
-            <h4 className={style.sectionTitle}>
-              <PoolIcon fontSize="small" /> Detalles del Servicio
-            </h4>
-            <div className={style.gridContainer}>
-              <div className="flex flex-col gap-1">
-                <LabelField label="Tipo de Piscina" required />
-                <CustomSelect
-                  label=""
-                  options={tiposPiscinasMaterial}
-                  onChange={(e) => settipoPiscinaClient(String(e.target.value))}
-                  value={tipoPiscinaClient}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <LabelField label="Día Mantención" required>
-                  <CustomSelect
-                    label=""
-                    options={dias}
-                    onChange={(e) =>
-                      setDiaMantencionClient(String(e.target.value))
-                    }
-                    value={diaMantencionClient}
-                  />
-                </LabelField>
-              </div>
-              <div className="flex flex-col gap-1">
-                <LabelField label="Periodicidad de visitas" required>
-                  <CustomSelect
-                    label=""
-                    options={opcionesFrecuencia}
-                    onChange={(e) => setFrecuenciaClient(String(e.target.value))}
-                    value={frecuenciaClient}
-                  />
-                </LabelField>
-              </div>
-              <div className="flex flex-col gap-1">
-                <Calendar
-                  title="Fecha de Ingreso"
-                  mode="day"
-                  required
-                  initialValue={
-                    fechaIngresoClient
-                      ? new Date(fechaIngresoClient)
-                      : undefined
-                  }
-                  onChange={({ start }) =>
-                    setFechaIngresoClient(
-                      start
-                        ? new Date(start)
-                        : (fechaIngresoClient ?? new Date()),
-                    )
-                  }
-                />
-              </div>
-              <CustomInputText
-                title="Valor Mantención"
-                icon={<PaidIcon />}
-                require
-                onChange={handlePriceChange}
-                onBlur={handlePriceBlur}
-                value={inputValue}
-              />
-            </div>
-          </div>
-
-          {/* Sección 4: Configuración Adicional */}
-          <div className={style.section}>
-            <h4 className={style.sectionTitle}>
-              <SettingsIcon fontSize="small" /> Configuración Adicional
-            </h4>
-            <div className={style.gridContainer}>
-              <div className={style.fullWidth}>
-                <CustomTextArea
-                  title="Observacion"
-                  placeholder="Detalles adicionales sobre el cliente o la piscina..."
-                  value={observacionClient}
-                  onChange={setObservacionClient}
-                />
-              </div>
-
-              {isEditMode && (
-                <div className="flex items-center gap-2 mt-2">
-                  <LabelField label="Cliente Activo" />
-                  <CustomCheckbox
-                    checked={isActiveClient}
-                    onChange={setIsActiveClient}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </Modal.Body>
-
-      <Modal.Footer className={style.dialogActions}>
-        <Button
-          className="bg-gray-400 hover:bg-gray-500 text-white"
-          onClick={onClose}
-          disabled={loading || success}
-          label="Cancelar"
+      <FormSection title="Servicio" icon={<PoolIcon fontSize="inherit" />}>
+        <FormField label="Tipo de piscina" htmlFor="cliente-tipo" required>
+          <FormSelect
+            id="cliente-tipo"
+            placeholder="Elegir tipo..."
+            options={tiposPiscinasMaterial}
+            value={tipoPiscinaClient}
+            onChange={(e) => settipoPiscinaClient(e.target.value)}
+          />
+        </FormField>
+        <FormField label="Valor mantención" htmlFor="cliente-valor" required>
+          <FormInput
+            id="cliente-valor"
+            inputMode="numeric"
+            placeholder="$0"
+            value={inputValue}
+            onChange={(e) => handlePriceChange(e.target.value)}
+            onFocus={() =>
+              setInputValue(
+                valorMantencionClient ? String(valorMantencionClient) : "",
+              )
+            }
+            onBlur={handlePriceBlur}
+          />
+        </FormField>
+        <FormField label="Día de mantención" htmlFor="cliente-dia" required>
+          <FormSelect
+            id="cliente-dia"
+            placeholder="Elegir día..."
+            options={opcionesSinVacio(dias)}
+            value={diaMantencionClient}
+            onChange={(e) => setDiaMantencionClient(e.target.value)}
+          />
+        </FormField>
+        <FormField
+          label="Periodicidad de visitas"
+          htmlFor="cliente-frecuencia"
+          required
+        >
+          <FormSelect
+            id="cliente-frecuencia"
+            placeholder="Elegir periodicidad..."
+            options={opcionesFrecuencia}
+            value={frecuenciaClient}
+            onChange={(e) => setFrecuenciaClient(e.target.value)}
+          />
+        </FormField>
+        <FormDate
+          full
+          label="Fecha de ingreso"
+          placeholder="Hoy, si no se elige"
+          initialDate={fechaIngresoClient ?? undefined}
+          onSave={(fecha) => setFechaIngresoClient(fecha)}
         />
-        <Button
-          onClick={handleButtonClick}
-          label={
-            success
-              ? "Guardado!"
-              : isEditMode
-                ? "Guardar Cambios"
-                : "Crear Cliente"
-          }
-          disabled={!isValidForm || loading || success}
-          icon={success ? <CheckIcon /> : <SaveIcon />}
-        />
-      </Modal.Footer>
-    </Modal>
+      </FormSection>
+
+      <FormSection title="Adicional" icon={<SettingsIcon fontSize="inherit" />}>
+        <FormField
+          label="Observación"
+          htmlFor="cliente-observacion"
+          hint="(opcional)"
+          full
+        >
+          <FormTextarea
+            id="cliente-observacion"
+            placeholder="Detalles adicionales sobre el cliente o la piscina..."
+            value={observacionClient}
+            onChange={(e) => setObservacionClient(e.target.value)}
+          />
+        </FormField>
+        {isEditMode && (
+          <FormField label="Estado del cliente" full>
+            <FormToggle
+              name="cliente-activo"
+              value={isActiveClient}
+              onChange={setIsActiveClient}
+              labelYes="Activo"
+              labelNo="Inactivo"
+            />
+          </FormField>
+        )}
+      </FormSection>
+    </FormSheet>
   );
 };
 

@@ -1,120 +1,148 @@
-.container {
+/*
+ * Piezas propias del formulario de revestimiento que no cubre FormFields:
+ * campos calculados, galeria de imagenes y extras.
+ * Usa los tokens --modal-* de styles/tokens.css (responden al tema oscuro).
+ */
+
+/* Campos calculados: solo lectura, se distinguen del resto. */
+.calculado {
+  background-color: var(--modal-superficie-2);
+  color: var(--modal-texto-2);
+  border-color: var(--modal-borde);
+}
+
+/* --- Imagenes ------------------------------------------------------------ */
+
+.subir {
   display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  padding: 1rem;
-}
-
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem;
-  background-color: #f9fafb; /* Fondo suave para separar secciones */
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-}
-
-.sectionTitle {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-primario);
-  margin-bottom: 0.5rem;
-  border-bottom: 2px solid var(--color-secundario);
-  padding-bottom: 0.5rem;
-  display: inline-block;
-  width: fit-content;
-}
-
-.gridContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  align-items: end; /* Alinea los inputs al fondo si tienen alturas distintas */
-}
-
-/* Estilos específicos para la sección de imágenes */
-.imageUploadContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.fileInputLabel {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.5rem;
-  background-color: var(--color-fondo);
-  color: var(--color-secundario);
-  border: 2px dashed var(--color-secundario);
-  border-radius: 8px;
+  gap: 0.5rem;
+  min-height: var(--tap-min);
+  padding: 0.75rem 1rem;
+  margin: 0;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
+  font-weight: 700;
+  color: var(--modal-acento);
+  background-color: var(--modal-acento-suave);
+  border: 0.125rem dashed var(--modal-acento);
+  border-radius: var(--radius-md);
 }
-
-.fileInputLabel:hover {
-  background-color: var(--color-fondo-suave);
-  border-color: var(--color-primario);
-  color: var(--color-primario);
+.subir:focus-within {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
 }
-
-.hiddenInput {
-  display: none;
+.inputOculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
-
-.previewGrid {
+.galeria {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  gap: 0.6rem;
 }
-
-.imageCard {
+.imagen {
   position: relative;
-  border-radius: 8px;
+  aspect-ratio: 1;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  aspect-ratio: 1; /* Mantiene las imágenes cuadradas */
+  border-radius: var(--radius-md);
+  border: 0.0625rem solid var(--modal-borde);
 }
-
-.previewImage {
+.imagen img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
-.deleteButton {
+.quitarImagen {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  top: 0.25rem;
+  right: 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 50%;
   cursor: pointer;
-  color: #ef4444; /* Rojo */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s;
+  background-color: rgba(255, 255, 255, 0.92);
+  color: var(--modal-peligro);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
-
-.deleteButton:hover {
-  transform: scale(1.1);
-  background-color: #fff;
+.vacio {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-style: italic;
+  color: var(--modal-texto-2);
 }
+/* --- Extras -------------------------------------------------------------- */
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .gridContainer {
-    grid-template-columns: 1fr; /* Una columna en móviles */
-  }
-
-  .section {
-    padding: 1rem;
-  }
+.extras {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.extra {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background-color: var(--modal-superficie-2);
+  border: 0.0625rem solid var(--modal-borde);
+  border-radius: var(--radius-md);
+}
+.extraTexto {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: anywhere;
+}
+.extraNombre {
+  font-weight: 700;
+}
+.extraDetalle {
+  font-size: var(--fs-sm);
+  color: var(--modal-texto-2);
+}
+.extraValor {
+  flex: 0 0 auto;
+  font-weight: 800;
+  color: var(--modal-acento);
+}
+.quitarExtra {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background: transparent;
+  color: var(--modal-peligro);
+}
+.quitarExtra:hover {
+  background-color: var(--modal-peligro-suave);
+}
+.nuevoExtra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.85rem;
+  padding: 0.75rem;
+  border: 0.125rem dashed var(--modal-borde-fuerte);
+  border-radius: var(--radius-md);
+}
+.accionesExtra {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  flex-wrap: wrap;
 }

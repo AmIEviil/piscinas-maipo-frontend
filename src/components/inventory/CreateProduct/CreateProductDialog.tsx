@@ -1,17 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import CustomInputText from "../../ui/InputText/CustomInputText";
-import style from "./CreateProductDialog.module.css";
-
 import { useEffect, useRef, useState } from "react";
 import CheckIcon from "@mui/icons-material/Check";
 import SaveIcon from "@mui/icons-material/Save";
+import Inventory2Icon from "@mui/icons-material/Inventory2";
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+import CategoryIcon from "@mui/icons-material/Category";
 import type {
   ICreateProductPayload,
   ICreateTypeProductPayload,
   IProducto,
   ITypeProduct,
 } from "../../../service/products.interface";
-import CustomSelect from "../../ui/Select/Select";
 import {
   useCreateProduct,
   useCreateTypeProduct,
@@ -19,7 +18,13 @@ import {
   useUpdateProductType,
 } from "../../../hooks/ProductHooks";
 import Button from "../../ui/button/Button";
-import { Modal } from "react-bootstrap";
+import FormSheet from "../../ui/formSheet/FormSheet";
+import {
+  FormField,
+  FormInput,
+  FormSection,
+  FormSelect,
+} from "../../ui/formSheet/FormFields";
 
 interface CreateClientDialogProps {
   open: boolean;
@@ -203,82 +208,167 @@ const CreateProductDialog = ({
       case "product":
         return (
           <>
-            <CustomInputText
-              title="Nombre del Producto"
-              require
-              onChange={handleName}
-              value={nameProduct}
-            />
-            <CustomSelect
-              label="Tipo de Producto"
-              options={typeOptions}
-              onChange={(event) => setTipoProducto(String(event.target.value))}
-              value={tipoProducto}
-            />
-            <CustomInputText
-              title="Cantidad Disponible"
-              require
-              onChange={(value) => handleCantidadDisponible(Number(value))}
-              value={cantidadDisponibleProduct}
-            />
-            <CustomInputText
-              title="Valor Unitario"
-              require
-              onChange={handleChange}
-              onBlur={handleBlur}
-              value={inputValue}
-            />
-            <CustomInputText
-              title="Alerta mínima de stock"
-              type="number"
-              onChange={(value) =>
-                setStockMinimoProduct(value !== "" ? Number(value) : undefined)
-              }
-              value={stockMinimoProduct}
-            />
+            <FormSection
+              title="Producto"
+              icon={<Inventory2Icon fontSize="inherit" />}
+            >
+              <FormField
+                label="Nombre del producto"
+                htmlFor="producto-nombre"
+                required
+                full
+              >
+                <FormInput
+                  id="producto-nombre"
+                  autoComplete="off"
+                  value={nameProduct ?? ""}
+                  onChange={(e) => handleName(e.target.value)}
+                />
+              </FormField>
+              <FormField
+                label="Tipo de producto"
+                htmlFor="producto-tipo"
+                full
+              >
+                <FormSelect
+                  id="producto-tipo"
+                  placeholder="Elegir tipo..."
+                  options={typeOptions}
+                  value={tipoProducto}
+                  onChange={(e) => setTipoProducto(String(e.target.value))}
+                />
+              </FormField>
+            </FormSection>
+
+            <FormSection
+              title="Stock y precio"
+              icon={<MonetizationOnIcon fontSize="inherit" />}
+            >
+              <FormField
+                label="Cantidad disponible"
+                htmlFor="producto-cantidad"
+                required
+              >
+                <FormInput
+                  id="producto-cantidad"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  autoComplete="off"
+                  value={cantidadDisponibleProduct ?? ""}
+                  onChange={(e) =>
+                    handleCantidadDisponible(Number(e.target.value))
+                  }
+                />
+              </FormField>
+              <FormField
+                label="Valor unitario"
+                htmlFor="producto-valor"
+                required
+              >
+                <FormInput
+                  id="producto-valor"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  placeholder="$0"
+                  value={inputValue}
+                  onChange={(e) => handleChange(e.target.value)}
+                  onFocus={() =>
+                    setInputValue(
+                      valorUnitarioProduct ? String(valorUnitarioProduct) : "",
+                    )
+                  }
+                  onBlur={handleBlur}
+                />
+              </FormField>
+              <FormField
+                label="Alerta mínima de stock"
+                htmlFor="producto-stock-minimo"
+                hint="(opcional)"
+                full
+              >
+                <FormInput
+                  id="producto-stock-minimo"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  autoComplete="off"
+                  value={stockMinimoProduct ?? ""}
+                  onChange={(e) =>
+                    setStockMinimoProduct(
+                      e.target.value !== ""
+                        ? Number(e.target.value)
+                        : undefined,
+                    )
+                  }
+                />
+              </FormField>
+            </FormSection>
           </>
         );
 
       case "type":
         return (
-          <>
-            <h3>Tipo de Producto</h3>
-            <CustomInputText
-              title="Nombre del Tipo"
-              require
-              onChange={setNameProductType}
-              value={nameProductType}
-            />
-          </>
+          <FormSection
+            title="Tipo de producto"
+            icon={<CategoryIcon fontSize="inherit" />}
+          >
+            <FormField
+              label="Nombre del tipo"
+              htmlFor="tipo-producto-nombre"
+              required
+              full
+            >
+              <FormInput
+                id="tipo-producto-nombre"
+                autoComplete="off"
+                value={nameProductType ?? ""}
+                onChange={(e) => setNameProductType(e.target.value)}
+              />
+            </FormField>
+          </FormSection>
         );
     }
   };
 
-  const renderFooterDialog = () => {
-    return (
-      <Modal.Footer className={style.dialogActions}>
-        <button onClick={handleClose}>Cancelar</button>
-        <Button
-          onClick={handleAcceptButton}
-          disabled={!isValidForm || loading}
-          label={isEditMode ? "Guardar Cambios" : "Crear Producto"}
-          icon={success ? <CheckIcon /> : <SaveIcon />}
-        ></Button>
-      </Modal.Footer>
-    );
-  };
+  const esTipo = kind === "type";
 
   return (
-    <Modal fullwidth="true" maxwidth="md" centered show={open} onHide={handleClose}>
-      <Modal.Header className={style.dialogTitle} closeButton>
-        {isEditMode ? "Editar" : "Crear"}{" "}
-        {kind === "product" ? "Producto" : "Tipo de Producto"}
-      </Modal.Header>
-      <Modal.Body>
-        <div className={style.formContainer}>{renderBodyDialog()}</div>
-      </Modal.Body>
-      {renderFooterDialog()}
-    </Modal>
+    <FormSheet
+      open={open}
+      onClose={handleClose}
+      title={`${isEditMode ? "Editar" : "Nuevo"} ${
+        esTipo ? "tipo de producto" : "producto"
+      }`}
+      subtitle={
+        isEditMode
+          ? esTipo
+            ? productInfo?.tipo?.nombre
+            : productInfo?.nombre
+          : "Los campos con * son obligatorios"
+      }
+      size="md"
+      footer={
+        <>
+          <Button label="Cancelar" variant="tertiary" onClick={handleClose} />
+          <Button
+            onClick={handleAcceptButton}
+            variant="primary"
+            disabled={!isValidForm || loading}
+            label={
+              isEditMode
+                ? "Guardar cambios"
+                : esTipo
+                  ? "Crear tipo"
+                  : "Crear producto"
+            }
+            icon={success ? <CheckIcon /> : <SaveIcon />}
+          />
+        </>
+      }
+    >
+      {renderBodyDialog()}
+    </FormSheet>
   );
 };
 

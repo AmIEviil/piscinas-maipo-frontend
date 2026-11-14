@@ -789,6 +789,16 @@ const InfoClientDialog = ({
             ) : (
               <p className={style.vacio}>No hay mantenciones para mostrar.</p>
             )}
+            {/* Solo visible en celular (ver `.fab`): reemplaza al boton de la
+                barra de meses, que ahi se oculta para no partirla en dos filas. */}
+            <button
+              type="button"
+              className={style.fab}
+              onClick={() => setHojaMantencionAbierta(true)}
+              aria-label="Registrar mantención"
+            >
+              +
+            </button>
           </div>
 
           {puenteVeloVisible && (
@@ -839,6 +849,16 @@ const InfoClientDialog = ({
               onGenerarBoleta={abrirBoleta}
               onRegistrarPago={abrirHojaPagoDirecta}
             />
+            {isSuperAdmin && (
+              <button
+                type="button"
+                className={style.fab}
+                onClick={abrirHojaPagoDirecta}
+                aria-label="Registrar pago"
+              >
+                +
+              </button>
+            )}
           </div>
 
           <div
@@ -880,7 +900,10 @@ const InfoClientDialog = ({
       {/* Fuera del ternario de loading a proposito: antes del rewrite el
           Modal.Footer era un hermano incondicional, asi que Cerrar y la
           paginacion seguian disponibles mientras cargaban los datos. */}
-      <div className={style.pie}>
+      <div
+        className={style.pie}
+        data-solo-cerrar={totalRecords > 1 ? "no" : "si"}
+      >
         {totalRecords > 1 && (
           <>
             <span className={style.piePosicion}>

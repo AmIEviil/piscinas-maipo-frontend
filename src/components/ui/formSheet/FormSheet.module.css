@@ -1,0 +1,329 @@
+/*
+ * Familia FormSheet: contenedor + campos de los formularios de alta/edicion.
+ *
+ * Mismo lenguaje que la ficha del cliente (InfoDialogClient.module.css) y la
+ * hoja de mantencion (MaintenanceSheet.module.css): tokens --modal-* de
+ * styles/tokens.css (responden al tema oscuro), todo en rem para escalar con
+ * el control de tamano de letra, areas tactiles >= --tap-min.
+ *
+ * El corte de columnas va por @container sobre `.cuerpo`, no por @media: lo
+ * que importa es el ancho real del formulario, no el de la ventana.
+ */
+
+/* --- Contenedor ---------------------------------------------------------- */
+
+.hoja {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 90dvh;
+  background: var(--modal-lienzo);
+  color: var(--modal-texto);
+  border: 0;
+  border-radius: 1.25rem;
+  box-shadow: 0 0.25rem 0.875rem var(--color-sombra);
+}
+
+/* En celular responsive.css ya pone el modal a pantalla completa
+   (.modal-content height:100%); el tope de 90dvh dejaria una franja vacia
+   abajo. Mismo corte de 768px que esa hoja global. */
+@media screen and (max-width: 768px) {
+  .hoja {
+    max-height: none;
+    height: 100dvh;
+    border-radius: 0;
+  }
+}
+
+.cabecera {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  padding-top: max(0.9rem, env(safe-area-inset-top));
+  background: linear-gradient(
+    160deg,
+    var(--modal-cab-bg) 0%,
+    var(--modal-cab-bg-2) 100%
+  );
+  color: var(--modal-cab-texto);
+}
+
+.textoCabecera {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.titulo {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.subtitulo {
+  margin: 0.1rem 0 0;
+  font-size: var(--fs-sm);
+  color: var(--modal-cab-texto-2);
+  overflow-wrap: anywhere;
+}
+
+.cerrar {
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: var(--fs-lg);
+  line-height: 1;
+  cursor: pointer;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--modal-cab-texto);
+  border: 0.0625rem solid var(--modal-cab-borde);
+}
+
+.cerrar:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.cerrar:focus-visible {
+  outline: 0.1875rem solid #fff;
+  outline-offset: 0.125rem;
+}
+
+.cuerpo {
+  container-type: inline-size;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pie {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
+  background: var(--modal-superficie);
+  border-top: 0.0625rem solid var(--modal-borde);
+}
+
+/* En celular los botones del pie se reparten el ancho en partes iguales:
+   uno al lado del otro, no apilados, para no comerse alto de pantalla. */
+@media screen and (max-width: 768px) {
+  .pie > * {
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+  }
+}
+
+/* --- Secciones y grilla -------------------------------------------------- */
+
+.seccion {
+  background: var(--modal-superficie);
+  border: 0.0625rem solid var(--modal-borde);
+  border-radius: var(--radius-md);
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.seccionTitulo {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--modal-acento);
+}
+
+.seccionIcono {
+  display: inline-flex;
+  font-size: 1.15rem;
+}
+
+.grilla {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.85rem;
+}
+
+@container (min-width: 36rem) {
+  .grilla {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+.anchoCompleto {
+  grid-column: 1 / -1;
+}
+
+/* --- Campos -------------------------------------------------------------- */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.rotulo {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--modal-texto);
+}
+
+.requerido {
+  color: var(--modal-peligro);
+}
+
+.pista {
+  font-size: var(--fs-sm);
+  font-weight: 400;
+  color: var(--modal-texto-2);
+}
+
+.error {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--modal-peligro);
+}
+
+/* Mismo control que MaintenanceSheet.module.css y ClientProfilePanel. El
+   font-size de 1rem como minimo es lo que evita que Safari en iPhone haga
+   zoom al enfocar el campo. */
+.control {
+  font: inherit;
+  font-size: max(1rem, var(--fs-base));
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  min-height: var(--tap-min);
+  background-color: var(--modal-superficie);
+  color: var(--modal-texto);
+  border: 0.125rem solid var(--modal-borde-fuerte);
+  border-radius: var(--radius-md);
+  margin: 0;
+}
+
+.control::placeholder {
+  color: var(--modal-texto-2);
+  opacity: 0.8;
+}
+
+.control:focus-visible,
+.control:focus {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+  border-color: var(--modal-acento);
+}
+
+.control:disabled {
+  background-color: var(--modal-superficie-2);
+  color: var(--modal-texto-2);
+  border-color: var(--modal-borde);
+}
+
+/* <select> sin el estilo nativo de iOS (gradiente y esquinas propias), con
+   una flecha dibujada. El picker que abre sigue siendo el del sistema. */
+select.control {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.4rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23668899'%3E%3Cpath d='M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.1rem;
+}
+
+.areaTexto {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+/* CustomCalendarV2 limita su `.wrapper` a 20rem; en la grilla va a ancho
+   completo de su celda. Doble clase: el orden de carga de los modulos CSS
+   no garantiza que esta regla llegue despues de la del calendario. */
+.campo .calendario {
+  max-width: none;
+}
+
+/* --- Par Si/No ----------------------------------------------------------- */
+
+.opciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.opcion {
+  position: relative;
+  margin: 0;
+}
+
+.opcion input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.opcion span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 3rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--modal-texto-2);
+  background: var(--modal-superficie);
+  border: 0.125rem solid var(--modal-borde-fuerte);
+  border-radius: var(--radius-md);
+}
+
+.opcion input:checked + span {
+  background: var(--modal-ok-suave);
+  color: var(--modal-ok);
+  border-color: var(--modal-ok);
+}
+
+.opcionNo input:checked + span {
+  background: var(--modal-alerta-suave);
+  color: var(--modal-alerta);
+  border-color: var(--modal-alerta);
+}
+
+.opcion input:focus-visible + span {
+  outline: 0.1875rem solid var(--modal-acento);
+  outline-offset: 0.125rem;
+}
+
+/* Buscador + select de FormSearchSelect. */
+.busqueda {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import style from "./CreateRepairsDialog.module.css";
 
 // Interfaces y Stores
 import { useClientStore } from "../../../store/ClientStore";
@@ -17,7 +16,8 @@ import type {
 } from "../../../service/repairs.interface";
 import { useCreateRepair, useUpdateRepair } from "../../../hooks/RepairsHooks";
 import RepairFields from "./RepairFields";
-import { Modal } from "react-bootstrap";
+import { validarReparacion } from "./repairValidation";
+import FormSheet from "../../ui/formSheet/FormSheet";
 
 interface CreateRepairsDialogProps {
   open: boolean;
@@ -39,6 +39,10 @@ const CreateRepairsDialog = ({
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [repairData, setRepairData] = useState<Partial<IRepairCreate>>({});
+  // Los errores se muestran recien despues del primer intento de guardar,
+  // para no recibir al usuario con el formulario en rojo.
+  const [intentado, setIntentado] = useState(false);
+  const errores = intentado ? validarReparacion(repairData) : {};
 
   useEffect(() => {
     if (clients.length === 0) {
@@ -52,6 +56,8 @@ const CreateRepairsDialog = ({
     } else {
       setRepairData({}); // Reset si es nuevo
     }
+    setIntentado(false);
+    setSuccess(false);
   }, [repairInfo, open]);
 
   const clearForm = () => {
@@ -59,24 +65,40 @@ const CreateRepairsDialog = ({
   };
 
   const handleSubmit = async () => {
+    if (Object.keys(validarReparacion(repairData)).length > 0) {
+      setIntentado(true);
+      // Lleva al primer campo con error: el cuerpo de la hoja hace scroll.
+      requestAnimationFrame(() =>
+        document
+          .querySelector("[role=alert]")
+          ?.parentElement?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          }),
+      );
+      return;
+    }
+
     setLoading(true);
     try {
+      // garantia es string obligatorio en el DTO del backend, aunque en el
+      // formulario sea opcional.
+      const payload = { ...repairData, garantia: repairData.garantia ?? "" };
       if (isEditMode) {
         if (!repairInfo?.id) return;
         await useUpdateRepairMutation.mutateAsync({
-          repairId: repairInfo?.id.toString(),
-          data: repairData,
+          repairId: repairInfo.id.toString(),
+          data: payload,
         });
       } else {
-        const created = await useCreateRepairMutation.mutateAsync(repairData);
-        if (created) {
-          setSuccess(true);
-          setTimeout(() => {
-            setSuccess(false);
-            onClose();
-          }, 1000);
-        }
+        await useCreateRepairMutation.mutateAsync(payload);
       }
+      // Antes la edicion no marcaba exito ni cerraba la hoja.
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        onClose();
+      }, 1000);
     } finally {
       setLoading(false);
     }
@@ -88,36 +110,41 @@ const CreateRepairsDialog = ({
   };
 
   return (
-    <Modal size="lg" show={open} onHide={handleClose}>
-      <Modal.Header className={style.dialogTitle} closeButton>
-        {repairInfo ? "Editar Reparación" : "Crear Nueva Reparación"}
-      </Modal.Header>
-
-      <Modal.Body className="custom-scrollbar">
-        <div className={style.formContainer}>
-          <RepairFields
-            value={repairData}
-            onChange={(next) => setRepairData(next)}
-            clients={clients}
+    <FormSheet
+      open={open}
+      onClose={handleClose}
+      title={repairInfo ? "Editar reparación" : "Nueva reparación"}
+      subtitle={
+        repairInfo
+          ? repairInfo.client?.nombre
+          : "Los campos con * son obligatorios"
+      }
+      size="lg"
+      footer={
+        <>
+          <Button
+            label="Cancelar"
+            variant="tertiary"
+            onClick={onClose}
+            disabled={loading || success}
           />
-        </div>
-      </Modal.Body>
-
-      <Modal.Footer className={style.dialogActions}>
-        <Button
-          className="bg-gray-400 hover:bg-gray-500 text-white"
-          onClick={onClose}
-          disabled={loading || success}
-          label="Cancelar"
-        />
-        <Button
-          onClick={handleSubmit}
-          label={success ? "Guardado!" : "Guardar Reparación"}
-          disabled={loading || success}
-          icon={success ? <CheckIcon /> : <SaveIcon />}
-        />
-      </Modal.Footer>
-    </Modal>
+          <Button
+            onClick={handleSubmit}
+            label={success ? "¡Guardado!" : "Guardar"}
+            variant="primary"
+            disabled={loading || success}
+            icon={success ? <CheckIcon /> : <SaveIcon />}
+          />
+        </>
+      }
+    >
+      <RepairFields
+        value={repairData}
+        onChange={(next) => setRepairData(next)}
+        clients={clients}
+        errores={errores}
+      />
+    </FormSheet>
   );
 };
 

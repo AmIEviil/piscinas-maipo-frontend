@@ -78,3 +78,13 @@
 :global([data-theme="dark"]) .pestana[aria-selected="true"] .conteo {
   color: #04131b;
 }
+
+/* Celular: pestanas mas bajas, mismo area tactil minima. */
+@container (max-width: 40rem) {
+  .pestana {
+    font-size: var(--fs-base);
+    padding: 0.55rem 0.8rem;
+    min-height: var(--tap-min);
+    border-bottom-width: 0.1875rem;
+  }
+}

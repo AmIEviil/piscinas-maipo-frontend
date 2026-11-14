@@ -140,3 +140,125 @@
   outline: 0.1875rem solid #fff;
   outline-offset: 0.125rem;
 }
+
+.botonCabecera {
+  gap: 0.4rem;
+}
+
+/* El icono acompana a la etiqueta; en celular es lo que permite acortarla. */
+.botonCabecera :global(.MuiSvgIcon-root) {
+  font-size: 1.2em;
+  flex: 0 0 auto;
+}
+
+.corto {
+  display: none;
+}
+
+/*
+ * Celular (iPhone 16 Pro Max: 430px de ancho).
+ *
+ * Antes la cabecera ocupaba casi un tercio de la pantalla: avatar de 3.25rem,
+ * cinco chips que se partian en tres filas y tres botones que se apilaban. El
+ * panel de mantenciones -lo que se viene a ver- quedaba con un hueco minimo.
+ *
+ * Ahora: identidad en una fila con avatar chico, chips en UNA fila con
+ * scroll horizontal (el dato sigue ahi, completo, en la pestana Ficha), y
+ * las tres acciones en una fila de botones iguales con icono + etiqueta
+ * corta. Ninguna accion se esconde.
+ */
+@container (max-width: 40rem) {
+  .cabecera {
+    padding: 0.7rem 0.85rem 0.65rem;
+    padding-top: max(0.7rem, env(safe-area-inset-top));
+  }
+
+  .fila {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .inicial {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.6rem;
+    font-size: 1.05rem;
+  }
+
+  .texto {
+    flex: 1 1 0;
+  }
+
+  /* Hasta dos lineas: un nombre largo no se corta a la mitad. */
+  .nombre {
+    font-size: 1.15rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .direccion {
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cerrar {
+    width: var(--tap-min);
+    height: var(--tap-min);
+    font-size: 1.15rem;
+  }
+
+  .chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin: 0.55rem -0.85rem 0;
+    padding: 0 0.85rem;
+    scrollbar-width: none;
+    /* Desvanecido en el borde derecho: senal de que la fila sigue. */
+    mask-image: linear-gradient(to right, #000 85%, transparent);
+  }
+
+  .chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: var(--fs-sm);
+    padding: 0.2rem 0.6rem;
+  }
+
+  /* flex y no grilla de columnas iguales: "Reparaciones" necesita mas
+     ancho que "Mapa", y con tercios iguales se cortaba. */
+  .acciones {
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+    margin-top: 0.55rem;
+  }
+
+  .botonCabecera {
+    flex: 1 1 auto;
+    justify-content: center;
+    gap: 0.3rem;
+    font-size: var(--fs-sm);
+    padding: 0.35rem 0.4rem;
+    border-radius: 0.6rem;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  .largo {
+    display: none;
+  }
+
+  .corto {
+    display: inline;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
